@@ -49,8 +49,8 @@
             {{ game.releaseDate | date: 'yyyy' }}
           </p>
           <div class="game-platforms" *ngIf="game.platforms?.length">
-            <span *ngFor="let platform of game.platforms.slice(0, 3)" class="platform-tag">{{ platform }}</span>
-            <span *ngIf="game.platforms.length > 3" class="platform-more">+{{ game.platforms.length - 3 }}</span>
+            <span *ngFor="let platform of game.platforms!.slice(0, 3)" class="platform-tag">{{ platform }}</span>
+            <span *ngIf="game.platforms!.length > 3" class="platform-more">+{{ game.platforms!.length - 3 }}</span>
           </div>
         </div>
       </li>

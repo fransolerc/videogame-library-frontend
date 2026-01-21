@@ -1,6 +1,5 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterOutlet } from '@angular/router';
 import { GameService } from './game.service';
 import { Observable, Subject, combineLatest, BehaviorSubject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, tap, map } from 'rxjs/operators';
@@ -9,7 +8,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, CommonModule],
+  imports: [CommonModule],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
