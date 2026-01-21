@@ -5,6 +5,7 @@ import { GameService } from './game.service';
 import { Observable, Subject, combineLatest, BehaviorSubject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, tap, map } from 'rxjs/operators';
 import { Game } from './game.model';
+import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-root',
@@ -20,7 +21,10 @@ export class App implements OnInit {
   lastSearchTerm: string | null = null;
   hasResults: boolean = true;
 
-  constructor(private gameService: GameService) {}
+  // Modal state
+  selectedGame: Game | null = null;
+
+  constructor(private gameService: GameService, private sanitizer: DomSanitizer) {}
 
   onSearch(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -30,6 +34,30 @@ export class App implements OnInit {
   onSortChange(event: Event) {
     const select = event.target as HTMLSelectElement;
     this.sortOrder.next(select.value);
+  }
+
+  openModal(game: Game) {
+    this.selectedGame = game;
+    document.body.style.overflow = 'hidden'; // Prevent background scrolling
+  }
+
+  closeModal() {
+    this.selectedGame = null;
+    document.body.style.overflow = 'auto'; // Restore scrolling
+  }
+
+  getSafeVideoUrl(url: string): SafeResourceUrl {
+    // Extract video ID from various YouTube URL formats
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+
+    let embedUrl = url;
+    if (match && match[2].length === 11) {
+      const videoId = match[2];
+      embedUrl = `https://www.youtube.com/embed/${videoId}`;
+    }
+
+    return this.sanitizer.bypassSecurityTrustResourceUrl(embedUrl);
   }
 
   ngOnInit(): void {
@@ -45,7 +73,7 @@ export class App implements OnInit {
       map(([games, sortKey]) => {
         if (!games) return [];
 
-        const sortedGames = [...games]; // Create a new array to avoid mutating the original
+        const sortedGames = [...games];
 
         switch (sortKey) {
           case 'name-asc':
@@ -56,6 +84,8 @@ export class App implements OnInit {
             return sortedGames.sort((a, b) => new Date(b.releaseDate!).getTime() - new Date(a.releaseDate!).getTime());
           case 'date-asc':
             return sortedGames.sort((a, b) => new Date(a.releaseDate!).getTime() - new Date(b.releaseDate!).getTime());
+          case 'rating-desc':
+            return sortedGames.sort((a, b) => (b.rating || 0) - (a.rating || 0));
           default: // 'relevance'
             return games;
         }
