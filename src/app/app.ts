@@ -1,5 +1,5 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { AsyncPipe, DatePipe, DecimalPipe } from '@angular/common';
 import { GameService } from './game.service';
 import { Observable, Subject, combineLatest, BehaviorSubject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, tap, map } from 'rxjs/operators';
@@ -8,7 +8,7 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 
 @Component({
   selector: 'app-root',
-  imports: [CommonModule],
+  imports: [AsyncPipe, DatePipe, DecimalPipe],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })

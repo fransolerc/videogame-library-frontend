@@ -12,14 +12,14 @@
         <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
           <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
         </svg>
-        <input class="search-input" type="text" (input)="onSearch($event)" placeholder="Buscar juego...">
+        <input class="search-input" type="text" (input)="onSearch($event)" placeholder="Buscar juego..." aria-label="Buscar juego">
       </div>
 
       <div class="filter-container">
         <svg class="filter-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
           <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/>
         </svg>
-        <select id="sort-by" class="sort-select" (change)="onSortChange($event)">
+        <select id="sort-by" class="sort-select" (change)="onSortChange($event)" aria-label="Ordenar por">
           <option value="relevance">Relevancia</option>
           <option value="name-asc">Nombre (A-Z)</option>
           <option value="name-desc">Nombre (Z-A)</option>
@@ -31,108 +31,147 @@
     </div>
   </nav>
 
-  <div *ngIf="games$ | async as games">
-    <ul *ngIf="hasResults; else noResults" class="results-list">
-      <li *ngFor="let game of games" class="game-item" (click)="openModal(game)">
-        <div class="card-image-container">
-          <img [src]="game.coverImageUrl" alt="{{ game.name }} cover" class="game-cover">
-          <div class="card-rating" *ngIf="game.rating">
-            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="star-icon">
-              <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-            </svg>
-            <span>{{ game.rating | number:'1.1-1' }}</span>
-          </div>
+  @if (games$ | async; as games) {
+    @if (hasResults) {
+      <ul class="results-list">
+        @for (game of games; track game.id) {
+          <li class="game-item" (click)="openModal(game)">
+            <div class="card-image-container">
+              <img [src]="game.coverImageUrl" src="" alt="{{ game.name }} cover" class="game-cover">
+              @if (game.rating) {
+                <div class="card-rating">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="star-icon">
+                    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                  </svg>
+                  <span>{{ game.rating | number:'1.1-1' }}</span>
+                </div>
+              }
+            </div>
+            <div class="game-info">
+              <h3 class="game-name">{{ game.name }}</h3>
+              @if (game.releaseDate) {
+                <p class="game-release-date">
+                  {{ game.releaseDate | date: 'yyyy' }}
+                </p>
+              }
+              @if (game.platforms?.length) {
+                <div class="game-platforms">
+                  @for (platform of game.platforms.slice(0, 3); track platform) {
+                    <span class="platform-tag">{{ platform }}</span>
+                  }
+                  @if (game.platforms.length > 3) {
+                    <span class="platform-more">+{{ game.platforms.length - 3 }}</span>
+                  }
+                </div>
+              }
+            </div>
+          </li>
+        }
+      </ul>
+    } @else {
+      @if (lastSearchTerm) {
+        <div class="no-results">
+          <p>No se encontraron juegos para "<strong>{{ lastSearchTerm }}</strong>"</p>
         </div>
-        <div class="game-info">
-          <h3 class="game-name">{{ game.name }}</h3>
-          <p class="game-release-date" *ngIf="game.releaseDate">
-            {{ game.releaseDate | date: 'yyyy' }}
-          </p>
-          <div class="game-platforms" *ngIf="game.platforms?.length">
-            <span *ngFor="let platform of game.platforms!.slice(0, 3)" class="platform-tag">{{ platform }}</span>
-            <span *ngIf="game.platforms!.length > 3" class="platform-more">+{{ game.platforms!.length - 3 }}</span>
-          </div>
-        </div>
-      </li>
-    </ul>
-
-    <ng-template #noResults>
-      <div class="no-results" *ngIf="lastSearchTerm">
-        <p>No se encontraron juegos para "<strong>{{ lastSearchTerm }}</strong>"</p>
-      </div>
-    </ng-template>
-  </div>
+      }
+    }
+  }
 
   <footer class="footer">
     <p>Creado por Francisco José Soler Conchello º 2026</p>
   </footer>
 
   <!-- Game Details Modal -->
-  <div class="modal-overlay" *ngIf="selectedGame" (click)="closeModal()">
-    <div class="modal-content" (click)="$event.stopPropagation()">
-      <button class="close-button" (click)="closeModal()">&times;</button>
+  @if (selectedGame) {
+    <div class="modal-overlay" (click)="closeModal()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <button class="close-button" (click)="closeModal()" aria-label="Cerrar detalles">&times;</button>
 
-      <div class="modal-header">
-        <img [src]="selectedGame.coverImageUrl" alt="{{ selectedGame.name }}" class="modal-cover">
-        <div class="modal-title-info">
-          <div class="modal-top-row">
-            <h2>{{ selectedGame.name }}</h2>
-            <div class="modal-rating" *ngIf="selectedGame.rating">
-              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="star-icon-large">
-                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
-              </svg>
-              <span>{{ selectedGame.rating | number:'1.1-1' }}</span>
+        <div class="modal-header">
+          <img [src]="selectedGame.coverImageUrl" src="" alt="{{ selectedGame.name }}" class="modal-cover">
+          <div class="modal-title-info">
+            <div class="modal-top-row">
+              <h2>{{ selectedGame.name }}</h2>
+              @if (selectedGame.rating) {
+                <div class="modal-rating">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="star-icon-large">
+                    <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                  </svg>
+                  <span>{{ selectedGame.rating | number:'1.1-1' }}</span>
+                </div>
+              }
             </div>
-          </div>
 
-          <p class="modal-date" *ngIf="selectedGame.releaseDate">
-            Lanzamiento: {{ selectedGame.releaseDate | date: 'longDate' }}
-          </p>
+            @if (selectedGame.releaseDate) {
+              <p class="modal-date">
+                Lanzamiento: {{ selectedGame.releaseDate | date: 'longDate' }}
+              </p>
+            }
 
-          <div class="game-genres modal-genres" *ngIf="selectedGame.genres?.length">
-            <span *ngFor="let genre of selectedGame.genres" class="genre-tag">{{ genre }}</span>
-          </div>
+            @if (selectedGame.genres?.length) {
+              <div class="game-genres modal-genres">
+                @for (genre of selectedGame.genres; track genre) {
+                  <span class="genre-tag">{{ genre }}</span>
+                }
+              </div>
+            }
 
-          <div class="modal-platforms" *ngIf="selectedGame.platforms?.length">
-            <span class="platforms-label">Plataformas:</span>
-            <span *ngFor="let platform of selectedGame.platforms" class="platform-tag-modal">{{ platform }}</span>
-          </div>
-        </div>
-      </div>
-
-      <div class="modal-body">
-        <div class="modal-section" *ngIf="selectedGame.summary">
-          <h3>Descripción</h3>
-          <p>{{ selectedGame.summary }}</p>
-        </div>
-
-        <div class="modal-section" *ngIf="selectedGame.screenshots?.length">
-          <h3>Galería</h3>
-          <div class="screenshots-grid">
-            <img *ngFor="let screenshot of selectedGame.screenshots" [src]="screenshot" alt="Screenshot" class="screenshot-img" (click)="openLightbox(screenshot)">
+            @if (selectedGame.platforms?.length) {
+              <div class="modal-platforms">
+                <span class="platforms-label">Plataformas:</span>
+                @for (platform of selectedGame.platforms; track platform) {
+                  <span class="platform-tag-modal">{{ platform }}</span>
+                }
+              </div>
+            }
           </div>
         </div>
 
-        <div class="modal-section" *ngIf="selectedGame.videos?.length">
-          <h3>Vídeos</h3>
-          <div class="video-grid">
-            <div *ngFor="let videoUrl of selectedGame.videos" class="video-container">
-              <iframe
-                [src]="getSafeVideoUrl(videoUrl)"
-                frameborder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowfullscreen>
-              </iframe>
+        <div class="modal-body">
+          @if (selectedGame.summary) {
+            <div class="modal-section">
+              <h3>Descripción</h3>
+              <p>{{ selectedGame.summary }}</p>
             </div>
-          </div>
+          }
+
+          @if (selectedGame.screenshots?.length) {
+            <div class="modal-section">
+              <h3>Galería</h3>
+              <div class="screenshots-grid">
+                @for (screenshot of selectedGame.screenshots; track screenshot) {
+                  <img [src]="screenshot" src="" alt="Screenshot" class="screenshot-img" (click)="openLightbox(screenshot)">
+                }
+              </div>
+            </div>
+          }
+
+          @if (selectedGame.videos?.length) {
+            <div class="modal-section">
+              <h3>Vídeos</h3>
+              <div class="video-grid">
+                @for (videoUrl of selectedGame.videos; track videoUrl) {
+                  <div class="video-container">
+                    <iframe
+                      [src]="getSafeVideoUrl(videoUrl)"
+                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                      allowfullscreen>
+                    </iframe>
+                  </div>
+                }
+              </div>
+            </div>
+          }
         </div>
       </div>
     </div>
-  </div>
+  }
 
   <!-- Screenshot Lightbox -->
-  <div class="lightbox-overlay" *ngIf="enlargedScreenshot" (click)="closeLightbox()">
-    <img [src]="enlargedScreenshot" alt="Enlarged screenshot" class="lightbox-image">
-    <button class="close-button lightbox-close-button" (click)="closeLightbox()">&times;</button>
-  </div>
+  @if (enlargedScreenshot) {
+    <div class="lightbox-overlay" (click)="closeLightbox()">
+      <img [src]="enlargedScreenshot" src="" alt="Enlarged screenshot" class="lightbox-image">
+      <button class="close-button lightbox-close-button" (click)="closeLightbox()" aria-label="Cerrar imagen">&times;</button>
+    </div>
+  }
 </div>
