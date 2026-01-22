@@ -4,7 +4,7 @@ export interface Game {
   genres?: string[];
   releaseDate: string | null;
   coverImageUrl: string;
-  description?: string;
+  summary?: string;
   videos?: string[];
   screenshots?: string[];
   platforms?: string[];

@@ -101,15 +101,15 @@
       </div>
 
       <div class="modal-body">
-        <div class="modal-section" *ngIf="selectedGame.description">
+        <div class="modal-section" *ngIf="selectedGame.summary">
           <h3>Descripción</h3>
-          <p>{{ selectedGame.description }}</p>
+          <p>{{ selectedGame.summary }}</p>
         </div>
 
         <div class="modal-section" *ngIf="selectedGame.screenshots?.length">
           <h3>Galería</h3>
           <div class="screenshots-grid">
-            <img *ngFor="let screenshot of selectedGame.screenshots" [src]="screenshot" alt="Screenshot" class="screenshot-img">
+            <img *ngFor="let screenshot of selectedGame.screenshots" [src]="screenshot" alt="Screenshot" class="screenshot-img" (click)="openLightbox(screenshot)">
           </div>
         </div>
 
@@ -128,5 +128,11 @@
         </div>
       </div>
     </div>
+  </div>
+
+  <!-- Screenshot Lightbox -->
+  <div class="lightbox-overlay" *ngIf="enlargedScreenshot" (click)="closeLightbox()">
+    <img [src]="enlargedScreenshot" alt="Enlarged screenshot" class="lightbox-image">
+    <button class="close-button lightbox-close-button" (click)="closeLightbox()">&times;</button>
   </div>
 </div>

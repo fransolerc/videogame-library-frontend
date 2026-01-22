@@ -23,6 +23,9 @@ export class App implements OnInit {
   // Modal state
   selectedGame: Game | null = null;
 
+  // Lightbox state
+  enlargedScreenshot: string | null = null;
+
   constructor(private gameService: GameService, private sanitizer: DomSanitizer) {}
 
   onSearch(event: Event) {
@@ -43,6 +46,14 @@ export class App implements OnInit {
   closeModal() {
     this.selectedGame = null;
     document.body.style.overflow = 'auto'; // Restore scrolling
+  }
+
+  openLightbox(screenshotUrl: string) {
+    this.enlargedScreenshot = screenshotUrl;
+  }
+
+  closeLightbox() {
+    this.enlargedScreenshot = null;
   }
 
   getSafeVideoUrl(url: string): SafeResourceUrl {
