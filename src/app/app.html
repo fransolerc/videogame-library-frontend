@@ -56,11 +56,11 @@
               }
               @if (game.platforms?.length) {
                 <div class="game-platforms">
-                  @for (platform of game.platforms.slice(0, 3); track platform) {
+                  @for (platform of game.platforms!.slice(0, 3); track platform) {
                     <span class="platform-tag">{{ platform }}</span>
                   }
-                  @if (game.platforms.length > 3) {
-                    <span class="platform-more">+{{ game.platforms.length - 3 }}</span>
+                  @if (game.platforms!.length > 3) {
+                    <span class="platform-more">+{{ game.platforms!.length - 3 }}</span>
                   }
                 </div>
               }
@@ -110,7 +110,7 @@
 
             @if (selectedGame.genres?.length) {
               <div class="game-genres modal-genres">
-                @for (genre of selectedGame.genres; track genre) {
+                @for (genre of selectedGame.genres!; track genre) {
                   <span class="genre-tag">{{ genre }}</span>
                 }
               </div>
@@ -119,7 +119,7 @@
             @if (selectedGame.platforms?.length) {
               <div class="modal-platforms">
                 <span class="platforms-label">Plataformas:</span>
-                @for (platform of selectedGame.platforms; track platform) {
+                @for (platform of selectedGame.platforms!; track platform) {
                   <span class="platform-tag-modal">{{ platform }}</span>
                 }
               </div>
@@ -139,7 +139,7 @@
             <div class="modal-section">
               <h3>Galería</h3>
               <div class="screenshots-grid">
-                @for (screenshot of selectedGame.screenshots; track screenshot) {
+                @for (screenshot of selectedGame.screenshots!; track screenshot) {
                   <img [src]="screenshot" src="" alt="Screenshot" class="screenshot-img" (click)="openLightbox(screenshot)">
                 }
               </div>
@@ -150,7 +150,7 @@
             <div class="modal-section">
               <h3>Vídeos</h3>
               <div class="video-grid">
-                @for (videoUrl of selectedGame.videos; track videoUrl) {
+                @for (videoUrl of selectedGame.videos!; track videoUrl) {
                   <div class="video-container">
                     <iframe
                       [src]="getSafeVideoUrl(videoUrl)"
