@@ -2,10 +2,17 @@
   <h2>Iniciar Sesión</h2>
   <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
     <div class="form-group">
-      <label for="username">Usuario:</label>
-      <input id="username" type="text" formControlName="username" placeholder="Introduce tu usuario">
-      @if (loginForm.get('username')?.invalid && loginForm.get('username')?.touched) {
-        <div class="error-message">Usuario es requerido.</div>
+      <label for="email">Email:</label>
+      <input id="email" type="email" formControlName="email" placeholder="Introduce tu email">
+      @if (loginForm.get('email')?.invalid && loginForm.get('email')?.touched) {
+        <div class="error-message">
+          @if (loginForm.get('email')?.hasError('required')) {
+            Email es requerido.
+          }
+          @if (loginForm.get('email')?.hasError('email')) {
+            Introduce un email válido.
+          }
+        </div>
       }
     </div>
 

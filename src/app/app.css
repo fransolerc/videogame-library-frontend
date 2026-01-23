@@ -52,7 +52,7 @@
   gap: 1rem;
   align-items: center;
   width: 100%;
-  max-width: 700px; /* Increased max-width */
+  max-width: 800px; /* Increased max-width to fit platform filter */
   margin-bottom: 0; /* Remove bottom margin */
   justify-content: flex-end; /* Align to the right */
 }
@@ -137,6 +137,8 @@
   appearance: none;
   cursor: pointer;
   transition: all 0.3s ease;
+  max-width: 150px; /* Limit width */
+  text-overflow: ellipsis;
 }
 
 .sort-select:focus {
@@ -150,7 +152,8 @@
 }
 
 .auth-controls {
-  margin-left: 1.5rem;
+  margin-left: 1rem;
+  flex-shrink: 0;
 }
 
 .auth-button {

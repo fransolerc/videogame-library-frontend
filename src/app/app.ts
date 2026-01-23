@@ -7,6 +7,8 @@ import { Game, GameFilterRequest } from './game.model';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { AuthService } from './auth/auth.service';
 import { LoginComponent } from './auth/login/login.component';
+import { PlatformService } from './platform.service'; // Importa el PlatformService
+import { Platform } from './platform.model'; // Importa el modelo Platform
 
 @Component({
   selector: 'app-root',
@@ -15,27 +17,33 @@ import { LoginComponent } from './auth/login/login.component';
   styleUrl: './app.css'
 })
 export class App implements OnInit {
+  // Observables para los datos
   latestGames$: Observable<Game[]> | undefined;
   searchResults$: Observable<Game[]> | undefined;
   isSearching$: Observable<boolean> | undefined;
   isAuthenticated$: Observable<boolean>;
+  platforms$: Observable<Platform[]> | undefined; // Observable para la lista de plataformas
 
   private searchInput = new BehaviorSubject<string>('');
   private sortInput = new BehaviorSubject<string>('relevance');
+  private platformFilterInput = new BehaviorSubject<number | 'all'>('all'); // Nuevo BehaviorSubject para el filtro de plataforma
 
   lastSearchTerm: string | null = null;
   hasResults: boolean = true;
 
+  // Modal state
   selectedGame: Game | null = null;
   showLoginModal = false;
 
+  // Lightbox state
   enlargedScreenshot: string | null = null;
   areVideosPaused = false;
 
   constructor(
     private gameService: GameService,
     private sanitizer: DomSanitizer,
-    private authService: AuthService
+    private authService: AuthService,
+    private platformService: PlatformService // Inyecta el PlatformService
   ) {
     this.isAuthenticated$ = this.authService.isAuthenticated$;
   }
@@ -48,6 +56,12 @@ export class App implements OnInit {
   onSortChange(event: Event) {
     const select = event.target as HTMLSelectElement;
     this.sortInput.next(select.value);
+  }
+
+  onPlatformFilterChange(event: Event) {
+    const select = event.target as HTMLSelectElement;
+    const value = select.value;
+    this.platformFilterInput.next(value === 'all' ? 'all' : parseInt(value, 10));
   }
 
   openModal(game: Game) {
@@ -110,26 +124,70 @@ export class App implements OnInit {
   }
 
   ngOnInit(): void {
-    const initialRequest: GameFilterRequest = {
-      filter: `first_release_date <= ${Math.floor(Date.now() / 1000)}`,
-      sort: 'first_release_date desc',
-      limit: 20
-    };
-    this.latestGames$ = this.gameService.filterGames(initialRequest);
+    // Suscribirse al estado de autenticación para cerrar el modal al loguearse
+    this.authService.isAuthenticated$.subscribe(isAuthenticated => {
+      if (isAuthenticated) {
+        this.closeLoginModal();
+      }
+    });
 
+    // Cargar la lista de plataformas al inicio
+    this.platforms$ = this.platformService.getPlatforms();
+
+    // Lógica para los últimos juegos (carga inicial)
+    this.latestGames$ = combineLatest([this.sortInput, this.platformFilterInput, this.platforms$]).pipe(
+      switchMap(([sortKey, platformId, allPlatforms]) => {
+        const initialRequest: GameFilterRequest = {
+          filter: `first_release_date <= ${Math.floor(Date.now() / 1000)}`,
+          limit: 20
+        };
+
+        // Añadir filtro por plataforma si está seleccionada
+        if (platformId !== 'all') {
+          // Asumiendo que el backend de filterGames espera platforms.id
+          initialRequest.filter += ` & platforms.id = ${platformId}`;
+        }
+
+        // Añadir ordenación
+        switch (sortKey) {
+          case 'name-asc': initialRequest.sort = 'name asc'; break;
+          case 'name-desc': initialRequest.sort = 'name desc'; break;
+          case 'date-desc': initialRequest.sort = 'first_release_date desc'; break;
+          case 'date-asc': initialRequest.sort = 'first_release_date asc'; break;
+          case 'rating-desc': initialRequest.sort = 'rating desc'; break;
+          default: initialRequest.sort = 'first_release_date desc'; break; // Default para relevancia en últimos juegos
+        }
+        return this.gameService.filterGames(initialRequest);
+      })
+    );
+
+    // Observable para saber si estamos buscando
     this.isSearching$ = this.searchInput.pipe(
       map(term => !!term)
     );
 
-    const searchResultsRaw$ = this.searchInput.pipe(
+    // Lógica para los resultados de búsqueda (usa el endpoint de búsqueda y ordena/filtra en el frontend)
+    const searchResultsRaw$ = combineLatest([this.searchInput, this.platformFilterInput, this.platforms$]).pipe(
       debounceTime(300),
       distinctUntilChanged(),
-      tap(term => this.lastSearchTerm = term),
-      switchMap(term => {
+      tap(([term]) => this.lastSearchTerm = term), // Solo el término para lastSearchTerm
+      switchMap(([term, platformId, allPlatforms]) => {
         if (!term) {
           return of([]);
         }
-        return this.gameService.searchGames(term);
+        // Llama al endpoint de búsqueda simple
+        return this.gameService.searchGames(term).pipe(
+          map(games => {
+            // Filtra por plataforma en el frontend si hay una seleccionada
+            if (platformId !== 'all' && allPlatforms) {
+              const selectedPlatformName = allPlatforms.find(p => p.id === platformId)?.name;
+              if (selectedPlatformName) {
+                return games.filter(game => game.platforms?.includes(selectedPlatformName));
+              }
+            }
+            return games;
+          })
+        );
       }),
       tap(games => this.hasResults = games.length > 0)
     );
@@ -151,7 +209,7 @@ export class App implements OnInit {
           case 'rating-desc':
             return sortedGames.sort((a, b) => (b.rating || 0) - (a.rating || 0));
           default:
-            return games;
+            return games; // El endpoint de búsqueda ya devuelve por relevancia
         }
       })
     );

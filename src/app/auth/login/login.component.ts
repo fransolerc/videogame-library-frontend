@@ -19,7 +19,7 @@ export class LoginComponent {
     private authService: AuthService
   ) {
     this.loginForm = this.fb.group({
-      username: ['', [Validators.required]],
+      email: ['', [Validators.required, Validators.email]],
       password: ['', [Validators.required]]
     });
   }
@@ -30,14 +30,14 @@ export class LoginComponent {
     }
 
     this.errorMessage = null;
-    const { username, password } = this.loginForm.value;
+    const { email, password } = this.loginForm.value;
 
-    this.authService.login(username, password).subscribe({
+    this.authService.login(email, password).subscribe({
       next: () => {
         // El login fue exitoso, el modal se cerrará desde el componente principal
       },
       error: (err) => {
-        this.errorMessage = 'Usuario o contraseña incorrectos. Por favor, inténtalo de nuevo.';
+        this.errorMessage = 'Email o contraseña incorrectos. Por favor, inténtalo de nuevo.';
         console.error('Error de login:', err);
       }
     });
