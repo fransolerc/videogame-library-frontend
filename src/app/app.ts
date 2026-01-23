@@ -1,14 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { AsyncPipe, DatePipe, DecimalPipe } from '@angular/common';
 import { GameService } from './game.service';
-import { Observable, Subject, combineLatest, BehaviorSubject, of } from 'rxjs';
+import { Observable, combineLatest, BehaviorSubject, of } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, tap, map } from 'rxjs/operators';
 import { Game, GameFilterRequest } from './game.model';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { AuthService } from './auth/auth.service';
 import { LoginComponent } from './auth/login/login.component';
-import { PlatformService } from './platform.service'; // Importa el PlatformService
-import { Platform } from './platform.model'; // Importa el modelo Platform
+import { PlatformService } from './platform.service';
+import { Platform } from './platform.model';
 
 @Component({
   selector: 'app-root',
@@ -17,33 +17,30 @@ import { Platform } from './platform.model'; // Importa el modelo Platform
   styleUrl: './app.css'
 })
 export class App implements OnInit {
-  // Observables para los datos
   latestGames$: Observable<Game[]> | undefined;
   searchResults$: Observable<Game[]> | undefined;
   isSearching$: Observable<boolean> | undefined;
   isAuthenticated$: Observable<boolean>;
-  platforms$: Observable<Platform[]> | undefined; // Observable para la lista de plataformas
+  platforms$: Observable<Platform[]> | undefined;
 
-  private searchInput = new BehaviorSubject<string>('');
-  private sortInput = new BehaviorSubject<string>('relevance');
-  private platformFilterInput = new BehaviorSubject<number | 'all'>('all'); // Nuevo BehaviorSubject para el filtro de plataforma
+  private readonly searchInput = new BehaviorSubject<string>('');
+  private readonly sortInput = new BehaviorSubject<string>('relevance');
+  private readonly platformFilterInput = new BehaviorSubject<number | 'all'>('all');
 
   lastSearchTerm: string | null = null;
   hasResults: boolean = true;
 
-  // Modal state
   selectedGame: Game | null = null;
   showLoginModal = false;
 
-  // Lightbox state
   enlargedScreenshot: string | null = null;
   areVideosPaused = false;
 
   constructor(
-    private gameService: GameService,
-    private sanitizer: DomSanitizer,
-    private authService: AuthService,
-    private platformService: PlatformService // Inyecta el PlatformService
+    private readonly gameService: GameService,
+    private readonly sanitizer: DomSanitizer,
+    private readonly authService: AuthService,
+    private readonly platformService: PlatformService
   ) {
     this.isAuthenticated$ = this.authService.isAuthenticated$;
   }
@@ -51,6 +48,14 @@ export class App implements OnInit {
   onSearch(event: Event) {
     const input = event.target as HTMLInputElement;
     this.searchInput.next(input.value);
+  }
+
+  clearSearch() {
+    this.searchInput.next('');
+    const inputElement = document.querySelector('.search-input') as HTMLInputElement;
+    if (inputElement) {
+      inputElement.value = '';
+    }
   }
 
   onSortChange(event: Event) {
@@ -61,7 +66,7 @@ export class App implements OnInit {
   onPlatformFilterChange(event: Event) {
     const select = event.target as HTMLSelectElement;
     const value = select.value;
-    this.platformFilterInput.next(value === 'all' ? 'all' : parseInt(value, 10));
+    this.platformFilterInput.next(value === 'all' ? 'all' : Number.parseInt(value, 10));
   }
 
   openModal(game: Game) {
@@ -124,17 +129,14 @@ export class App implements OnInit {
   }
 
   ngOnInit(): void {
-    // Suscribirse al estado de autenticación para cerrar el modal al loguearse
     this.authService.isAuthenticated$.subscribe(isAuthenticated => {
       if (isAuthenticated) {
         this.closeLoginModal();
       }
     });
 
-    // Cargar la lista de plataformas al inicio
     this.platforms$ = this.platformService.getPlatforms();
 
-    // Lógica para los últimos juegos (carga inicial)
     this.latestGames$ = combineLatest([this.sortInput, this.platformFilterInput, this.platforms$]).pipe(
       switchMap(([sortKey, platformId, allPlatforms]) => {
         const initialRequest: GameFilterRequest = {
@@ -142,43 +144,38 @@ export class App implements OnInit {
           limit: 20
         };
 
-        // Añadir filtro por plataforma si está seleccionada
         if (platformId !== 'all') {
-          // Asumiendo que el backend de filterGames espera platforms.id
           initialRequest.filter += ` & platforms.id = ${platformId}`;
         }
 
-        // Añadir ordenación
         switch (sortKey) {
           case 'name-asc': initialRequest.sort = 'name asc'; break;
           case 'name-desc': initialRequest.sort = 'name desc'; break;
           case 'date-desc': initialRequest.sort = 'first_release_date desc'; break;
           case 'date-asc': initialRequest.sort = 'first_release_date asc'; break;
           case 'rating-desc': initialRequest.sort = 'rating desc'; break;
-          default: initialRequest.sort = 'first_release_date desc'; break; // Default para relevancia en últimos juegos
+          default: initialRequest.sort = 'first_release_date desc'; break;
         }
         return this.gameService.filterGames(initialRequest);
       })
     );
 
-    // Observable para saber si estamos buscando
     this.isSearching$ = this.searchInput.pipe(
       map(term => !!term)
     );
 
-    // Lógica para los resultados de búsqueda (usa el endpoint de búsqueda y ordena/filtra en el frontend)
     const searchResultsRaw$ = combineLatest([this.searchInput, this.platformFilterInput, this.platforms$]).pipe(
       debounceTime(300),
       distinctUntilChanged(),
-      tap(([term]) => this.lastSearchTerm = term), // Solo el término para lastSearchTerm
+      tap(([term]) => this.lastSearchTerm = term),
       switchMap(([term, platformId, allPlatforms]) => {
         if (!term) {
           return of([]);
         }
-        // Llama al endpoint de búsqueda simple
+
         return this.gameService.searchGames(term).pipe(
           map(games => {
-            // Filtra por plataforma en el frontend si hay una seleccionada
+
             if (platformId !== 'all' && allPlatforms) {
               const selectedPlatformName = allPlatforms.find(p => p.id === platformId)?.name;
               if (selectedPlatformName) {
@@ -209,7 +206,7 @@ export class App implements OnInit {
           case 'rating-desc':
             return sortedGames.sort((a, b) => (b.rating || 0) - (a.rating || 0));
           default:
-            return games; // El endpoint de búsqueda ya devuelve por relevancia
+            return games;
         }
       })
     );

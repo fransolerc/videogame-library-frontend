@@ -15,8 +15,8 @@ export class LoginComponent {
   errorMessage: string | null = null;
 
   constructor(
-    private fb: FormBuilder,
-    private authService: AuthService
+    private readonly fb: FormBuilder,
+    private readonly authService: AuthService
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -33,9 +33,7 @@ export class LoginComponent {
     const { email, password } = this.loginForm.value;
 
     this.authService.login(email, password).subscribe({
-      next: () => {
-        // El login fue exitoso, el modal se cerrará desde el componente principal
-      },
+      next: () => {},
       error: (err) => {
         this.errorMessage = 'Email o contraseña incorrectos. Por favor, inténtalo de nuevo.';
         console.error('Error de login:', err);

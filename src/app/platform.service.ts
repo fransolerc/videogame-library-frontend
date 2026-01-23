@@ -9,9 +9,9 @@ import { environment } from '../environments/environment';
 })
 export class PlatformService {
 
-  private apiUrl = `${environment.apiUrl}/platforms`;
+  private readonly apiUrl = `${environment.apiUrl}/platforms`;
 
-  constructor(private http: HttpClient) { }
+  constructor(private readonly http: HttpClient) { }
 
   getPlatforms(): Observable<Platform[]> {
     return this.http.get<Platform[]>(this.apiUrl);

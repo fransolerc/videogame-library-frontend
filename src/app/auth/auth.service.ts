@@ -9,12 +9,12 @@ import { AuthResponse } from './user.model';
   providedIn: 'root'
 })
 export class AuthService {
-  private tokenKey = 'jwt_token';
-  private isAuthenticatedSubject = new BehaviorSubject<boolean>(this.hasToken());
+  private readonly tokenKey = 'jwt_token';
+  private readonly isAuthenticatedSubject = new BehaviorSubject<boolean>(this.hasToken());
 
   isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
 
-  constructor(private http: HttpClient) { }
+  constructor(private readonly http: HttpClient) { }
 
   private hasToken(): boolean {
     return !!localStorage.getItem(this.tokenKey);

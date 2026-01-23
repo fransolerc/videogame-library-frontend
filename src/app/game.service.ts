@@ -9,22 +9,20 @@ import { environment } from '../environments/environment';
 })
 export class GameService {
 
-  private searchApiUrl = `${environment.apiUrl}/games/search`;
-  private filterApiUrl = `${environment.apiUrl}/games/filter`;
+  private readonly searchApiUrl = `${environment.apiUrl}/games/search`;
+  private readonly filterApiUrl = `${environment.apiUrl}/games/filter`;
 
-  constructor(private http: HttpClient) { }
+  constructor(private readonly http: HttpClient) { }
 
   /**
-   * Realiza una búsqueda simple por nombre.
-   * @param query El término de búsqueda.
+   * @param query
    */
   searchGames(query: string): Observable<Game[]> {
     return this.http.get<Game[]>(`${this.searchApiUrl}?name=${query}`);
   }
 
   /**
-   * Realiza una búsqueda avanzada de videojuegos.
-   * @param requestBody El cuerpo de la petición con los filtros.
+   * @param requestBody
    */
   filterGames(requestBody: GameFilterRequest): Observable<Game[]> {
     return this.http.post<Game[]>(this.filterApiUrl, requestBody);
