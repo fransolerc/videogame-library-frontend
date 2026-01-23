@@ -28,6 +28,24 @@
           <option value="rating-desc">Valoración (Mejores)</option>
         </select>
       </div>
+
+      <div class="auth-controls">
+        @if (isAuthenticated$ | async) {
+          <button class="auth-button logout" (click)="logout()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="auth-icon">
+              <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+            </svg>
+            <span>Logout</span>
+          </button>
+        } @else {
+          <button class="auth-button login" (click)="openLoginModal()">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="auth-icon">
+              <path d="M11 7l-1.41 1.41L12.17 11H2v2h10.17l-2.58 2.58L11 17l5-5zM20 19h-8v2h8c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2h-8v2h8v14z"/>
+            </svg>
+            <span>Login</span>
+          </button>
+        }
+      </div>
     </div>
   </nav>
 
@@ -128,7 +146,7 @@
   <!-- Game Details Modal -->
   @if (selectedGame) {
     <div class="modal-overlay" (click)="closeModal()">
-      <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-content" (click)="stopPropagation($event)">
         <button class="close-button" (click)="closeModal()" aria-label="Cerrar detalles">&times;</button>
 
         <div class="modal-header">
@@ -179,28 +197,32 @@
             </div>
           }
 
-          @if (selectedGame.screenshots; as screenshots) {
+          @if (selectedGame.screenshots?.length) {
             <div class="modal-section">
               <h3>Galería</h3>
               <div class="screenshots-grid">
-                @for (screenshot of screenshots; track screenshot) {
+                @for (screenshot of selectedGame.screenshots; track screenshot) {
                   <img [src]="screenshot" src="" alt="Screenshot" class="screenshot-img" (click)="openLightbox(screenshot)">
                 }
               </div>
             </div>
           }
 
-          @if (selectedGame.videos; as videos) {
+          @if (selectedGame.videos?.length) {
             <div class="modal-section">
               <h3>Vídeos</h3>
               <div class="video-grid">
-                @for (videoUrl of videos; track videoUrl) {
+                @for (videoUrl of selectedGame.videos; track videoUrl) {
                   <div class="video-container">
-                    <iframe
-                      [src]="getSafeVideoUrl(videoUrl)"
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowfullscreen>
-                    </iframe>
+                    @if (!areVideosPaused) {
+                      <iframe
+                        [src]="getSafeVideoUrl(videoUrl)"
+                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        allowfullscreen>
+                      </iframe>
+                    } @else {
+                      <img [src]="getVideoThumbnail(videoUrl)" alt="Video thumbnail" class="video-thumbnail">
+                    }
                   </div>
                 }
               </div>
@@ -216,6 +238,16 @@
     <div class="lightbox-overlay" (click)="closeLightbox()">
       <img [src]="enlargedScreenshot" src="" alt="Enlarged screenshot" class="lightbox-image">
       <button class="close-button lightbox-close-button" (click)="closeLightbox()" aria-label="Cerrar imagen">&times;</button>
+    </div>
+  }
+
+  <!-- Login Modal -->
+  @if (showLoginModal) {
+    <div class="modal-overlay" (click)="closeLoginModal()">
+      <div class="modal-content login-modal-content" (click)="stopPropagation($event)">
+        <button class="close-button" (click)="closeLoginModal()" aria-label="Cerrar login">&times;</button>
+        <app-login></app-login>
+      </div>
     </div>
   }
 </div>

@@ -5,18 +5,20 @@ import { Observable, Subject, combineLatest, BehaviorSubject, of } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, tap, map } from 'rxjs/operators';
 import { Game, GameFilterRequest } from './game.model';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { AuthService } from './auth/auth.service';
+import { LoginComponent } from './auth/login/login.component';
 
 @Component({
   selector: 'app-root',
-  imports: [AsyncPipe, DatePipe, DecimalPipe],
+  imports: [AsyncPipe, DatePipe, DecimalPipe, LoginComponent],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
 export class App implements OnInit {
-  // Observables para los datos
   latestGames$: Observable<Game[]> | undefined;
   searchResults$: Observable<Game[]> | undefined;
   isSearching$: Observable<boolean> | undefined;
+  isAuthenticated$: Observable<boolean>;
 
   private searchInput = new BehaviorSubject<string>('');
   private sortInput = new BehaviorSubject<string>('relevance');
@@ -24,13 +26,19 @@ export class App implements OnInit {
   lastSearchTerm: string | null = null;
   hasResults: boolean = true;
 
-  // Modal state
   selectedGame: Game | null = null;
+  showLoginModal = false;
 
-  // Lightbox state
   enlargedScreenshot: string | null = null;
+  areVideosPaused = false;
 
-  constructor(private gameService: GameService, private sanitizer: DomSanitizer) {}
+  constructor(
+    private gameService: GameService,
+    private sanitizer: DomSanitizer,
+    private authService: AuthService
+  ) {
+    this.isAuthenticated$ = this.authService.isAuthenticated$;
+  }
 
   onSearch(event: Event) {
     const input = event.target as HTMLInputElement;
@@ -54,10 +62,30 @@ export class App implements OnInit {
 
   openLightbox(screenshotUrl: string) {
     this.enlargedScreenshot = screenshotUrl;
+    this.areVideosPaused = true;
   }
 
   closeLightbox() {
     this.enlargedScreenshot = null;
+    this.areVideosPaused = false;
+  }
+
+  stopPropagation(event: Event) {
+    event.stopPropagation();
+  }
+
+  openLoginModal() {
+    this.showLoginModal = true;
+    document.body.style.overflow = 'hidden';
+  }
+
+  closeLoginModal() {
+    this.showLoginModal = false;
+    document.body.style.overflow = 'auto';
+  }
+
+  logout() {
+    this.authService.logout();
   }
 
   getSafeVideoUrl(url: string): SafeResourceUrl {
@@ -71,8 +99,17 @@ export class App implements OnInit {
     return this.sanitizer.bypassSecurityTrustResourceUrl(embedUrl);
   }
 
+  getVideoThumbnail(url: string): string {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
+    const match = url.match(regExp);
+    if (match && match[2] && match[2].length === 11) {
+      const videoId = match[2];
+      return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+    }
+    return '';
+  }
+
   ngOnInit(): void {
-    // 1. Carga inicial de los últimos juegos
     const initialRequest: GameFilterRequest = {
       filter: `first_release_date <= ${Math.floor(Date.now() / 1000)}`,
       sort: 'first_release_date desc',
@@ -80,12 +117,10 @@ export class App implements OnInit {
     };
     this.latestGames$ = this.gameService.filterGames(initialRequest);
 
-    // Observable para saber si estamos buscando
     this.isSearching$ = this.searchInput.pipe(
-      map(term => !!term) // Convierte el término en un booleano
+      map(term => !!term)
     );
 
-    // 2. Lógica para los resultados de búsqueda
     const searchResultsRaw$ = this.searchInput.pipe(
       debounceTime(300),
       distinctUntilChanged(),
