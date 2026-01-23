@@ -10,3 +10,10 @@ export interface Game {
   platforms?: string[];
   rating?: number;
 }
+
+export interface GameFilterRequest {
+  filter?: string;
+  sort?: string;
+  limit?: number;
+  offset?: number;
+}
