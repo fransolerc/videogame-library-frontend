@@ -1,8 +1,8 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core'; // Importa ChangeDetectionStrategy y ChangeDetectorRef
 import { AsyncPipe, DatePipe, DecimalPipe } from '@angular/common';
 import { GameService } from './game.service';
 import { Observable, combineLatest, BehaviorSubject, of } from 'rxjs';
-import { debounceTime, distinctUntilChanged, switchMap, tap, map } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, switchMap, tap, map, finalize } from 'rxjs/operators';
 import { Game, GameFilterRequest } from './game.model';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { AuthService } from './auth/auth.service';
@@ -16,7 +16,8 @@ import { GameStatus } from './library/library.model';
   selector: 'app-root',
   imports: [AsyncPipe, DatePipe, DecimalPipe, LoginComponent],
   templateUrl: './app.html',
-  styleUrl: './app.css'
+  styleUrl: './app.css',
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class App implements OnInit {
   latestGames$: Observable<Game[]> | undefined;
@@ -47,7 +48,8 @@ export class App implements OnInit {
     private readonly sanitizer: DomSanitizer,
     private readonly authService: AuthService,
     private readonly platformService: PlatformService,
-    private readonly libraryService: LibraryService
+    private readonly libraryService: LibraryService,
+    private readonly cdr: ChangeDetectorRef
   ) {
     this.isAuthenticated$ = this.authService.isAuthenticated$;
   }
@@ -80,6 +82,16 @@ export class App implements OnInit {
     this.selectedGame = game;
     this.currentLibraryStatus = null;
     document.body.style.overflow = 'hidden';
+
+    const userId = this.authService.getUserId();
+    if (userId) {
+      this.libraryService.getGameFromLibrary(userId, game.id).subscribe(userGame => {
+        if (userGame) {
+          this.currentLibraryStatus = userGame.status;
+          this.cdr.detectChanges();
+        }
+      });
+    }
   }
 
   closeModal() {
@@ -127,18 +139,24 @@ export class App implements OnInit {
     this.isAddingToLibrary = true;
     const newStatus = status as GameStatus;
 
-    this.libraryService.addGameToLibrary(userId, {
+    this.libraryService.addOrUpdateGameInLibrary(userId, {
       gameId: this.selectedGame.id,
       status: newStatus
-    }).subscribe({
-      next: () => {
+    }).pipe(
+      finalize(() => {
         this.isAddingToLibrary = false;
-        this.currentLibraryStatus = newStatus;
+        this.cdr.detectChanges();
+      })
+    ).subscribe({
+      next: (userGame) => {
+        this.currentLibraryStatus = userGame.status;
+        console.log('Juego añadido/actualizado en la biblioteca:', userGame);
+        this.cdr.detectChanges();
       },
       error: (err) => {
-        this.isAddingToLibrary = false;
         console.error('Error adding game to library:', err);
         alert('Error al añadir el juego a la biblioteca');
+        this.cdr.detectChanges();
       }
     });
   }
