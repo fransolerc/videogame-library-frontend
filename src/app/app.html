@@ -207,6 +207,18 @@
                 }
               </div>
             }
+
+            <!-- Add to Library Section -->
+            <div class="library-actions">
+              <label for="game-status" class="library-label">Estado en biblioteca:</label>
+              <select id="game-status" class="status-select" (change)="addGameToLibrary($any($event.target).value)" [disabled]="isAddingToLibrary">
+                <option value="" disabled selected>Seleccionar estado...</option>
+                <option [value]="GameStatus.WANT_TO_PLAY">Quiero jugar</option>
+                <option [value]="GameStatus.PLAYING">Jugando</option>
+                <option [value]="GameStatus.COMPLETED">Completado</option>
+                <option [value]="GameStatus.DROPPED">Abandonado</option>
+              </select>
+            </div>
           </div>
         </div>
 

@@ -9,6 +9,8 @@ import { AuthService } from './auth/auth.service';
 import { LoginComponent } from './auth/login/login.component';
 import { PlatformService } from './platform.service';
 import { Platform } from './platform.model';
+import { LibraryService } from './library/library.service';
+import { GameStatus } from './library/library.model';
 
 @Component({
   selector: 'app-root',
@@ -36,11 +38,15 @@ export class App implements OnInit {
   enlargedScreenshot: string | null = null;
   areVideosPaused = false;
 
+  GameStatus = GameStatus;
+  isAddingToLibrary = false;
+
   constructor(
     private readonly gameService: GameService,
     private readonly sanitizer: DomSanitizer,
     private readonly authService: AuthService,
-    private readonly platformService: PlatformService
+    private readonly platformService: PlatformService,
+    private readonly libraryService: LibraryService
   ) {
     this.isAuthenticated$ = this.authService.isAuthenticated$;
   }
@@ -107,11 +113,37 @@ export class App implements OnInit {
     this.authService.logout();
   }
 
+  addGameToLibrary(status: string) {
+    if (!this.selectedGame) return;
+
+    const userId = this.authService.getUserId();
+    if (!userId) {
+      this.openLoginModal();
+      return;
+    }
+
+    this.isAddingToLibrary = true;
+    this.libraryService.addGameToLibrary(userId, {
+      gameId: this.selectedGame.id,
+      status: status as GameStatus
+    }).subscribe({
+      next: () => {
+        this.isAddingToLibrary = false;
+        alert('Juego añadido a tu biblioteca correctamente');
+      },
+      error: (err) => {
+        this.isAddingToLibrary = false;
+        console.error('Error adding game to library:', err);
+        alert('Error al añadir el juego a la biblioteca');
+      }
+    });
+  }
+
   getSafeVideoUrl(url: string): SafeResourceUrl {
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-    const match = url.match(regExp);
+    const match = regExp.exec(url);
     let embedUrl = url;
-    if (match && match[2] && match[2].length === 11) {
+    if (match?.[2]?.length === 11) {
       const videoId = match[2];
       embedUrl = `https://www.youtube.com/embed/${videoId}`;
     }
@@ -120,8 +152,8 @@ export class App implements OnInit {
 
   getVideoThumbnail(url: string): string {
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-    const match = url.match(regExp);
-    if (match && match[2] && match[2].length === 11) {
+    const match = regExp.exec(url);
+    if (match?.[2]?.length === 11) {
       const videoId = match[2];
       return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
     }
