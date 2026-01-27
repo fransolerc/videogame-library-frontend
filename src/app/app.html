@@ -80,7 +80,7 @@
               <li class="game-item" (click)="openModal(game)">
                 <div class="card-image-container">
                   <img [src]="game.coverImageUrl" src="" alt="{{ game.name }} cover" class="game-cover">
-                  @if (game.rating) {
+                  @if (game.rating !== undefined && game.rating !== null) {
                     <div class="card-rating">
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="star-icon">
                         <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
@@ -127,7 +127,7 @@
           <li class="game-item" (click)="openModal(game)">
             <div class="card-image-container">
               <img [src]="game.coverImageUrl" src="" alt="{{ game.name }} cover" class="game-cover">
-              @if (game.rating) {
+              @if (game.rating !== undefined && game.rating !== null) {
                 <div class="card-rating">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="star-icon">
                     <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
@@ -175,7 +175,7 @@
           <div class="modal-title-info">
             <div class="modal-top-row">
               <h2>{{ selectedGame.name }}</h2>
-              @if (selectedGame.rating) {
+              @if (selectedGame.rating !== undefined && selectedGame.rating !== null) {
                 <div class="modal-rating">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="star-icon-large">
                     <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
@@ -210,14 +210,41 @@
 
             <!-- Add to Library Section -->
             <div class="library-actions">
-              <label for="game-status" class="library-label">Estado en biblioteca:</label>
-              <select id="game-status" class="status-select" (change)="addGameToLibrary($any($event.target).value)" [disabled]="isAddingToLibrary">
-                <option value="" disabled selected>Seleccionar estado...</option>
-                <option [value]="GameStatus.WANT_TO_PLAY">Quiero jugar</option>
-                <option [value]="GameStatus.PLAYING">Jugando</option>
-                <option [value]="GameStatus.COMPLETED">Completado</option>
-                <option [value]="GameStatus.DROPPED">Abandonado</option>
-              </select>
+              <div class="status-buttons">
+                <button
+                  class="status-btn"
+                  [class.active]="currentLibraryStatus === GameStatus.WANT_TO_PLAY"
+                  (click)="addGameToLibrary(GameStatus.WANT_TO_PLAY)"
+                  [disabled]="isAddingToLibrary"
+                  title="Quiero jugar">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="status-icon">
+                    <path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/>
+                  </svg>
+                  <span>Quiero jugar</span>
+                </button>
+                <button
+                  class="status-btn"
+                  [class.active]="currentLibraryStatus === GameStatus.PLAYING"
+                  (click)="addGameToLibrary(GameStatus.PLAYING)"
+                  [disabled]="isAddingToLibrary"
+                  title="Jugando">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="status-icon">
+                    <path d="M8 5v14l11-7z"/>
+                  </svg>
+                  <span>Jugando</span>
+                </button>
+                <button
+                  class="status-btn"
+                  [class.active]="currentLibraryStatus === GameStatus.COMPLETED"
+                  (click)="addGameToLibrary(GameStatus.COMPLETED)"
+                  [disabled]="isAddingToLibrary"
+                  title="Completado">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="status-icon">
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                  </svg>
+                  <span>Completado</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -523,36 +523,52 @@
   padding-top: 1.5rem;
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.status-buttons {
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+}
+
+.status-btn {
+  display: flex;
   align-items: center;
-  gap: 1rem;
-}
-
-.library-label {
-  color: rgba(255, 255, 255, 0.8);
-  font-weight: 500;
-}
-
-.status-select {
-  padding: 8px 12px;
-  font-size: 0.95rem;
+  gap: 8px;
+  padding: 8px 16px;
+  font-size: 0.9rem;
   font-family: 'Poppins', sans-serif;
-  color: #fff;
+  color: rgba(255, 255, 255, 0.8);
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  border-radius: 8px;
+  border-radius: 20px;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
-.status-select:focus {
-  outline: none;
-  border-color: #4facfe;
-  background: rgba(255, 255, 255, 0.15);
+.status-icon {
+  width: 18px;
+  height: 18px;
 }
 
-.status-select option {
-  background: #2c5364;
+.status-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
   color: #fff;
+}
+
+.status-btn.active {
+  background: #4facfe;
+  border-color: #4facfe;
+  color: #fff;
+  box-shadow: 0 2px 10px rgba(79, 172, 254, 0.3);
+}
+
+.status-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .modal-body {
@@ -802,13 +818,11 @@
 
   /* Library actions responsive */
   .library-actions {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.5rem;
+    align-items: center;
   }
 
-  .status-select {
-    width: 100%;
+  .status-buttons {
+    justify-content: center;
   }
 }
 

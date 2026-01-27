@@ -40,6 +40,7 @@ export class App implements OnInit {
 
   GameStatus = GameStatus;
   isAddingToLibrary = false;
+  currentLibraryStatus: GameStatus | null = null;
 
   constructor(
     private readonly gameService: GameService,
@@ -77,6 +78,7 @@ export class App implements OnInit {
 
   openModal(game: Game) {
     this.selectedGame = game;
+    this.currentLibraryStatus = null;
     document.body.style.overflow = 'hidden';
   }
 
@@ -123,13 +125,15 @@ export class App implements OnInit {
     }
 
     this.isAddingToLibrary = true;
+    const newStatus = status as GameStatus;
+
     this.libraryService.addGameToLibrary(userId, {
       gameId: this.selectedGame.id,
-      status: status as GameStatus
+      status: newStatus
     }).subscribe({
       next: () => {
         this.isAddingToLibrary = false;
-        alert('Juego añadido a tu biblioteca correctamente');
+        this.currentLibraryStatus = newStatus;
       },
       error: (err) => {
         this.isAddingToLibrary = false;

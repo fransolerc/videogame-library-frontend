@@ -3,8 +3,7 @@ import { Game } from '../game.model';
 export enum GameStatus {
   WANT_TO_PLAY = 'WANT_TO_PLAY',
   PLAYING = 'PLAYING',
-  COMPLETED = 'COMPLETED',
-  DROPPED = 'DROPPED'
+  COMPLETED = 'COMPLETED'
 }
 
 export interface AddGameToLibraryRequest {

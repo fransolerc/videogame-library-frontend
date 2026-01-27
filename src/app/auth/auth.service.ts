@@ -17,7 +17,14 @@ export class AuthService {
   isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
   currentUser$ = this.currentUserSubject.asObservable();
 
-  constructor(private readonly http: HttpClient) { }
+  constructor(private readonly http: HttpClient) {
+    if (this.hasToken() && !this.getUser()) {
+      const token = this.getToken();
+      if (token) {
+        this.processToken(token);
+      }
+    }
+  }
 
   private hasToken(): boolean {
     return !!localStorage.getItem(this.tokenKey);
@@ -33,13 +40,49 @@ export class AuthService {
     return this.http.post<AuthResponse>(authUrl, { email, password }).pipe(
       tap(response => {
         localStorage.setItem(this.tokenKey, response.token);
+
         if (response.user) {
-          localStorage.setItem(this.userKey, JSON.stringify(response.user));
-          this.currentUserSubject.next(response.user);
+          this.saveUser(response.user);
+        } else if (response.userId) {
+          const tokenPayload = this.decodeTokenPayload(response.token);
+          const user: User = {
+            id: response.userId,
+            username: tokenPayload.sub || email
+          };
+          this.saveUser(user);
+        } else {
+          this.processToken(response.token);
         }
+
         this.isAuthenticatedSubject.next(true);
       })
     );
+  }
+
+  private decodeTokenPayload(token: string): any {
+    try {
+      return JSON.parse(atob(token.split('.')[1]));
+    } catch (e) {
+      console.error('Error decoding JWT token', e);
+      return {};
+    }
+  }
+
+  private processToken(token: string): void {
+    const payload = this.decodeTokenPayload(token);
+    const user: User = {
+      id: payload.userId || payload.id || payload.sub,
+      username: payload.username || payload.sub
+    };
+
+    if (user.id) {
+      this.saveUser(user);
+    }
+  }
+
+  private saveUser(user: User): void {
+    localStorage.setItem(this.userKey, JSON.stringify(user));
+    this.currentUserSubject.next(user);
   }
 
   getToken(): string | null {
