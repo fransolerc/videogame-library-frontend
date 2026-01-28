@@ -228,7 +228,7 @@
                 <button
                   class="status-btn"
                   [class.active]="currentLibraryStatus === GameStatus.WANT_TO_PLAY"
-                  (click)="addGameToLibrary(GameStatus.WANT_TO_PLAY)"
+                  (click)="handleLibraryAction(GameStatus.WANT_TO_PLAY)"
                   [disabled]="isAddingToLibrary"
                   title="Quiero jugar">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="status-icon">
@@ -239,7 +239,7 @@
                 <button
                   class="status-btn"
                   [class.active]="currentLibraryStatus === GameStatus.PLAYING"
-                  (click)="addGameToLibrary(GameStatus.PLAYING)"
+                  (click)="handleLibraryAction(GameStatus.PLAYING)"
                   [disabled]="isAddingToLibrary"
                   title="Jugando">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="status-icon">
@@ -250,7 +250,7 @@
                 <button
                   class="status-btn"
                   [class.active]="currentLibraryStatus === GameStatus.COMPLETED"
-                  (click)="addGameToLibrary(GameStatus.COMPLETED)"
+                  (click)="handleLibraryAction(GameStatus.COMPLETED)"
                   [disabled]="isAddingToLibrary"
                   title="Completado">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="status-icon">
@@ -321,7 +321,23 @@
     <div class="modal-overlay" (click)="closeLoginModal()">
       <div class="modal-content login-modal-content" (click)="stopPropagation($event)">
         <button class="close-button" (click)="closeLoginModal()" aria-label="Cerrar login">&times;</button>
-        <app-login></app-login>
+        <app-login
+          (switchToRegister)="openRegisterModal()"
+          (loginSuccess)="closeLoginModal()"
+        ></app-login>
+      </div>
+    </div>
+  }
+
+  <!-- Register Modal -->
+  @if (showRegisterModal) {
+    <div class="modal-overlay" (click)="closeRegisterModal()">
+      <div class="modal-content login-modal-content" (click)="stopPropagation($event)">
+        <button class="close-button" (click)="closeRegisterModal()" aria-label="Cerrar registro">&times;</button>
+        <app-register
+          (registerSuccess)="closeRegisterModal()"
+          (switchToLogin)="openLoginModal(); closeRegisterModal()"
+        ></app-register>
       </div>
     </div>
   }

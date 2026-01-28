@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { tap } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
-import { AuthResponse, User } from './user.model';
+import { AuthResponse, User, RegisterRequest } from './user.model';
 
 @Injectable({
   providedIn: 'root'
@@ -64,6 +64,11 @@ export class AuthService {
         this.isAuthenticatedSubject.next(true);
       })
     );
+  }
+
+  register(request: RegisterRequest): Observable<User> {
+    const authUrl = `${environment.apiUrl}/users/register`;
+    return this.http.post<User>(authUrl, request);
   }
 
   private decodeTokenPayload(token: string): any {

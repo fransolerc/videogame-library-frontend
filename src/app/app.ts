@@ -12,10 +12,11 @@ import { Platform } from './platform.model';
 import { LibraryService } from './library/library.service';
 import { GameStatus } from './library/library.model';
 import { User } from './auth/user.model';
+import { RegisterComponent } from './auth/register/register.component';
 
 @Component({
   selector: 'app-root',
-  imports: [AsyncPipe, DatePipe, DecimalPipe, LoginComponent],
+  imports: [AsyncPipe, DatePipe, DecimalPipe, LoginComponent, RegisterComponent],
   templateUrl: './app.html',
   styleUrl: './app.css',
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -40,6 +41,7 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
 
   selectedGame: Game | null = null;
   showLoginModal = false;
+  showRegisterModal = false;
 
   enlargedScreenshot: string | null = null;
   areVideosPaused = false;
@@ -48,10 +50,8 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
   isAddingToLibrary = false;
   currentLibraryStatus: GameStatus | null = null;
 
-  // Profile Dropdown state
   isProfileMenuOpen = false;
 
-  // Drag-to-scroll state
   isDown = false;
   startX = 0;
   scrollLeft = 0;
@@ -182,6 +182,7 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
   }
 
   openLoginModal() {
+    this.showRegisterModal = false;
     this.showLoginModal = true;
     document.body.style.overflow = 'hidden';
   }
@@ -191,12 +192,23 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
     document.body.style.overflow = 'auto';
   }
 
+  openRegisterModal() {
+    this.showLoginModal = false;
+    this.showRegisterModal = true;
+    document.body.style.overflow = 'hidden';
+  }
+
+  closeRegisterModal() {
+    this.showRegisterModal = false;
+    document.body.style.overflow = 'auto';
+  }
+
   logout() {
     this.authService.logout();
     this.isProfileMenuOpen = false;
   }
 
-  addGameToLibrary(status: string) {
+  handleLibraryAction(status: string) {
     if (!this.selectedGame) return;
 
     const userId = this.authService.getUserId();
@@ -208,26 +220,48 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
     this.isAddingToLibrary = true;
     const newStatus = status as GameStatus;
 
-    this.libraryService.addOrUpdateGameInLibrary(userId, {
-      gameId: this.selectedGame.id,
-      status: newStatus
-    }).pipe(
-      finalize(() => {
-        this.isAddingToLibrary = false;
-        this.cdr.detectChanges();
-      })
-    ).subscribe({
-      next: (userGame) => {
-        this.currentLibraryStatus = userGame.status;
-        console.log('Juego añadido/actualizado en la biblioteca:', userGame);
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        console.error('Error adding game to library:', err);
-        alert('Error al añadir el juego a la biblioteca');
-        this.cdr.detectChanges();
-      }
-    });
+    // Si el estado actual es el mismo que el nuevo estado, significa que queremos borrarlo
+    if (this.currentLibraryStatus === newStatus) {
+      this.libraryService.removeGameFromLibrary(userId, this.selectedGame.id).pipe(
+        finalize(() => {
+          this.isAddingToLibrary = false;
+          this.cdr.detectChanges();
+        })
+      ).subscribe({
+        next: () => {
+          this.currentLibraryStatus = null; // El juego ya no está en la biblioteca
+          console.log('Juego eliminado de la biblioteca.');
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Error eliminando juego de la biblioteca:', err);
+          alert('Error al eliminar el juego de la biblioteca');
+          this.cdr.detectChanges();
+        }
+      });
+    } else {
+      // Si el estado es diferente, o el juego no estaba en la biblioteca, lo añadimos/actualizamos
+      this.libraryService.addOrUpdateGameInLibrary(userId, {
+        gameId: this.selectedGame.id,
+        status: newStatus
+      }).pipe(
+        finalize(() => {
+          this.isAddingToLibrary = false;
+          this.cdr.detectChanges();
+        })
+      ).subscribe({
+        next: (userGame) => {
+          this.currentLibraryStatus = userGame.status;
+          console.log('Juego añadido/actualizado en la biblioteca:', userGame);
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error('Error adding game to library:', err);
+          alert('Error al añadir el juego a la biblioteca');
+          this.cdr.detectChanges();
+        }
+      });
+    }
   }
 
   getSafeVideoUrl(url: string): SafeResourceUrl {
@@ -255,6 +289,7 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
     this.authService.isAuthenticated$.subscribe(isAuthenticated => {
       if (isAuthenticated) {
         this.closeLoginModal();
+        this.closeRegisterModal();
       }
     });
 

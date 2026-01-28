@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, EventEmitter, Output } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from '../auth.service';
 import { CommonModule } from '@angular/common';
@@ -13,6 +13,7 @@ import { CommonModule } from '@angular/common';
 export class LoginComponent {
   loginForm: FormGroup;
   errorMessage: string | null = null;
+  @Output() switchToRegister = new EventEmitter<void>();
 
   constructor(
     private readonly fb: FormBuilder,
@@ -33,11 +34,17 @@ export class LoginComponent {
     const { email, password } = this.loginForm.value;
 
     this.authService.login(email, password).subscribe({
-      next: () => {},
+      next: () => {
+        // El login fue exitoso, el modal se cerrará desde el componente principal
+      },
       error: (err) => {
         this.errorMessage = 'Email o contraseña incorrectos. Por favor, inténtalo de nuevo.';
         console.error('Error de login:', err);
       }
     });
+  }
+
+  onSwitchToRegister() {
+    this.switchToRegister.emit();
   }
 }
