@@ -877,21 +877,105 @@
     from { transform: translateX(100%); }
     to { transform: translateX(0); }
   }
+
+  /* Modal Responsive */
+  .modal-overlay {
+    padding: 0.5rem;
+  }
+
+  .modal-content {
+    max-height: 95vh;
+  }
+
+  .modal-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding: 1rem;
+  }
+
+  .modal-cover {
+    width: 100px;
+    height: 150px;
+  }
+
+  .modal-top-row {
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .modal-title-info h2 {
+    font-size: 1.3rem;
+    padding-right: 0;
+  }
+
+  .modal-rating {
+    font-size: 1rem;
+    padding: 3px 8px;
+  }
+
+  .star-icon-large {
+    width: 16px;
+    height: 16px;
+  }
+
+  .modal-date {
+    font-size: 0.9rem;
+  }
+
+  .modal-genres, .modal-platforms {
+    justify-content: center;
+  }
+
+  .modal-body {
+    padding: 1rem;
+  }
+
+  .modal-section h3 {
+    font-size: 1.2rem;
+  }
+
+  .modal-section p {
+    font-size: 0.9rem;
+  }
+
+  .screenshots-grid {
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 0.8rem;
+  }
+
+  .screenshot-img {
+    height: 100px;
+  }
+
+  .video-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .library-actions {
+    align-items: center;
+  }
+
+  .status-buttons {
+    justify-content: center;
+  }
 }
 
 /* Further adjustments for very small screens (e.g., width < 360px) */
 @media (max-width: 360px) {
   .search-container {
-    padding-top: 150px; /* Adjust if navbar height changes */
+    padding-top: 150px;
   }
 
   .results-list {
-    grid-template-columns: 1fr; /* Single column for very small screens */
+    grid-template-columns: 1fr;
     gap: 0.5rem;
   }
 
   .card-image-container {
-    height: 250px; /* Make single column cards a bit taller */
+    height: 250px;
   }
 
   .game-name {
