@@ -41,19 +41,26 @@ export class AuthService {
       tap(response => {
         localStorage.setItem(this.tokenKey, response.token);
 
+        let user: User | null = null;
         if (response.user) {
-          this.saveUser(response.user);
+          user = response.user;
         } else if (response.userId) {
           const tokenPayload = this.decodeTokenPayload(response.token);
-          const user: User = {
+          user = {
             id: response.userId,
-            username: tokenPayload.sub || email
+            username: response.username || tokenPayload.sub || email
           };
-          this.saveUser(user);
         } else {
-          this.processToken(response.token);
+          const tokenPayload = this.decodeTokenPayload(response.token);
+          user = {
+            id: tokenPayload.userId || tokenPayload.id || tokenPayload.sub,
+            username: tokenPayload.username || tokenPayload.sub
+          };
         }
 
+        if (user?.id) {
+          this.saveUser(user);
+        }
         this.isAuthenticatedSubject.next(true);
       })
     );
@@ -75,7 +82,7 @@ export class AuthService {
       username: payload.username || payload.sub
     };
 
-    if (user.id) {
+    if (user?.id) {
       this.saveUser(user);
     }
   }

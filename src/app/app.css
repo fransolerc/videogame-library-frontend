@@ -183,6 +183,88 @@
 .auth-controls {
   margin-left: 1rem;
   flex-shrink: 0;
+  position: relative; /* Para posicionar el dropdown */
+}
+
+.profile-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.profile-button {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 15px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.profile-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.profile-icon {
+  width: 20px;
+  height: 20px;
+  color: #4facfe;
+}
+
+.dropdown-arrow {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.3s ease;
+}
+
+.dropdown-arrow.rotated {
+  transform: rotate(180deg);
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%; /* Debajo del botón */
+  right: 0;
+  background: rgba(15, 32, 39, 0.95);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+  padding: 0.5rem 0;
+  min-width: 160px;
+  z-index: 1001; /* Por encima de la navbar */
+  display: flex;
+  flex-direction: column;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 15px;
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.8);
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.dropdown-item:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.dropdown-icon {
+  width: 18px;
+  height: 18px;
+  color: rgba(255, 255, 255, 0.6);
 }
 
 .auth-button {
@@ -233,6 +315,35 @@
   width: 100%;
   max-width: 1200px;
   flex-grow: 1;
+}
+
+.latest-releases-scroll-list {
+  display: flex;
+  gap: 1.5rem;
+  overflow-x: auto;
+  padding: 1rem 0;
+  list-style-type: none;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
+  cursor: grab;
+}
+
+.latest-releases-scroll-list.active {
+  cursor: grabbing;
+}
+
+.latest-releases-scroll-list::-webkit-scrollbar {
+  height: 8px;
+}
+
+.latest-releases-scroll-list::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 4px;
+}
+
+.latest-releases-scroll-list .game-item {
+  flex: 0 0 240px; /* Ancho fijo para cada tarjeta */
+  width: 240px;
 }
 
 .game-item {

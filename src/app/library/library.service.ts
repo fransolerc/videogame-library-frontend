@@ -13,8 +13,8 @@ export class LibraryService {
   constructor(private readonly http: HttpClient) { }
 
   addOrUpdateGameInLibrary(userId: string, request: AddGameToLibraryRequest): Observable<UserGame> {
-    const url = `${environment.apiUrl}/users/${userId}/games/${request.gameId}`; // URL actualizada con gameId
-    return this.http.put<UserGame>(url, { status: request.status }); // Enviamos solo el status en el cuerpo
+    const url = `${environment.apiUrl}/users/${userId}/games/${request.gameId}`;
+    return this.http.put<UserGame>(url, { status: request.status });
   }
 
   getGameFromLibrary(userId: string, gameId: string): Observable<UserGame | null> {
@@ -29,5 +29,10 @@ export class LibraryService {
         throw error;
       })
     );
+  }
+
+  removeGameFromLibrary(userId: string, gameId: string): Observable<void> {
+    const url = `${environment.apiUrl}/users/${userId}/games/${gameId}`;
+    return this.http.delete<void>(url);
   }
 }

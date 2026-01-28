@@ -1,7 +1,7 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef } from '@angular/core'; // Importa ChangeDetectionStrategy y ChangeDetectorRef
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, AfterViewInit, ElementRef, ViewChild, OnDestroy, HostListener } from '@angular/core';
 import { AsyncPipe, DatePipe, DecimalPipe } from '@angular/common';
 import { GameService } from './game.service';
-import { Observable, combineLatest, BehaviorSubject, of } from 'rxjs';
+import { Observable, combineLatest, BehaviorSubject, of, Subscription, fromEvent } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, tap, map, finalize } from 'rxjs/operators';
 import { Game, GameFilterRequest } from './game.model';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
@@ -11,6 +11,7 @@ import { PlatformService } from './platform.service';
 import { Platform } from './platform.model';
 import { LibraryService } from './library/library.service';
 import { GameStatus } from './library/library.model';
+import { User } from './auth/user.model';
 
 @Component({
   selector: 'app-root',
@@ -19,12 +20,16 @@ import { GameStatus } from './library/library.model';
   styleUrl: './app.css',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class App implements OnInit {
+export class App implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild('latestReleasesList') latestReleasesList!: ElementRef<HTMLUListElement>;
+  @ViewChild('profileMenu') profileMenu!: ElementRef;
+
   latestGames$: Observable<Game[]> | undefined;
   searchResults$: Observable<Game[]> | undefined;
   isSearching$: Observable<boolean> | undefined;
   isAuthenticated$: Observable<boolean>;
   platforms$: Observable<Platform[]> | undefined;
+  currentUser$: Observable<User | null>;
 
   private readonly searchInput = new BehaviorSubject<string>('');
   private readonly sortInput = new BehaviorSubject<string>('relevance');
@@ -43,15 +48,94 @@ export class App implements OnInit {
   isAddingToLibrary = false;
   currentLibraryStatus: GameStatus | null = null;
 
+  // Profile Dropdown state
+  isProfileMenuOpen = false;
+
+  // Drag-to-scroll state
+  isDown = false;
+  startX = 0;
+  scrollLeft = 0;
+  isDragging = false;
+  private readonly subscriptions = new Subscription();
+
   constructor(
     private readonly gameService: GameService,
     private readonly sanitizer: DomSanitizer,
     private readonly authService: AuthService,
     private readonly platformService: PlatformService,
     private readonly libraryService: LibraryService,
-    private readonly cdr: ChangeDetectorRef
+    private readonly cdr: ChangeDetectorRef,
+    private readonly elementRef: ElementRef
   ) {
     this.isAuthenticated$ = this.authService.isAuthenticated$;
+    this.currentUser$ = this.authService.currentUser$;
+  }
+
+  @HostListener('document:click', ['$event'])
+  clickOutside(event: Event) {
+    if (this.isProfileMenuOpen && this.profileMenu && !this.profileMenu.nativeElement.contains(event.target)) {
+      this.isProfileMenuOpen = false;
+      this.cdr.detectChanges();
+    }
+  }
+
+  ngAfterViewInit(): void {
+    if (this.latestReleasesList) {
+      const slider = this.latestReleasesList.nativeElement;
+
+      this.subscriptions.add(fromEvent<MouseEvent>(slider, 'mousedown').subscribe((e: MouseEvent) => {
+        this.isDown = true;
+        this.isDragging = false;
+        slider.classList.add('active');
+        this.startX = e.pageX - slider.offsetLeft;
+        this.scrollLeft = slider.scrollLeft;
+      }));
+
+      this.subscriptions.add(fromEvent<MouseEvent>(document, 'mouseup').subscribe(() => {
+        this.isDown = false;
+        if (this.latestReleasesList) {
+          this.latestReleasesList.nativeElement.classList.remove('active');
+        }
+      }));
+
+      this.subscriptions.add(fromEvent<MouseEvent>(document, 'mousemove').subscribe((e: MouseEvent) => {
+        if (!this.isDown) return;
+        e.preventDefault();
+        this.isDragging = true;
+        const x = e.pageX - slider.offsetLeft;
+        const walk = (x - this.startX) * 2;
+        slider.scrollLeft = this.scrollLeft - walk;
+      }));
+    }
+  }
+
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
+  }
+
+  toggleProfileMenu(event: Event): void {
+    event.stopPropagation();
+    this.isProfileMenuOpen = !this.isProfileMenuOpen;
+  }
+
+  openModal(game: Game, event?: MouseEvent) {
+    if (this.isDragging) {
+      this.isDragging = false;
+      return;
+    }
+    this.selectedGame = game;
+    this.currentLibraryStatus = null;
+    document.body.style.overflow = 'hidden';
+
+    const userId = this.authService.getUserId();
+    if (userId) {
+      this.libraryService.getGameFromLibrary(userId, game.id).subscribe(userGame => {
+        if (userGame) {
+          this.currentLibraryStatus = userGame.status;
+          this.cdr.detectChanges();
+        }
+      });
+    }
   }
 
   onSearch(event: Event) {
@@ -76,22 +160,6 @@ export class App implements OnInit {
     const select = event.target as HTMLSelectElement;
     const value = select.value;
     this.platformFilterInput.next(value === 'all' ? 'all' : Number.parseInt(value, 10));
-  }
-
-  openModal(game: Game) {
-    this.selectedGame = game;
-    this.currentLibraryStatus = null;
-    document.body.style.overflow = 'hidden';
-
-    const userId = this.authService.getUserId();
-    if (userId) {
-      this.libraryService.getGameFromLibrary(userId, game.id).subscribe(userGame => {
-        if (userGame) {
-          this.currentLibraryStatus = userGame.status;
-          this.cdr.detectChanges();
-        }
-      });
-    }
   }
 
   closeModal() {
@@ -125,6 +193,7 @@ export class App implements OnInit {
 
   logout() {
     this.authService.logout();
+    this.isProfileMenuOpen = false;
   }
 
   addGameToLibrary(status: string) {
