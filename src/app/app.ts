@@ -51,6 +51,7 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
   currentLibraryStatus: GameStatus | null = null;
 
   isProfileMenuOpen = false;
+  isMobileMenuOpen = false; // Nuevo estado para el menú móvil
 
   isDown = false;
   startX = 0;
@@ -116,6 +117,14 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
   toggleProfileMenu(event: Event): void {
     event.stopPropagation();
     this.isProfileMenuOpen = !this.isProfileMenuOpen;
+  }
+
+  toggleMobileMenu(): void {
+    this.isMobileMenuOpen = !this.isMobileMenuOpen;
+  }
+
+  closeMobileMenu(): void {
+    this.isMobileMenuOpen = false;
   }
 
   openModal(game: Game, event?: MouseEvent) {
@@ -185,6 +194,7 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
     this.showRegisterModal = false;
     this.showLoginModal = true;
     document.body.style.overflow = 'hidden';
+    this.closeMobileMenu();
   }
 
   closeLoginModal() {
@@ -196,6 +206,7 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
     this.showLoginModal = false;
     this.showRegisterModal = true;
     document.body.style.overflow = 'hidden';
+    this.closeMobileMenu();
   }
 
   closeRegisterModal() {
@@ -206,6 +217,7 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
   logout() {
     this.authService.logout();
     this.isProfileMenuOpen = false;
+    this.closeMobileMenu();
   }
 
   handleLibraryAction(status: string) {
@@ -220,7 +232,6 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
     this.isAddingToLibrary = true;
     const newStatus = status as GameStatus;
 
-    // Si el estado actual es el mismo que el nuevo estado, significa que queremos borrarlo
     if (this.currentLibraryStatus === newStatus) {
       this.libraryService.removeGameFromLibrary(userId, this.selectedGame.id).pipe(
         finalize(() => {
@@ -229,7 +240,7 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
         })
       ).subscribe({
         next: () => {
-          this.currentLibraryStatus = null; // El juego ya no está en la biblioteca
+          this.currentLibraryStatus = null;
           console.log('Juego eliminado de la biblioteca.');
           this.cdr.detectChanges();
         },
@@ -240,7 +251,6 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
         }
       });
     } else {
-      // Si el estado es diferente, o el juego no estaba en la biblioteca, lo añadimos/actualizamos
       this.libraryService.addOrUpdateGameInLibrary(userId, {
         gameId: this.selectedGame.id,
         status: newStatus

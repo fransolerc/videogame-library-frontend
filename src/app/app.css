@@ -306,6 +306,14 @@
   border-color: #fff;
 }
 
+.mobile-menu-button {
+  display: none; /* Oculto por defecto */
+}
+
+.mobile-menu-overlay {
+  display: none; /* Oculto por defecto */
+}
+
 .results-list {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
@@ -799,141 +807,75 @@
 
 /* Responsive adjustments for smaller screens */
 @media (max-width: 768px) {
-  .navbar {
+  .desktop-controls {
+    display: none;
+  }
+
+  .mobile-menu-button {
+    display: block;
+  }
+
+  .mobile-menu-button button {
+    background: none;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+  }
+
+  .mobile-menu-button svg {
+    width: 28px;
+    height: 28px;
+  }
+
+  .mobile-menu-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1001;
+    display: block;
+  }
+
+  .mobile-menu {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: 80%;
+    max-width: 300px;
+    height: 100%;
+    background: #1a2a33;
+    box-shadow: -5px 0 15px rgba(0,0,0,0.3);
+    display: flex;
     flex-direction: column;
-    height: auto;
     padding: 1rem;
-    gap: 1rem;
+    animation: slideIn 0.3s ease;
   }
 
-  .search-container {
-    padding-top: 160px; /* Increased padding to account for stacked navbar */
-    padding-left: 0.5rem; /* Reduced padding */
-    padding-right: 0.5rem;
-  }
-
-  .controls-container {
-    width: 100%;
-    justify-content: center;
-    flex-direction: column;
-    gap: 0.8rem;
-  }
-
-  .search-bar, .filter-container {
-    width: 100%;
-    max-width: 100%;
-  }
-
-  .sort-select {
-    width: 100%;
-  }
-
-  /* Grid adjustments for mobile */
-  .results-list {
-    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); /* Even smaller cards for mobile */
-    gap: 0.8rem; /* Reduced gap */
-  }
-
-  .card-image-container {
-    height: 180px; /* Smaller images */
-  }
-
-  .game-name {
-    font-size: 0.85rem; /* Smaller font */
-  }
-
-  .game-release-date {
-    font-size: 0.75rem;
-  }
-
-  .platform-tag {
-    font-size: 0.6rem;
-    padding: 2px 6px;
-  }
-
-  /* Modal Responsive */
-  .modal-overlay {
-    padding: 0.5rem; /* Less padding on mobile */
-  }
-
-  .modal-content {
-    max-height: 95vh; /* Allow modal to take more height */
-  }
-
-  .modal-header {
-    flex-direction: column;
+  .mobile-menu-header {
+    display: flex;
+    justify-content: space-between;
     align-items: center;
-    text-align: center;
-    padding: 1rem; /* Reduced padding */
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   }
 
-  .modal-cover {
-    width: 100px; /* Smaller cover */
-    height: 150px;
+  .mobile-menu-header h2 {
+    color: #fff;
+    margin: 0;
   }
 
-  .modal-top-row {
+  .mobile-menu-content {
+    display: flex;
     flex-direction: column;
-    align-items: center;
-    gap: 0.5rem;
+    gap: 1.5rem;
+    padding-top: 1.5rem;
   }
 
-  .modal-title-info h2 {
-    font-size: 1.3rem; /* Smaller title */
-    padding-right: 0;
-  }
-
-  .modal-rating {
-    font-size: 1rem;
-    padding: 3px 8px;
-  }
-
-  .star-icon-large {
-    width: 16px;
-    height: 16px;
-  }
-
-  .modal-date {
-    font-size: 0.9rem;
-  }
-
-  .modal-genres, .modal-platforms {
-    justify-content: center;
-  }
-
-  .modal-body {
-    padding: 1rem; /* Reduced padding */
-  }
-
-  .modal-section h3 {
-    font-size: 1.2rem;
-  }
-
-  .modal-section p {
-    font-size: 0.9rem;
-  }
-
-  .screenshots-grid {
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); /* Smaller screenshots */
-    gap: 0.8rem;
-  }
-
-  .screenshot-img {
-    height: 100px;
-  }
-
-  .video-grid {
-    grid-template-columns: 1fr; /* Single column for videos on small screens */
-    gap: 1rem;
-  }
-
-  /* Library actions responsive */
-  .library-actions {
-    align-items: center;
-  }
-
-  .status-buttons {
-    justify-content: center;
+  @keyframes slideIn {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
   }
 }
 
