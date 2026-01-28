@@ -23,6 +23,7 @@ import { RegisterComponent } from './auth/register/register.component';
 })
 export class App implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('latestReleasesList') latestReleasesList!: ElementRef<HTMLUListElement>;
+  @ViewChild('searchResultsList') searchResultsList!: ElementRef<HTMLUListElement>;
   @ViewChild('profileMenu') profileMenu!: ElementRef;
 
   latestGames$: Observable<Game[]> | undefined;
@@ -51,7 +52,7 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
   currentLibraryStatus: GameStatus | null = null;
 
   isProfileMenuOpen = false;
-  isMobileMenuOpen = false; // Nuevo estado para el menú móvil
+  isMobileMenuOpen = false;
 
   isDown = false;
   startX = 0;
@@ -81,9 +82,17 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    if (this.latestReleasesList) {
-      const slider = this.latestReleasesList.nativeElement;
+    this.setupDragToScroll(this.latestReleasesList);
+    this.setupDragToScroll(this.searchResultsList);
+  }
 
+  ngOnDestroy(): void {
+    this.subscriptions.unsubscribe();
+  }
+
+  private setupDragToScroll(elementRef: ElementRef<HTMLUListElement>): void {
+    if (elementRef) {
+      const slider = elementRef.nativeElement;
       this.subscriptions.add(fromEvent<MouseEvent>(slider, 'mousedown').subscribe((e: MouseEvent) => {
         this.isDown = true;
         this.isDragging = false;
@@ -94,8 +103,8 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
 
       this.subscriptions.add(fromEvent<MouseEvent>(document, 'mouseup').subscribe(() => {
         this.isDown = false;
-        if (this.latestReleasesList) {
-          this.latestReleasesList.nativeElement.classList.remove('active');
+        if (elementRef) {
+          elementRef.nativeElement.classList.remove('active');
         }
       }));
 
@@ -108,10 +117,6 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
         slider.scrollLeft = this.scrollLeft - walk;
       }));
     }
-  }
-
-  ngOnDestroy(): void {
-    this.subscriptions.unsubscribe();
   }
 
   toggleProfileMenu(event: Event): void {

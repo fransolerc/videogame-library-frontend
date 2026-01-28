@@ -189,7 +189,7 @@
       <h2 class="section-title">Resultados para "{{ lastSearchTerm }}"</h2>
       @if (searchResults$ | async; as games) {
         @if (hasResults) {
-          <ul class="results-list">
+          <ul class="latest-releases-scroll-list" #searchResultsList>
             @for (game of games; track game.id) {
               <li class="game-item" (click)="openModal(game, $event)">
                 <div class="card-image-container">
