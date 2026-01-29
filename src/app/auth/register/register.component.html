@@ -8,6 +8,26 @@
 
   <form [formGroup]="registerForm" (ngSubmit)="onSubmit()">
     <div class="form-group">
+      <label for="username">Nombre de usuario:</label>
+      <div class="input-wrapper">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="input-icon">
+          <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
+        </svg>
+        <input id="username" type="text" formControlName="username" placeholder="Elige un nombre de usuario">
+      </div>
+      @if (registerForm.get('username')?.invalid && registerForm.get('username')?.touched) {
+        <div class="error-message">
+          @if (registerForm.get('username')?.hasError('required')) {
+            Nombre de usuario es requerido.
+          }
+          @if (registerForm.get('username')?.hasError('minlength')) {
+            El nombre de usuario debe tener al menos 3 caracteres.
+          }
+        </div>
+      }
+    </div>
+
+    <div class="form-group">
       <label for="email">Email:</label>
       <div class="input-wrapper">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="input-icon">
@@ -28,26 +48,6 @@
     </div>
 
     <div class="form-group">
-      <label for="username">Usuario:</label>
-      <div class="input-wrapper">
-        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="input-icon">
-          <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
-        </svg>
-        <input id="username" type="text" formControlName="username" placeholder="Elige un nombre de usuario">
-      </div>
-      @if (registerForm.get('username')?.invalid && registerForm.get('username')?.touched) {
-        <div class="error-message">
-          @if (registerForm.get('username')?.hasError('required')) {
-            Usuario es requerido.
-          }
-          @if (registerForm.get('username')?.hasError('minlength')) {
-            El usuario debe tener al menos 3 caracteres.
-          }
-        </div>
-      }
-    </div>
-
-    <div class="form-group">
       <label for="password">Contraseña:</label>
       <div class="input-wrapper">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="input-icon">
@@ -61,7 +61,10 @@
             Contraseña es requerida.
           }
           @if (registerForm.get('password')?.hasError('minlength')) {
-            La contraseña debe tener al menos 6 caracteres.
+            La contraseña debe tener al menos 8 caracteres.
+          }
+          @if (registerForm.get('password')?.hasError('pattern')) {
+            Debe contener mayúscula, minúscula y un número.
           }
         </div>
       }
