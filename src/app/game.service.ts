@@ -11,20 +11,19 @@ export class GameService {
 
   private readonly searchApiUrl = `${environment.apiUrl}/games/search`;
   private readonly filterApiUrl = `${environment.apiUrl}/games/filter`;
+  private readonly gamesApiUrl = `${environment.apiUrl}/games`;
 
   constructor(private readonly http: HttpClient) { }
 
-  /**
-   * @param query
-   */
   searchGames(query: string): Observable<Game[]> {
     return this.http.get<Game[]>(`${this.searchApiUrl}?name=${query}`);
   }
 
-  /**
-   * @param requestBody
-   */
   filterGames(requestBody: GameFilterRequest): Observable<Game[]> {
     return this.http.post<Game[]>(this.filterApiUrl, requestBody);
+  }
+
+  getGameById(id: string): Observable<Game> {
+    return this.http.get<Game>(`${this.gamesApiUrl}/${id}`);
   }
 }

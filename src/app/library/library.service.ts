@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
-import { catchError } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../environments/environment';
 import { AddGameToLibraryRequest, UserGame } from './library.model';
 
@@ -22,10 +22,8 @@ export class LibraryService {
     return this.http.get<UserGame>(url).pipe(
       catchError(error => {
         if (error.status === 404) {
-          // Si el juego no está en la biblioteca, devuelve null
           return of(null);
         }
-        // Para otros errores, relanza el error
         throw error;
       })
     );
@@ -33,6 +31,24 @@ export class LibraryService {
 
   removeGameFromLibrary(userId: string, gameId: string): Observable<void> {
     const url = `${environment.apiUrl}/users/${userId}/games/${gameId}`;
+    return this.http.delete<void>(url);
+  }
+
+
+  getFavorites(userId: string): Observable<UserGame[]> {
+    const url = `${environment.apiUrl}/users/${userId}/favorites`;
+    return this.http.get<any>(url).pipe(
+      map(response => response.content || [])
+    );
+  }
+
+  addFavorite(userId: string, gameId: string): Observable<void> {
+    const url = `${environment.apiUrl}/users/${userId}/games/${gameId}/favorite`;
+    return this.http.post<void>(url, {});
+  }
+
+  removeFavorite(userId: string, gameId: string): Observable<void> {
+    const url = `${environment.apiUrl}/users/${userId}/games/${gameId}/favorite`;
     return this.http.delete<void>(url);
   }
 }

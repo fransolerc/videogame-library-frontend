@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, AfterViewInit, ElementRef, ViewChild, OnDestroy, HostListener } from '@angular/core';
 import { AsyncPipe, DatePipe, DecimalPipe } from '@angular/common';
 import { GameService } from './game.service';
-import { Observable, combineLatest, BehaviorSubject, of, Subscription, fromEvent } from 'rxjs';
+import { Observable, combineLatest, BehaviorSubject, of, Subscription, fromEvent, forkJoin } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, tap, map, finalize } from 'rxjs/operators';
 import { Game, GameFilterRequest } from './game.model';
 import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
@@ -32,6 +32,7 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
   isAuthenticated$: Observable<boolean>;
   platforms$: Observable<Platform[]> | undefined;
   currentUser$: Observable<User | null>;
+  favorites$ = new BehaviorSubject<Game[]>([]);
 
   private readonly searchInput = new BehaviorSubject<string>('');
   private readonly sortInput = new BehaviorSubject<string>('relevance');
@@ -50,6 +51,7 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
   GameStatus = GameStatus;
   isAddingToLibrary = false;
   currentLibraryStatus: GameStatus | null = null;
+  isCurrentGameFavorite = false;
 
   isProfileMenuOpen = false;
   isMobileMenuOpen = false;
@@ -82,8 +84,12 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngAfterViewInit(): void {
-    this.setupDragToScroll(this.latestReleasesList);
-    this.setupDragToScroll(this.searchResultsList);
+    if (this.latestReleasesList) {
+      this.setupDragToScroll(this.latestReleasesList);
+    }
+    if (this.searchResultsList) {
+      this.setupDragToScroll(this.searchResultsList);
+    }
   }
 
   ngOnDestroy(): void {
@@ -91,32 +97,28 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private setupDragToScroll(elementRef: ElementRef<HTMLUListElement>): void {
-    if (elementRef) {
-      const slider = elementRef.nativeElement;
-      this.subscriptions.add(fromEvent<MouseEvent>(slider, 'mousedown').subscribe((e: MouseEvent) => {
-        this.isDown = true;
-        this.isDragging = false;
-        slider.classList.add('active');
-        this.startX = e.pageX - slider.offsetLeft;
-        this.scrollLeft = slider.scrollLeft;
-      }));
+    const slider = elementRef.nativeElement;
+    this.subscriptions.add(fromEvent<MouseEvent>(slider, 'mousedown').subscribe((e: MouseEvent) => {
+      this.isDown = true;
+      this.isDragging = false;
+      slider.classList.add('active');
+      this.startX = e.pageX - slider.offsetLeft;
+      this.scrollLeft = slider.scrollLeft;
+    }));
 
-      this.subscriptions.add(fromEvent<MouseEvent>(document, 'mouseup').subscribe(() => {
-        this.isDown = false;
-        if (elementRef) {
-          elementRef.nativeElement.classList.remove('active');
-        }
-      }));
+    this.subscriptions.add(fromEvent<MouseEvent>(document, 'mouseup').subscribe(() => {
+      this.isDown = false;
+      slider.classList.remove('active');
+    }));
 
-      this.subscriptions.add(fromEvent<MouseEvent>(document, 'mousemove').subscribe((e: MouseEvent) => {
-        if (!this.isDown) return;
-        e.preventDefault();
-        this.isDragging = true;
-        const x = e.pageX - slider.offsetLeft;
-        const walk = (x - this.startX) * 2;
-        slider.scrollLeft = this.scrollLeft - walk;
-      }));
-    }
+    this.subscriptions.add(fromEvent<MouseEvent>(document, 'mousemove').subscribe((e: MouseEvent) => {
+      if (!this.isDown) return;
+      e.preventDefault();
+      this.isDragging = true;
+      const x = e.pageX - slider.offsetLeft;
+      const walk = (x - this.startX) * 2;
+      slider.scrollLeft = this.scrollLeft - walk;
+    }));
   }
 
   toggleProfileMenu(event: Event): void {
@@ -139,13 +141,14 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
     }
     this.selectedGame = game;
     this.currentLibraryStatus = null;
-    document.body.style.overflow = 'hidden';
+    this.isCurrentGameFavorite = false;
 
     const userId = this.authService.getUserId();
     if (userId) {
       this.libraryService.getGameFromLibrary(userId, game.id).subscribe(userGame => {
         if (userGame) {
           this.currentLibraryStatus = userGame.status;
+          this.isCurrentGameFavorite = userGame.isFavorite || false;
           this.cdr.detectChanges();
         }
       });
@@ -279,6 +282,50 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
+  toggleFavorite(): void {
+    if (!this.selectedGame) return;
+
+    const userId = this.authService.getUserId();
+    if (!userId) {
+      this.openLoginModal();
+      return;
+    }
+
+    const gameId = this.selectedGame.id;
+    const isFavorite = this.isCurrentGameFavorite;
+
+    const action$ = isFavorite
+      ? this.libraryService.removeFavorite(userId, gameId)
+      : this.libraryService.addFavorite(userId, gameId);
+
+    action$.subscribe({
+      next: () => {
+        this.isCurrentGameFavorite = !isFavorite;
+        this.loadFavorites(userId);
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Error al actualizar favoritos:', err);
+        alert('Error al actualizar favoritos');
+      }
+    });
+  }
+
+  private loadFavorites(userId: string): void {
+    this.libraryService.getFavorites(userId).pipe(
+      switchMap(favoriteUserGames => {
+        if (favoriteUserGames.length === 0) {
+          return of([]);
+        }
+        const gameObservables = favoriteUserGames.map(fav => this.gameService.getGameById(fav.gameId.toString()));
+        return forkJoin(gameObservables);
+      })
+    ).subscribe(games => {
+      this.favorites$.next(games);
+      this.cdr.detectChanges();
+    });
+  }
+
   getSafeVideoUrl(url: string): SafeResourceUrl {
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
     const match = regExp.exec(url);
@@ -305,6 +352,12 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
       if (isAuthenticated) {
         this.closeLoginModal();
         this.closeRegisterModal();
+        const userId = this.authService.getUserId();
+        if (userId) {
+          this.loadFavorites(userId);
+        }
+      } else {
+        this.favorites$.next([]);
       }
     });
 

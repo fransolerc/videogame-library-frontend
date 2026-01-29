@@ -233,6 +233,48 @@
     </div>
   }
 
+  @if (isAuthenticated$ | async) {
+    @if (favorites$ | async; as favoriteGames) {
+      @if (favoriteGames.length > 0) {
+        <div class="section-container">
+          <h2 class="section-title">Mis Favoritos</h2>
+          <ul class="latest-releases-scroll-list" #favoritesList>
+            @for (game of favoriteGames; track game.id) {
+              <li class="game-item" (click)="openModal(game, $event)">
+                <div class="card-image-container">
+                  <img [src]="game.coverImageUrl" src="" alt="{{ game.name }} cover" class="game-cover">
+                  @if (game.rating !== undefined && game.rating !== null) {
+                    <div class="card-rating">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="star-icon">
+                        <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+                      </svg>
+                      <span>{{ game.rating | number:'1.1-1' }}</span>
+                    </div>
+                  }
+                </div>
+                <div class="game-info">
+                  <h3 class="game-name">{{ game.name }}</h3>
+                  @if (game.releaseDate) {
+                    <p class="game-release-date">
+                      {{ game.releaseDate | date: 'longDate' }}
+                    </p>
+                  }
+                  @if (game.platforms; as platforms) {
+                    <div class="game-platforms">
+                      @for (platform of platforms; track platform) {
+                        <span class="platform-tag">{{ platform }}</span>
+                      }
+                    </div>
+                  }
+                </div>
+              </li>
+            }
+          </ul>
+        </div>
+      }
+    }
+  }
+
   <div class="section-container">
     <h2 class="section-title">Últimos Lanzamientos</h2>
     @if (latestGames$ | async; as games) {
@@ -285,7 +327,14 @@
           <img [src]="selectedGame.coverImageUrl" src="" alt="{{ selectedGame.name }}" class="modal-cover">
           <div class="modal-title-info">
             <div class="modal-top-row">
-              <h2>{{ selectedGame.name }}</h2>
+              <div class="modal-title-wrapper">
+                <h2>{{ selectedGame.name }}</h2>
+                <button class="favorite-button" (click)="toggleFavorite()" [class.is-favorite]="isCurrentGameFavorite" title="Añadir a favoritos">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                  </svg>
+                </button>
+              </div>
               @if (selectedGame.rating !== undefined && selectedGame.rating !== null) {
                 <div class="modal-rating">
                   <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="star-icon-large">
