@@ -33,10 +33,12 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
   platforms$: Observable<Platform[]> | undefined;
   currentUser$: Observable<User | null>;
   favorites$ = new BehaviorSubject<Game[]>([]);
+  sortedFavorites$: Observable<Game[]>;
 
   private readonly searchInput = new BehaviorSubject<string>('');
   private readonly sortInput = new BehaviorSubject<string>('relevance');
   private readonly platformFilterInput = new BehaviorSubject<number | 'all'>('all');
+  private readonly favoritesSortInput = new BehaviorSubject<string>('name-asc');
 
   lastSearchTerm: string | null = null;
   hasResults: boolean = true;
@@ -73,6 +75,31 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
   ) {
     this.isAuthenticated$ = this.authService.isAuthenticated$;
     this.currentUser$ = this.authService.currentUser$;
+
+    this.sortedFavorites$ = combineLatest([
+      this.favorites$,
+      this.favoritesSortInput
+    ]).pipe(
+      map(([games, sortKey]) => {
+        if (!games || games.length === 0) return [];
+
+        const sortedGames = [...games];
+        switch (sortKey) {
+          case 'name-asc':
+            return sortedGames.sort((a, b) => a.name.localeCompare(b.name));
+          case 'name-desc':
+            return sortedGames.sort((a, b) => b.name.localeCompare(a.name));
+          case 'date-desc':
+            return sortedGames.sort((a, b) => new Date(b.releaseDate!).getTime() - new Date(a.releaseDate!).getTime());
+          case 'date-asc':
+            return sortedGames.sort((a, b) => new Date(a.releaseDate!).getTime() - new Date(b.releaseDate!).getTime());
+          case 'rating-desc':
+            return sortedGames.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+          default:
+            return games;
+        }
+      })
+    );
   }
 
   @HostListener('document:click', ['$event'])
@@ -141,7 +168,7 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
     }
     this.selectedGame = game;
     this.currentLibraryStatus = null;
-    this.isCurrentGameFavorite = false;
+    this.isCurrentGameFavorite = false; // Resetear estado al abrir
 
     const userId = this.authService.getUserId();
     if (userId) {
@@ -171,6 +198,11 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
   onSortChange(event: Event) {
     const select = event.target as HTMLSelectElement;
     this.sortInput.next(select.value);
+  }
+
+  onFavoritesSortChange(event: Event) {
+    const select = event.target as HTMLSelectElement;
+    this.favoritesSortInput.next(select.value);
   }
 
   onPlatformFilterChange(event: Event) {
@@ -301,7 +333,7 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
     action$.subscribe({
       next: () => {
         this.isCurrentGameFavorite = !isFavorite;
-        this.loadFavorites(userId);
+        this.loadFavorites(userId); // Recargar la lista de favoritos
         this.cdr.detectChanges();
       },
       error: (err) => {

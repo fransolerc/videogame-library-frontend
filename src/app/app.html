@@ -234,12 +234,26 @@
   }
 
   @if (isAuthenticated$ | async) {
-    @if (favorites$ | async; as favoriteGames) {
-      @if (favoriteGames.length > 0) {
+    @if (sortedFavorites$ | async; as games) {
+      @if (games.length > 0) {
         <div class="section-container">
-          <h2 class="section-title">Mis Favoritos</h2>
+          <div class="section-header">
+            <h2 class="section-title">Mis Favoritos</h2>
+            <div class="filter-container">
+              <svg class="filter-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/>
+              </svg>
+              <select id="favorites-sort-by" class="sort-select" (change)="onFavoritesSortChange($event)" aria-label="Ordenar favoritos por">
+                <option value="name-asc">Nombre (A-Z)</option>
+                <option value="name-desc">Nombre (Z-A)</option>
+                <option value="date-desc">Fecha (Nuevos)</option>
+                <option value="date-asc">Fecha (Antiguos)</option>
+                <option value="rating-desc">Valoración (Mejores)</option>
+              </select>
+            </div>
+          </div>
           <ul class="latest-releases-scroll-list" #favoritesList>
-            @for (game of favoriteGames; track game.id) {
+            @for (game of games; track game.id) {
               <li class="game-item" (click)="openModal(game, $event)">
                 <div class="card-image-container">
                   <img [src]="game.coverImageUrl" src="" alt="{{ game.name }} cover" class="game-cover">
