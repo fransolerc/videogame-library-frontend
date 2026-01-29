@@ -19,4 +19,5 @@ export interface UserGame {
   addedAt: string;
   updatedAt: string;
   game?: Game;
+  isFavorite?: boolean;
 }
