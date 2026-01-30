@@ -1,0 +1,109 @@
+<div class="modal-overlay" (click)="closeModal()">
+  <div class="modal-content" (click)="stopPropagation($event)">
+    <button class="close-button" (click)="closeModal()" aria-label="Cerrar detalles">&times;</button>
+
+    <div class="modal-header">
+      <img [src]="game.coverImageUrl" [alt]="game.name" class="modal-cover">
+      <div class="modal-title-info">
+        <div class="modal-top-row">
+          <div class="modal-title-wrapper">
+            <h2>{{ game.name }}</h2>
+            <button class="favorite-button" (click)="toggleFavorite()" [class.is-favorite]="isCurrentGameFavorite" title="Añadir a favoritos">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+              </svg>
+            </button>
+          </div>
+          @if (game.rating !== undefined && game.rating !== null) {
+            <div class="modal-rating">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="star-icon-large">
+                <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+              </svg>
+              <span>{{ game.rating | number:'1.1-1' }}</span>
+            </div>
+          }
+        </div>
+
+        @if (game.releaseDate) {
+          <p class="modal-date">Lanzamiento: {{ game.releaseDate | date: 'longDate' }}</p>
+        }
+
+        @if (game.genres; as genres) {
+          <div class="game-genres modal-genres">
+            @for (genre of genres; track genre) {
+              <span class="genre-tag">{{ genre }}</span>
+            }
+          </div>
+        }
+
+        @if (game.platforms; as platforms) {
+          <div class="modal-platforms">
+            <span class="platforms-label">Plataformas:</span>
+            @for (platform of platforms; track platform) {
+              <span class="platform-tag-modal">{{ platform }}</span>
+            }
+          </div>
+        }
+
+        <div class="library-actions">
+          <div class="status-buttons">
+            <button class="status-btn" [class.active]="currentLibraryStatus === GameStatus.WANT_TO_PLAY" (click)="handleLibraryAction(GameStatus.WANT_TO_PLAY)" [disabled]="isAddingToLibrary" title="Quiero jugar">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="status-icon"><path d="M17 3H7c-1.1 0-1.99.9-1.99 2L5 21l7-3 7 3V5c0-1.1-.9-2-2-2z"/></svg>
+              <span>Quiero jugar</span>
+            </button>
+            <button class="status-btn" [class.active]="currentLibraryStatus === GameStatus.PLAYING" (click)="handleLibraryAction(GameStatus.PLAYING)" [disabled]="isAddingToLibrary" title="Jugando">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="status-icon"><path d="M8 5v14l11-7z"/></svg>
+              <span>Jugando</span>
+            </button>
+            <button class="status-btn" [class.active]="currentLibraryStatus === GameStatus.COMPLETED" (click)="handleLibraryAction(GameStatus.COMPLETED)" [disabled]="isAddingToLibrary" title="Completado">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="status-icon"><path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/></svg>
+              <span>Completado</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-body">
+      @if (game.summary) {
+        <div class="modal-section">
+          <h3>Descripción</h3>
+          <p>{{ game.summary }}</p>
+        </div>
+      }
+
+      @if (game.screenshots?.length) {
+        <div class="modal-section">
+          <h3>Galería</h3>
+          <div class="screenshots-grid">
+            @for (screenshot of game.screenshots; track screenshot) {
+              <img [src]="screenshot" alt="Screenshot" class="screenshot-img" (click)="openLightbox(screenshot)">
+            }
+          </div>
+        </div>
+      }
+
+      @if (game.videos?.length) {
+        <div class="modal-section">
+          <h3>Vídeos</h3>
+          <div class="video-grid">
+            @for (videoUrl of game.videos; track videoUrl) {
+              <div class="video-container">
+                @if (extractYoutubeVideoId(videoUrl); as videoId) {
+                  <lite-youtube [videoId]="videoId"></lite-youtube>
+                }
+              </div>
+            }
+          </div>
+        </div>
+      }
+    </div>
+  </div>
+</div>
+
+@if (enlargedScreenshot) {
+  <div class="lightbox-overlay" (click)="closeLightbox()">
+    <img [src]="enlargedScreenshot" alt="Enlarged screenshot" class="lightbox-image">
+    <button class="close-button lightbox-close-button" (click)="closeLightbox()" aria-label="Cerrar imagen">&times;</button>
+  </div>
+}

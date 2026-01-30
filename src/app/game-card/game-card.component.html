@@ -1,0 +1,27 @@
+<div class="card-image-container">
+  <img [src]="game.coverImageUrl" [alt]="game.name" class="game-cover">
+  @if (game.rating !== undefined && game.rating !== null) {
+    <div class="card-rating">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="star-icon">
+        <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+      </svg>
+      <span>{{ game.rating | number:'1.1-1' }}</span>
+    </div>
+  }
+</div>
+<div class="game-info">
+  <h3 class="game-name">{{ game.name }}</h3>
+  @if (game.releaseDate) {
+    <p class="game-release-date">{{ game.releaseDate | date: 'yyyy' }}</p>
+  }
+  @if (game.platforms; as platforms) {
+    <div class="game-platforms">
+      @for (platform of platforms.slice(0, 3); track platform) {
+        <span class="platform-tag" [class.clickable]="isPlatformClickable" (click)="onPlatformClick(platform, $event)">{{ platform }}</span>
+      }
+      @if (platforms.length > 3) {
+        <span class="platform-more">+{{ platforms.length - 3 }}</span>
+      }
+    </div>
+  }
+</div>
