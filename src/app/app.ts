@@ -13,7 +13,7 @@ import { LibraryService } from './library/library.service';
 import { GameStatus } from './library/library.model';
 import { User } from './auth/user.model';
 import { RegisterComponent } from './auth/register/register.component';
-import '@justinribeiro/lite-youtube'; // Importar el componente
+import '@justinribeiro/lite-youtube';
 
 @Component({
   selector: 'app-root',
@@ -21,7 +21,7 @@ import '@justinribeiro/lite-youtube'; // Importar el componente
   templateUrl: './app.html',
   styleUrl: './app.css',
   changeDetection: ChangeDetectionStrategy.OnPush,
-  schemas: [CUSTOM_ELEMENTS_SCHEMA] // Permitir elementos personalizados como <lite-youtube>
+  schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class App implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('latestReleasesList') latestReleasesList!: ElementRef<HTMLUListElement>;
