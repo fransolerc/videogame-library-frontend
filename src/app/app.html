@@ -447,16 +447,9 @@
               <h3>Vídeos</h3>
               <div class="video-grid">
                 @for (videoUrl of selectedGame.videos; track videoUrl) {
-                  <div class="video-container">
-                    @if (!areVideosPaused) {
-                      <iframe
-                        title="youtube"
-                        [src]="getSafeVideoUrl(videoUrl)"
-                        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                        allowfullscreen>
-                      </iframe>
-                    } @else {
-                      <img [src]="getVideoThumbnail(videoUrl)" alt="Video thumbnail" class="video-thumbnail">
+                  <div class="video-container" (click)="stopPropagation($event)">
+                    @if (extractYoutubeVideoId(videoUrl); as videoId) {
+                      <lite-youtube [attr.videoid]="videoId"></lite-youtube>
                     }
                   </div>
                 }

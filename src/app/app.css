@@ -766,35 +766,22 @@
 }
 
 .video-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  display: flex;
+  flex-direction: column;
   gap: 1.5rem;
 }
 
 .video-container {
-  position: relative;
-  padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
-  height: 0;
-  overflow: hidden;
   border-radius: 10px;
-  background: #000;
+  overflow: hidden;
+  background-color: #000; /* Fondo negro por si el video no carga */
+  position: relative;
+  aspect-ratio: 16 / 9; /* Asegurar aspect ratio */
 }
 
-.video-container iframe {
-  position: absolute;
-  top: 0;
-  left: 0;
+.video-container lite-youtube {
   width: 100%;
   height: 100%;
-  transform: translateZ(0); /* Promotes iframe to its own layer */
-  backface-visibility: hidden;
-}
-
-.video-thumbnail {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  cursor: pointer;
 }
 
 @keyframes fadeIn {

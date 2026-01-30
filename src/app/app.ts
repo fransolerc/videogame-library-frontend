@@ -1,10 +1,10 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, AfterViewInit, ElementRef, ViewChild, OnDestroy, HostListener } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, AfterViewInit, ElementRef, ViewChild, OnDestroy, HostListener, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { AsyncPipe, DatePipe, DecimalPipe } from '@angular/common';
 import { GameService } from './game.service';
 import { Observable, combineLatest, BehaviorSubject, of, Subscription, fromEvent, forkJoin } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, tap, map, finalize } from 'rxjs/operators';
 import { Game, GameFilterRequest } from './game.model';
-import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
+import { DomSanitizer } from '@angular/platform-browser';
 import { AuthService } from './auth/auth.service';
 import { LoginComponent } from './auth/login/login.component';
 import { PlatformService } from './platform.service';
@@ -13,13 +13,15 @@ import { LibraryService } from './library/library.service';
 import { GameStatus } from './library/library.model';
 import { User } from './auth/user.model';
 import { RegisterComponent } from './auth/register/register.component';
+import '@justinribeiro/lite-youtube'; // Importar el componente
 
 @Component({
   selector: 'app-root',
   imports: [AsyncPipe, DatePipe, DecimalPipe, LoginComponent, RegisterComponent],
   templateUrl: './app.html',
   styleUrl: './app.css',
-  changeDetection: ChangeDetectionStrategy.OnPush
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  schemas: [CUSTOM_ELEMENTS_SCHEMA] // Permitir elementos personalizados como <lite-youtube>
 })
 export class App implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('latestReleasesList') latestReleasesList!: ElementRef<HTMLUListElement>;
@@ -48,7 +50,6 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
   showRegisterModal = false;
 
   enlargedScreenshot: string | null = null;
-  areVideosPaused = false;
 
   GameStatus = GameStatus;
   isAddingToLibrary = false;
@@ -82,7 +83,6 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
     ]).pipe(
       map(([games, sortKey]) => {
         if (!games || games.length === 0) return [];
-
         const sortedGames = [...games];
         switch (sortKey) {
           case 'name-asc':
@@ -124,6 +124,7 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private setupDragToScroll(elementRef: ElementRef<HTMLUListElement>): void {
+    if (!elementRef) return;
     const slider = elementRef.nativeElement;
     this.subscriptions.add(fromEvent<MouseEvent>(slider, 'mousedown').subscribe((e: MouseEvent) => {
       this.isDown = true;
@@ -132,12 +133,10 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
       this.startX = e.pageX - slider.offsetLeft;
       this.scrollLeft = slider.scrollLeft;
     }));
-
     this.subscriptions.add(fromEvent<MouseEvent>(document, 'mouseup').subscribe(() => {
       this.isDown = false;
       slider.classList.remove('active');
     }));
-
     this.subscriptions.add(fromEvent<MouseEvent>(document, 'mousemove').subscribe((e: MouseEvent) => {
       if (!this.isDown) return;
       e.preventDefault();
@@ -168,8 +167,8 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
     }
     this.selectedGame = game;
     this.currentLibraryStatus = null;
-    this.isCurrentGameFavorite = false; // Resetear estado al abrir
-
+    this.isCurrentGameFavorite = false;
+    document.body.style.overflow = 'hidden';
     const userId = this.authService.getUserId();
     if (userId) {
       this.libraryService.getGameFromLibrary(userId, game.id).subscribe(userGame => {
@@ -182,35 +181,6 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
     }
   }
 
-  onSearch(event: Event) {
-    const input = event.target as HTMLInputElement;
-    this.searchInput.next(input.value);
-  }
-
-  clearSearch() {
-    this.searchInput.next('');
-    const inputElement = document.querySelector('.search-input') as HTMLInputElement;
-    if (inputElement) {
-      inputElement.value = '';
-    }
-  }
-
-  onSortChange(event: Event) {
-    const select = event.target as HTMLSelectElement;
-    this.sortInput.next(select.value);
-  }
-
-  onFavoritesSortChange(event: Event) {
-    const select = event.target as HTMLSelectElement;
-    this.favoritesSortInput.next(select.value);
-  }
-
-  onPlatformFilterChange(event: Event) {
-    const select = event.target as HTMLSelectElement;
-    const value = select.value;
-    this.platformFilterInput.next(value === 'all' ? 'all' : Number.parseInt(value, 10));
-  }
-
   closeModal() {
     this.selectedGame = null;
     document.body.style.overflow = 'auto';
@@ -218,12 +188,10 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
 
   openLightbox(screenshotUrl: string) {
     this.enlargedScreenshot = screenshotUrl;
-    this.areVideosPaused = true;
   }
 
   closeLightbox() {
     this.enlargedScreenshot = null;
-    this.areVideosPaused = false;
   }
 
   stopPropagation(event: Event) {
@@ -260,86 +228,89 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
     this.closeMobileMenu();
   }
 
+  onSearch(event: Event) {
+    const input = event.target as HTMLInputElement;
+    this.searchInput.next(input.value);
+  }
+
+  clearSearch() {
+    this.searchInput.next('');
+    const inputElement = document.querySelector('.search-input') as HTMLInputElement;
+    if (inputElement) {
+      inputElement.value = '';
+    }
+  }
+
+  onSortChange(event: Event) {
+    const select = event.target as HTMLSelectElement;
+    this.sortInput.next(select.value);
+  }
+
+  onFavoritesSortChange(event: Event) {
+    const select = event.target as HTMLSelectElement;
+    this.favoritesSortInput.next(select.value);
+  }
+
+  onPlatformFilterChange(event: Event) {
+    const select = event.target as HTMLSelectElement;
+    const value = select.value;
+    this.platformFilterInput.next(value === 'all' ? 'all' : Number.parseInt(value, 10));
+  }
+
   handleLibraryAction(status: string) {
     if (!this.selectedGame) return;
-
     const userId = this.authService.getUserId();
     if (!userId) {
       this.openLoginModal();
       return;
     }
-
     this.isAddingToLibrary = true;
     const newStatus = status as GameStatus;
-
     if (this.currentLibraryStatus === newStatus) {
-      this.libraryService.removeGameFromLibrary(userId, this.selectedGame.id).pipe(
-        finalize(() => {
-          this.isAddingToLibrary = false;
-          this.cdr.detectChanges();
-        })
-      ).subscribe({
+      this.libraryService.removeGameFromLibrary(userId, this.selectedGame.id).pipe(finalize(() => {
+        this.isAddingToLibrary = false;
+        this.cdr.detectChanges();
+      })).subscribe({
         next: () => {
           this.currentLibraryStatus = null;
-          console.log('Juego eliminado de la biblioteca.');
           this.cdr.detectChanges();
         },
-        error: (err) => {
-          console.error('Error eliminando juego de la biblioteca:', err);
-          alert('Error al eliminar el juego de la biblioteca');
-          this.cdr.detectChanges();
-        }
+        error: (err) => console.error('Error eliminando juego de la biblioteca:', err)
       });
     } else {
       this.libraryService.addOrUpdateGameInLibrary(userId, {
         gameId: this.selectedGame.id,
         status: newStatus
-      }).pipe(
-        finalize(() => {
-          this.isAddingToLibrary = false;
-          this.cdr.detectChanges();
-        })
-      ).subscribe({
+      }).pipe(finalize(() => {
+        this.isAddingToLibrary = false;
+        this.cdr.detectChanges();
+      })).subscribe({
         next: (userGame) => {
           this.currentLibraryStatus = userGame.status;
-          console.log('Juego añadido/actualizado en la biblioteca:', userGame);
           this.cdr.detectChanges();
         },
-        error: (err) => {
-          console.error('Error adding game to library:', err);
-          alert('Error al añadir el juego a la biblioteca');
-          this.cdr.detectChanges();
-        }
+        error: (err) => console.error('Error adding game to library:', err)
       });
     }
   }
 
   toggleFavorite(): void {
     if (!this.selectedGame) return;
-
     const userId = this.authService.getUserId();
     if (!userId) {
       this.openLoginModal();
       return;
     }
-
     const gameId = this.selectedGame.id;
     const isFavorite = this.isCurrentGameFavorite;
-
-    const action$ = isFavorite
-      ? this.libraryService.removeFavorite(userId, gameId)
-      : this.libraryService.addFavorite(userId, gameId);
-
+    const action$ = isFavorite ? this.libraryService.removeFavorite(userId, gameId) : this.libraryService.addFavorite(userId, gameId);
     action$.subscribe({
       next: () => {
         this.isCurrentGameFavorite = !isFavorite;
-        this.loadFavorites(userId); // Recargar la lista de favoritos
+        this.loadFavorites(userId);
         this.cdr.detectChanges();
       },
-      error: (err) => {
-        console.error('Error al actualizar favoritos:', err);
-        alert('Error al actualizar favoritos');
-      }
+      error: (err) => console.error('Error al actualizar favoritos:', err)
     });
   }
 
@@ -358,25 +329,11 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  getSafeVideoUrl(url: string): SafeResourceUrl {
+  extractYoutubeVideoId(url: string): string | null {
     const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
     const match = regExp.exec(url);
-    let embedUrl = url;
-    if (match?.[2]?.length === 11) {
-      const videoId = match[2];
-      embedUrl = `https://www.youtube.com/embed/${videoId}`;
-    }
-    return this.sanitizer.bypassSecurityTrustResourceUrl(embedUrl);
-  }
-
-  getVideoThumbnail(url: string): string {
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/;
-    const match = regExp.exec(url);
-    if (match?.[2]?.length === 11) {
-      const videoId = match[2];
-      return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-    }
-    return '';
+    const videoId = match?.[2]?.length === 11 ? match[2] : null;
+    return videoId;
   }
 
   ngOnInit(): void {
@@ -392,20 +349,16 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
         this.favorites$.next([]);
       }
     });
-
     this.platforms$ = this.platformService.getPlatforms();
-
     this.latestGames$ = combineLatest([this.sortInput, this.platformFilterInput, this.platforms$]).pipe(
       switchMap(([sortKey, platformId, allPlatforms]) => {
         const initialRequest: GameFilterRequest = {
           filter: `first_release_date <= ${Math.floor(Date.now() / 1000)}`,
           limit: 20
         };
-
         if (platformId !== 'all') {
           initialRequest.filter += ` & platforms.id = ${platformId}`;
         }
-
         switch (sortKey) {
           case 'name-asc': initialRequest.sort = 'name asc'; break;
           case 'name-desc': initialRequest.sort = 'name desc'; break;
@@ -417,11 +370,7 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
         return this.gameService.filterGames(initialRequest);
       })
     );
-
-    this.isSearching$ = this.searchInput.pipe(
-      map(term => !!term)
-    );
-
+    this.isSearching$ = this.searchInput.pipe(map(term => !!term));
     const searchResultsRaw$ = combineLatest([this.searchInput, this.platformFilterInput, this.platforms$]).pipe(
       debounceTime(300),
       distinctUntilChanged(),
@@ -430,10 +379,8 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
         if (!term) {
           return of([]);
         }
-
         return this.gameService.searchGames(term).pipe(
           map(games => {
-
             if (platformId !== 'all' && allPlatforms) {
               const selectedPlatformName = allPlatforms.find(p => p.id === platformId)?.name;
               if (selectedPlatformName) {
@@ -446,11 +393,9 @@ export class App implements OnInit, AfterViewInit, OnDestroy {
       }),
       tap(games => this.hasResults = games.length > 0)
     );
-
     this.searchResults$ = combineLatest([searchResultsRaw$, this.sortInput]).pipe(
       map(([games, sortKey]) => {
         if (!games || games.length === 0) return [];
-
         const sortedGames = [...games];
         switch (sortKey) {
           case 'name-asc':
