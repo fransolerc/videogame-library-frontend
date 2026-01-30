@@ -1,19 +1,19 @@
 export interface Game {
   id: string;
   name: string;
-  genres?: string[];
-  releaseDate: string | null;
-  coverImageUrl: string;
   summary?: string;
-  videos?: string[];
-  screenshots?: string[];
-  platforms?: string[];
+  releaseDate?: string;
   rating?: number;
+  coverImageUrl?: string;
+  screenshots?: string[];
+  videos?: string[];
+  platforms?: string[];
+  genres?: string[];
 }
 
 export interface GameFilterRequest {
-  filter?: string;
+  filter: string;
   sort?: string;
   limit?: number;
-  offset?: number;
+  offset?: number; // Añadir offset
 }

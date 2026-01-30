@@ -19,8 +19,8 @@ export class GameService {
     return this.http.get<Game[]>(`${this.searchApiUrl}?name=${query}`);
   }
 
-  filterGames(requestBody: GameFilterRequest): Observable<Game[]> {
-    return this.http.post<Game[]>(this.filterApiUrl, requestBody);
+  filterGames(requestBody: GameFilterRequest): Observable<any> { // Cambiado a Observable<any>
+    return this.http.post<any>(this.filterApiUrl, requestBody);
   }
 
   getGameById(id: string): Observable<Game> {

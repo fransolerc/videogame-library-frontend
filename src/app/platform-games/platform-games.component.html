@@ -1,0 +1,28 @@
+<div class="platform-games-container">
+  @if (platformName) {
+    <div class="header">
+      <h2>Juegos para {{ platformName }}</h2>
+      <p>{{ totalElements }} resultados</p>
+    </div>
+  }
+
+  @if (games.length > 0) {
+    <div class="games-grid">
+      @for (game of games; track game.id) {
+        <app-game-card [game]="game" (click)="openGameModal(game)" [isPlatformClickable]="false"></app-game-card>
+      }
+    </div>
+
+    <div class="pagination-controls">
+      <button (click)="onPageChange(currentPage - 1)" [disabled]="currentPage === 0">
+        Anterior
+      </button>
+      <span>Página {{ currentPage + 1 }} de {{ totalPages }}</span>
+      <button (click)="onPageChange(currentPage + 1)" [disabled]="currentPage + 1 >= totalPages">
+        Siguiente
+      </button>
+    </div>
+  } @else {
+    <p>Cargando juegos...</p>
+  }
+</div>

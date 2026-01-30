@@ -1,0 +1,110 @@
+.platforms-container {
+  padding: 6rem 2rem 2rem 2rem;
+  color: #fff;
+  width: 100%;
+  max-width: 1000px; /* Ancho más contenido para lista */
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.page-title {
+  font-size: 2.5rem;
+  margin-bottom: 2rem;
+  text-align: center;
+  font-weight: 600;
+}
+
+.generation-section {
+  margin-bottom: 3rem;
+}
+
+.generation-title {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #4facfe;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.platforms-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+}
+
+.platform-item {
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  padding: 1rem 1.5rem;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.2s ease, background-color 0.2s ease;
+}
+
+.platform-item:hover {
+  transform: translateX(5px);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.platform-icon {
+  width: 40px;
+  height: 40px;
+  margin-right: 1.5rem;
+  color: #4facfe;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 50%;
+  padding: 8px;
+  flex-shrink: 0;
+}
+
+.platform-icon svg {
+  width: 100%;
+  height: 100%;
+}
+
+.platform-info {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.platform-info h3 {
+  margin: 0 0 0.2rem 0;
+  font-size: 1.1rem;
+  font-weight: 500;
+  color: #fff;
+}
+
+.platform-type {
+  font-size: 0.8rem;
+  color: rgba(255, 255, 255, 0.5);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.platform-arrow {
+  color: rgba(255, 255, 255, 0.3);
+  width: 24px;
+  height: 24px;
+  transition: color 0.2s;
+}
+
+.platform-item:hover .platform-arrow {
+  color: #4facfe;
+}
+
+.loading {
+  text-align: center;
+  font-size: 1.2rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 3rem;
+}
