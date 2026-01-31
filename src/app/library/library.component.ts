@@ -4,11 +4,15 @@ import { GameService } from '../core/services/game.service';
 import { LibraryService } from '../core/services/library.service';
 import { AuthService } from '../core/services/auth.service';
 import { Game } from '../shared/models/game.model';
-import { forkJoin, of, Subscription, fromEvent, Subject } from 'rxjs';
-import { switchMap, map, takeUntil } from 'rxjs/operators';
+import { forkJoin, of, Subscription, fromEvent, Subject, BehaviorSubject, combineLatest, Observable } from 'rxjs';
+import { switchMap, map, takeUntil, catchError } from 'rxjs/operators';
 import { GameCardComponent } from '../game-card/game-card.component';
 import { UiService } from '../core/services/ui.service';
 import { GameStatus, UserGame } from '../shared/models/library.model';
+import { PlatformService } from '../core/services/platform.service';
+import { Platform } from '../shared/models/platform.model';
+
+type LibraryDisplayGame = Game & { status: GameStatus; isFavorite: boolean | undefined; };
 
 @Component({
   selector: 'app-library',
@@ -23,15 +27,20 @@ export class LibraryComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('playingList') playingList!: ElementRef<HTMLUListElement>;
   @ViewChild('completedList') completedList!: ElementRef<HTMLUListElement>;
 
-  favorites: Game[] = [];
-  wantToPlay: Game[] = [];
-  playing: Game[] = [];
-  completed: Game[] = [];
+  platforms$: Observable<Platform[]>;
+  favorites: LibraryDisplayGame[] = [];
+  wantToPlay: LibraryDisplayGame[] = [];
+  playing: LibraryDisplayGame[] = [];
+  completed: LibraryDisplayGame[] = [];
 
   isDown = false;
   startX = 0;
   scrollLeft = 0;
   isDragging = false;
+
+  private readonly sortInput = new BehaviorSubject<string>('relevance');
+  private readonly platformFilterInput = new BehaviorSubject<number | 'all'>('all');
+  private allGames: LibraryDisplayGame[] = [];
 
   private dragSubscriptions = new Subscription();
   private readonly destroy$ = new Subject<void>();
@@ -41,8 +50,11 @@ export class LibraryComponent implements OnInit, AfterViewInit, OnDestroy {
     private readonly gameService: GameService,
     private readonly authService: AuthService,
     private readonly uiService: UiService,
-    private readonly cdr: ChangeDetectorRef
-  ) {}
+    private readonly cdr: ChangeDetectorRef,
+    private readonly platformService: PlatformService
+  ) {
+    this.platforms$ = this.platformService.getPlatforms();
+  }
 
   ngOnInit(): void {
     const userId = this.authService.getUserId();
@@ -56,6 +68,12 @@ export class LibraryComponent implements OnInit, AfterViewInit, OnDestroy {
       if (userId) {
         this.loadLibrary(userId);
       }
+    });
+
+    combineLatest([this.sortInput, this.platformFilterInput, this.platforms$]).pipe(
+      takeUntil(this.destroy$)
+    ).subscribe(([sortKey, platformId, allPlatforms]) => {
+      this.applyFilters(sortKey, platformId, allPlatforms);
     });
   }
 
@@ -73,27 +91,76 @@ export class LibraryComponent implements OnInit, AfterViewInit, OnDestroy {
     this.libraryService.getLibrary(userId).pipe(
       switchMap((userGames: UserGame[]) => {
         if (userGames.length === 0) {
-          this.favorites = [];
-          this.wantToPlay = [];
-          this.playing = [];
-          this.completed = [];
+          this.allGames = [];
           return of([]);
         }
         const gameObservables = userGames.map(userGame =>
           this.gameService.getGameById(userGame.gameId.toString()).pipe(
-            map(game => ({ ...game, status: userGame.status, isFavorite: userGame.isFavorite }))
+            map(game => ({ ...game, status: userGame.status, isFavorite: userGame.isFavorite })),
+            catchError(error => {
+              console.warn(`Could not load game with ID ${userGame.gameId}:`, error);
+              return of(null);
+            })
           )
         );
         return forkJoin(gameObservables);
       })
     ).subscribe(games => {
-      this.favorites = games.filter(game => game.isFavorite);
-      this.wantToPlay = games.filter(game => game.status === GameStatus.WANT_TO_PLAY);
-      this.playing = games.filter(game => game.status === GameStatus.PLAYING);
-      this.completed = games.filter(game => game.status === GameStatus.COMPLETED);
-      this.cdr.detectChanges();
-      this.setupAllDragToScroll();
+      this.allGames = games.filter((game): game is LibraryDisplayGame => game !== null);
+      this.applyFilters(this.sortInput.value, this.platformFilterInput.value, []);
     });
+  }
+
+  private applyFilters(sortKey: string, platformId: number | 'all', allPlatforms: Platform[]): void {
+    let filteredGames = [...this.allGames];
+
+    if (platformId !== 'all' && allPlatforms.length > 0) {
+      const selectedPlatform = allPlatforms.find(p => p.id === platformId);
+      if (selectedPlatform) {
+        filteredGames = filteredGames.filter(game =>
+          game.platforms?.includes(selectedPlatform.name)
+        );
+      }
+    }
+
+    const sortedGames = this.sortGames(filteredGames, sortKey);
+
+    this.favorites = sortedGames.filter(game => game.isFavorite);
+    this.wantToPlay = sortedGames.filter(game => game.status === GameStatus.WANT_TO_PLAY);
+    this.playing = sortedGames.filter(game => game.status === GameStatus.PLAYING);
+    this.completed = sortedGames.filter(game => game.status === GameStatus.COMPLETED);
+
+    this.cdr.detectChanges();
+    this.setupAllDragToScroll();
+  }
+
+  private sortGames(games: LibraryDisplayGame[], sortKey: string): LibraryDisplayGame[] {
+    const sorted = [...games];
+    switch (sortKey) {
+      case 'name-asc':
+        return sorted.sort((a, b) => a.name.localeCompare(b.name));
+      case 'name-desc':
+        return sorted.sort((a, b) => b.name.localeCompare(a.name));
+      case 'date-desc':
+        return sorted.sort((a, b) => new Date(b.releaseDate!).getTime() - new Date(a.releaseDate!).getTime());
+      case 'date-asc':
+        return sorted.sort((a, b) => new Date(a.releaseDate!).getTime() - new Date(b.releaseDate!).getTime());
+      case 'rating-desc':
+        return sorted.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+      default:
+        return games;
+    }
+  }
+
+  onSortChange(event: Event) {
+    const select = event.target as HTMLSelectElement;
+    this.sortInput.next(select.value);
+  }
+
+  onPlatformFilterChange(event: Event) {
+    const select = event.target as HTMLSelectElement;
+    const value = select.value;
+    this.platformFilterInput.next(value === 'all' ? 'all' : Number(value));
   }
 
   openGameModal(game: Game): void {
