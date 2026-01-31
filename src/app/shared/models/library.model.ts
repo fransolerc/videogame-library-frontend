@@ -1,4 +1,4 @@
-import { Game } from '../game.model';
+import { Game } from './game.model';
 
 export enum GameStatus {
   WANT_TO_PLAY = 'WANT_TO_PLAY',

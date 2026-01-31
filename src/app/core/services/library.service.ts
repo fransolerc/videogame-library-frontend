@@ -2,8 +2,8 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
-import { environment } from '../../environments/environment';
-import { AddGameToLibraryRequest, UserGame } from './library.model';
+import { environment } from '../../../environments/environment';
+import { AddGameToLibraryRequest, UserGame } from '../../shared/models/library.model';
 
 @Injectable({
   providedIn: 'root'

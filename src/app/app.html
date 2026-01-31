@@ -63,7 +63,7 @@
   </footer>
 
   @if (selectedGame$ | async; as game) {
-    <app-game-detail-modal [game]="game" (close)="uiService.closeGameModal()"></app-game-detail-modal>
+    <app-game-detail-modal [game]="game" (closeModalEvent)="uiService.closeGameModal()"></app-game-detail-modal>
   }
   @if (showLoginModal$ | async) {
     <div class="modal-overlay" (click)="uiService.closeLoginModal()">

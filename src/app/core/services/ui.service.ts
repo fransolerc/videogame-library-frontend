@@ -1,7 +1,7 @@
 import { Injectable, Inject, Renderer2, RendererFactory2 } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { BehaviorSubject, Subject } from 'rxjs';
-import { Game } from './game.model';
+import { Game } from '../../shared/models/game.model';
 
 @Injectable({
   providedIn: 'root'

@@ -1,6 +1,6 @@
 import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Game } from '../game.model';
+import { Game } from '../shared/models/game.model';
 
 @Component({
   selector: 'app-game-card',

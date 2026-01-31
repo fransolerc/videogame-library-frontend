@@ -1,8 +1,8 @@
 import { Component, EventEmitter, Output } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
-import { AuthService } from '../auth.service';
+import { AuthService } from '../../core/services/auth.service';
 import { CommonModule } from '@angular/common';
-import { RegisterRequest } from '../user.model';
+import { RegisterRequest } from '../../shared/models/user.model';
 
 @Component({
   selector: 'app-register',

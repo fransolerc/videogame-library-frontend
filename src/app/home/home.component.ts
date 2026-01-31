@@ -1,14 +1,14 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, AfterViewInit, ElementRef, ViewChild, OnDestroy } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
-import { GameService } from '../game.service';
+import { GameService } from '../core/services/game.service';
 import { Observable, combineLatest, BehaviorSubject, of, Subscription, fromEvent } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, tap, map } from 'rxjs/operators';
-import { Game, GameFilterRequest } from '../game.model';
-import { PlatformService } from '../platform.service';
-import { Platform } from '../platform.model';
-import { UiService } from '../ui.service';
+import { Game, GameFilterRequest } from '../shared/models/game.model';
+import { PlatformService } from '../core/services/platform.service';
+import { Platform } from '../shared/models/platform.model';
+import { UiService } from '../core/services/ui.service';
 import { Router } from '@angular/router';
-import { AuthService } from '../auth/auth.service';
+import { AuthService } from '../core/services/auth.service';
 import { GameCardComponent } from '../game-card/game-card.component';
 
 @Component({

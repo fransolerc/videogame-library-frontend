@@ -1,8 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { PlatformService } from '../platform.service';
-import { Platform } from '../platform.model';
+import { PlatformService } from '../core/services/platform.service';
+import { Platform } from '../shared/models/platform.model';
 import { map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 
@@ -23,8 +23,8 @@ export class PlatformListComponent implements OnInit {
   groupedPlatforms$: Observable<PlatformGroup[]> | undefined;
 
   constructor(
-    private platformService: PlatformService,
-    private router: Router
+    private readonly platformService: PlatformService,
+    private readonly router: Router
   ) {}
 
   ngOnInit(): void {
@@ -63,7 +63,7 @@ export class PlatformListComponent implements OnInit {
 
         const resultGroups: PlatformGroup[] = Array.from(groups.entries()).map(([key, value]) => ({
           key,
-          platforms: value.platforms.sort((a, b) => a.name.localeCompare(b.name)),
+          platforms: [...value.platforms].sort((a, b) => a.name.localeCompare(b.name)),
           sortOrder: value.sortOrder
         }));
 

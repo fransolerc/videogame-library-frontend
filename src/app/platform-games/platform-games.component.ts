@@ -1,12 +1,12 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { GameService } from '../game.service';
-import { Game } from '../game.model';
+import { GameService } from '../core/services/game.service';
+import { Game } from '../shared/models/game.model';
 import { CommonModule } from '@angular/common';
 import { of, combineLatest } from 'rxjs';
 import { switchMap, tap } from 'rxjs/operators';
-import { UiService } from '../ui.service';
-import { PlatformService } from '../platform.service';
+import { UiService } from '../core/services/ui.service';
+import { PlatformService } from '../core/services/platform.service';
 import { GameCardComponent } from '../game-card/game-card.component';
 
 @Component({

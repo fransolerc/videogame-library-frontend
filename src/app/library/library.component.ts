@@ -1,14 +1,14 @@
 import { Component, OnInit, ChangeDetectorRef, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { GameService } from '../game.service';
-import { LibraryService } from './library.service';
-import { AuthService } from '../auth/auth.service';
-import { Game } from '../game.model';
+import { GameService } from '../core/services/game.service';
+import { LibraryService } from '../core/services/library.service';
+import { AuthService } from '../core/services/auth.service';
+import { Game } from '../shared/models/game.model';
 import { forkJoin, of, Subscription, fromEvent, Subject } from 'rxjs';
 import { switchMap, map, takeUntil } from 'rxjs/operators';
 import { GameCardComponent } from '../game-card/game-card.component';
-import { UiService } from '../ui.service';
-import { GameStatus, UserGame } from './library.model';
+import { UiService } from '../core/services/ui.service';
+import { GameStatus, UserGame } from '../shared/models/library.model';
 
 @Component({
   selector: 'app-library',

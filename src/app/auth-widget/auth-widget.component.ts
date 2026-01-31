@@ -1,7 +1,7 @@
 import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
-import { User } from '../auth/user.model';
+import { User } from '../shared/models/user.model';
 
 @Component({
   selector: 'app-auth-widget',
