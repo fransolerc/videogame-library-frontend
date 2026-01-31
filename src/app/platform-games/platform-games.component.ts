@@ -60,9 +60,9 @@ export class PlatformGamesComponent implements OnInit {
     }
 
     const request = {
-      filter: `platforms = (${this.platformId})`,
-      limit: this.pageSize,
-      offset: this.currentPage * this.pageSize,
+      filter: `involved_companies != null & platforms = (${this.platformId})`,
+      limit: 50,
+      offset: this.currentPage * 50,
       sort: 'rating desc'
     };
 

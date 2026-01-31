@@ -15,5 +15,5 @@ export interface GameFilterRequest {
   filter: string;
   sort?: string;
   limit?: number;
-  offset?: number; // Añadir offset
+  offset?: number;
 }

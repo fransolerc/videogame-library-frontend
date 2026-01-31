@@ -1,0 +1,67 @@
+<div class="library-container">
+  <h1 class="main-title">Mi Biblioteca</h1>
+
+  @if (favorites.length > 0) {
+    <div class="section-container">
+      <h2 class="section-title">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="section-icon">
+          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/>
+        </svg>
+        <span>Mis Favoritos</span>
+      </h2>
+      <div class="scroll-list" #favoritesList>
+        @for (game of favorites; track game.id) {
+          <app-game-card class="game-item" [game]="game" (click)="openGameModal(game)"></app-game-card>
+        }
+      </div>
+    </div>
+  }
+
+  @if (wantToPlay.length > 0) {
+    <div class="section-container">
+      <h2 class="section-title">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="section-icon">
+          <path d="M17 3H7c-1.1 0-2 .9-2 2v16l7-3 7 3V5c0-1.1-.9-2-2-2z"/>
+        </svg>
+        <span>Quiero Jugar</span>
+      </h2>
+      <div class="scroll-list" #wantToPlayList>
+        @for (game of wantToPlay; track game.id) {
+          <app-game-card class="game-item" [game]="game" (click)="openGameModal(game)"></app-game-card>
+        }
+      </div>
+    </div>
+  }
+
+  @if (playing.length > 0) {
+    <div class="section-container">
+      <h2 class="section-title">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="section-icon">
+          <path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+        </svg>
+        <span>Jugando</span>
+      </h2>
+      <div class="scroll-list" #playingList>
+        @for (game of playing; track game.id) {
+          <app-game-card class="game-item" [game]="game" (click)="openGameModal(game)"></app-game-card>
+        }
+      </div>
+    </div>
+  }
+
+  @if (completed.length > 0) {
+    <div class="section-container">
+      <h2 class="section-title">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="section-icon">
+          <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+        </svg>
+        <span>Completados</span>
+      </h2>
+      <div class="scroll-list" #completedList>
+        @for (game of completed; track game.id) {
+          <app-game-card class="game-item" [game]="game" (click)="openGameModal(game)"></app-game-card>
+        }
+      </div>
+    </div>
+  }
+</div>

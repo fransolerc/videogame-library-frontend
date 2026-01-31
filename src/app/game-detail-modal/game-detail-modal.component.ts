@@ -6,6 +6,7 @@ import { LibraryService } from '../library/library.service';
 import { AuthService } from '../auth/auth.service';
 import { finalize } from 'rxjs/operators';
 import '@justinribeiro/lite-youtube';
+import { UiService } from '../ui.service';
 
 @Component({
   selector: 'app-game-detail-modal',
@@ -29,6 +30,7 @@ export class GameDetailModalComponent implements OnInit {
   constructor(
     private readonly libraryService: LibraryService,
     private readonly authService: AuthService,
+    private readonly uiService: UiService,
     private readonly cdr: ChangeDetectorRef
   ) {}
 
@@ -58,7 +60,6 @@ export class GameDetailModalComponent implements OnInit {
   handleLibraryAction(status: GameStatus): void {
     const userId = this.authService.getUserId();
     if (!userId) {
-      // Idealmente, aquí se emitiría un evento para que el AppComponent abra el modal de login
       return;
     }
     this.isAddingToLibrary = true;
@@ -68,6 +69,7 @@ export class GameDetailModalComponent implements OnInit {
         this.cdr.detectChanges();
       })).subscribe(() => {
         this.currentLibraryStatus = null;
+        this.uiService.notifyLibraryChanged();
       });
     } else {
       this.libraryService.addOrUpdateGameInLibrary(userId, { gameId: this.game.id, status }).pipe(finalize(() => {
@@ -75,6 +77,7 @@ export class GameDetailModalComponent implements OnInit {
         this.cdr.detectChanges();
       })).subscribe(userGame => {
         this.currentLibraryStatus = userGame.status;
+        this.uiService.notifyLibraryChanged();
       });
     }
   }
@@ -90,6 +93,7 @@ export class GameDetailModalComponent implements OnInit {
 
     action$.subscribe(() => {
       this.isCurrentGameFavorite = !this.isCurrentGameFavorite;
+      this.uiService.notifyLibraryChanged();
       this.cdr.detectChanges();
     });
   }

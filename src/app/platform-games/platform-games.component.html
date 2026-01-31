@@ -1,28 +1,18 @@
 <div class="platform-games-container">
-  @if (platformName) {
-    <div class="header">
-      <h2>Juegos para {{ platformName }}</h2>
-      <p>{{ totalElements }} resultados</p>
+  <h1 class="main-title">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="title-icon">
+      <path d="M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z"/>
+    </svg>
+    <span>{{ platformName }}</span>
+  </h1>
+  <div class="games-grid">
+    @for (game of games; track game.id) {
+      <app-game-card [game]="game" (click)="openGameModal(game)"></app-game-card>
+    }
+  </div>
+  @if (games.length === 0) {
+    <div class="no-games">
+      <p>No se encontraron juegos para esta plataforma.</p>
     </div>
-  }
-
-  @if (games.length > 0) {
-    <div class="games-grid">
-      @for (game of games; track game.id) {
-        <app-game-card [game]="game" (click)="openGameModal(game)" [isPlatformClickable]="false"></app-game-card>
-      }
-    </div>
-
-    <div class="pagination-controls">
-      <button (click)="onPageChange(currentPage - 1)" [disabled]="currentPage === 0">
-        Anterior
-      </button>
-      <span>Página {{ currentPage + 1 }} de {{ totalPages }}</span>
-      <button (click)="onPageChange(currentPage + 1)" [disabled]="currentPage + 1 >= totalPages">
-        Siguiente
-      </button>
-    </div>
-  } @else {
-    <p>Cargando juegos...</p>
   }
 </div>

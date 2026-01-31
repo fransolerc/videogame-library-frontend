@@ -1,6 +1,7 @@
 export interface User {
   id: string;
   username: string;
+  avatar?: string; // Añadido para la URL del avatar
   // Puedes añadir más propiedades del usuario aquí si el backend las devuelve
 }
 

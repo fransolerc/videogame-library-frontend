@@ -1,128 +1,54 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy, HostListener, ViewChild, ElementRef, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Observable, Subscription } from 'rxjs';
-import { Game } from './game.model';
+import { Router, RouterModule } from '@angular/router';
+import { Observable } from 'rxjs';
 import { AuthService } from './auth/auth.service';
-import { LoginComponent } from './auth/login/login.component';
-import { PlatformService } from './platform.service';
-import { Platform } from './platform.model';
-import { User } from './auth/user.model';
-import { RegisterComponent } from './auth/register/register.component';
-import { Router, RouterLink, RouterOutlet } from '@angular/router';
 import { UiService } from './ui.service';
+import { User } from './auth/user.model';
+import { Game } from './game.model';
 import { GameDetailModalComponent } from './game-detail-modal/game-detail-modal.component';
+import { LoginComponent } from './auth/login/login.component';
+import { RegisterComponent } from './auth/register/register.component';
+import { AuthWidgetComponent } from './auth-widget/auth-widget.component';
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [CommonModule, LoginComponent, RegisterComponent, RouterLink, RouterOutlet, GameDetailModalComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    GameDetailModalComponent,
+    LoginComponent,
+    RegisterComponent,
+    AuthWidgetComponent
+  ],
   templateUrl: './app.html',
-  styleUrls: ['./app.css'],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA]
+  styleUrls: ['./app.css']
 })
-export class App implements OnInit, OnDestroy {
-  @ViewChild('profileMenu') profileMenu!: ElementRef;
-
+export class App {
   isAuthenticated$: Observable<boolean>;
   currentUser$: Observable<User | null>;
-  platforms$: Observable<Platform[]>;
-
-  selectedGame: Game | null = null;
-  showLoginModal = false;
-  showRegisterModal = false;
-
-  isProfileMenuOpen = false;
-  isMobileMenuOpen = false;
-
-  private readonly subscriptions = new Subscription();
+  selectedGame$: Observable<Game | null>;
+  showLoginModal$: Observable<boolean>;
+  showRegisterModal$: Observable<boolean>;
+  isMobileMenuOpen$: Observable<boolean>;
 
   constructor(
-    private readonly authService: AuthService,
-    private readonly platformService: PlatformService,
-    private readonly uiService: UiService,
-    private readonly cdr: ChangeDetectorRef,
+    public readonly authService: AuthService,
+    public readonly uiService: UiService,
     private readonly router: Router
   ) {
     this.isAuthenticated$ = this.authService.isAuthenticated$;
     this.currentUser$ = this.authService.currentUser$;
-    this.platforms$ = this.platformService.getPlatforms();
+    this.selectedGame$ = this.uiService.selectedGame$;
+    this.showLoginModal$ = this.uiService.showLoginModal$;
+    this.showRegisterModal$ = this.uiService.showRegisterModal$;
+    this.isMobileMenuOpen$ = this.uiService.isMobileMenuOpen$;
   }
 
-  ngOnInit(): void {
-    this.subscriptions.add(
-      this.uiService.openGameModal$.subscribe(game => {
-        this.selectedGame = game;
-        this.cdr.detectChanges();
-      })
-    );
-
-    this.subscriptions.add(
-      this.authService.isAuthenticated$.subscribe(isAuthenticated => {
-        if (isAuthenticated) {
-          this.closeLoginModal();
-          this.closeRegisterModal();
-        }
-      })
-    );
-  }
-
-  ngOnDestroy(): void {
-    this.subscriptions.unsubscribe();
-  }
-
-  @HostListener('document:click', ['$event'])
-  clickOutside(event: Event) {
-    if (this.isProfileMenuOpen && this.profileMenu && !this.profileMenu.nativeElement.contains(event.target)) {
-      this.isProfileMenuOpen = false;
-      this.cdr.detectChanges();
-    }
-  }
-
-  toggleProfileMenu(event: Event): void {
-    event.stopPropagation();
-    this.isProfileMenuOpen = !this.isProfileMenuOpen;
-  }
-
-  toggleMobileMenu(): void {
-    this.isMobileMenuOpen = !this.isMobileMenuOpen;
-  }
-
-  closeMobileMenu(): void {
-    this.isMobileMenuOpen = false;
-  }
-
-  stopPropagation(event: Event): void {
-    event.stopPropagation();
-  }
-
-  openLoginModal() {
-    this.showRegisterModal = false;
-    this.showLoginModal = true;
-    document.body.style.overflow = 'hidden';
-    this.closeMobileMenu();
-    this.cdr.detectChanges(); // Forzar detección de cambios
-  }
-
-  closeLoginModal() {
-    this.showLoginModal = false;
-    document.body.style.overflow = 'auto';
-  }
-
-  openRegisterModal() {
-    this.showLoginModal = false;
-    this.showRegisterModal = true;
-    document.body.style.overflow = 'hidden';
-    this.closeMobileMenu();
-  }
-
-  closeRegisterModal() {
-    this.showRegisterModal = false;
-    document.body.style.overflow = 'auto';
-  }
-
-  logout() {
+  logout(): void {
     this.authService.logout();
-    this.isProfileMenuOpen = false;
-    this.closeMobileMenu();
+    this.uiService.closeMobileMenu();
+    this.router.navigate(['/']);
   }
 }

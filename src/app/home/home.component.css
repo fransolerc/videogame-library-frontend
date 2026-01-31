@@ -121,6 +121,12 @@
   text-overflow: ellipsis;
 }
 
+.sort-select:hover {
+  background-color: rgba(56, 189, 248, 0.2);
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.3);
+}
+
 .sort-select:focus {
   outline: none;
   border-color: rgba(255, 255, 255, 0.4);
@@ -131,25 +137,28 @@
   color: #fff;
 }
 
+/* --- Estilos para Secciones de Juegos --- */
 .section-container {
-  width: 100%;
-  max-width: 1200px;
   margin: 2rem auto 0 auto;
 }
 
-.section-header {
+.section-title {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 1.5rem;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-  padding-bottom: 0.5rem;
+  font-size: 1.6rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: #fff;
+  border-bottom: 2px solid #444;
+  padding-bottom: 10px;
 }
 
-.section-title {
-  margin-bottom: 0;
-  border-bottom: none;
-  padding-bottom: 0;
+/* Estilo específico para el icono dentro de .section-title */
+.section-title .section-icon {
+  width: 28px;
+  height: 28px;
+  margin-right: 15px;
+  fill: #ffc107; /* Color dorado */
 }
 
 .latest-releases-scroll-list {

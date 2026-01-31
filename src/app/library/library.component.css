@@ -1,0 +1,78 @@
+.library-container {
+  padding: 20px;
+}
+
+.main-title {
+  font-size: 2.2rem;
+  font-weight: bold;
+  margin-bottom: 40px;
+  color: #fff;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.section-container {
+  margin-bottom: 40px;
+}
+
+.section-title {
+  display: flex;
+  align-items: center;
+  font-size: 1.6rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: #fff;
+  border-bottom: 2px solid #444;
+  padding-bottom: 10px;
+}
+
+.section-icon {
+  width: 28px;
+  height: 28px;
+  margin-right: 15px;
+  fill: #ffc107; /* Un color dorado para los iconos */
+}
+
+.scroll-list {
+  display: flex;
+  overflow-x: auto;
+  padding-bottom: 15px;
+  scrollbar-width: thin;
+  scrollbar-color: #555 #333;
+  cursor: grab;
+  user-select: none;
+}
+
+.scroll-list.active {
+  cursor: grabbing;
+}
+
+.scroll-list::-webkit-scrollbar {
+  height: 8px;
+}
+
+.scroll-list::-webkit-scrollbar-track {
+  background: #333;
+  border-radius: 4px;
+}
+
+.scroll-list::-webkit-scrollbar-thumb {
+  background-color: #555;
+  border-radius: 4px;
+}
+
+.game-item {
+  flex: 0 0 auto;
+  margin-right: 20px;
+  width: 200px;
+}
+
+.empty-section {
+  text-align: center;
+  margin-top: 20px;
+  color: #888;
+  background-color: #2a2a2a;
+  padding: 20px;
+  border-radius: 8px;
+}
