@@ -77,4 +77,20 @@
       </div>
     }
   </div>
+
+  <div class="section-container">
+    <h2 class="section-title">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="section-icon">
+        <g><rect fill="none" height="24" width="24"/></g><g><path d="M12,17.27L18.18,21l-1.64-7.03L22,9.24l-7.19-0.61L12,2L9.19,8.63L2,9.24l5.46,4.73L5.82,21L12,17.27z"/></g>
+      </svg>
+      <span>Top 50 Mejor Valorados</span>
+    </h2>
+    @if (topRatedGames$ | async; as games) {
+    <div class="latest-releases-scroll-list" #topRatedList>
+      @for (game of games; track game.id) {
+      <app-game-card class="game-item" [game]="game" (click)="openModal(game)" (platformClick)="navigateToPlatformPage($event)"></app-game-card>
+      }
+    </div>
+    }
+  </div>
 </div>
