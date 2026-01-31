@@ -11,6 +11,9 @@
 
     <div class="auth-controls desktop-controls">
       <a class="nav-link" routerLink="/platforms">Plataformas</a>
+      @if (isAuthenticated$ | async) {
+        <a class="nav-link" routerLink="/library">Mi Biblioteca</a>
+      }
       <app-auth-widget
         [isAuthenticated]="isAuthenticated$ | async"
         [currentUser]="currentUser$ | async"
@@ -36,6 +39,10 @@
           <button (click)="uiService.closeMobileMenu()" class="close-button">&times;</button>
         </div>
         <div class="mobile-menu-content">
+          <a class="nav-link" routerLink="/platforms" (click)="uiService.closeMobileMenu()">Plataformas</a>
+          @if (isAuthenticated$ | async) {
+            <a class="nav-link" routerLink="/library" (click)="uiService.closeMobileMenu()">Mi Biblioteca</a>
+          }
           <div class="auth-controls">
             <app-auth-widget
               [isAuthenticated]="isAuthenticated$ | async"

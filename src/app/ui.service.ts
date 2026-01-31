@@ -1,6 +1,6 @@
 import { Injectable, Inject, Renderer2, RendererFactory2 } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
-import { BehaviorSubject } from 'rxjs';
+import { BehaviorSubject, Subject } from 'rxjs';
 import { Game } from './game.model';
 
 @Injectable({
@@ -20,6 +20,9 @@ export class UiService {
 
   private readonly _isMobileMenuOpenSource = new BehaviorSubject<boolean>(false);
   isMobileMenuOpen$ = this._isMobileMenuOpenSource.asObservable();
+
+  private readonly _libraryChangedSource = new Subject<void>();
+  libraryChanged$ = this._libraryChangedSource.asObservable();
 
   constructor(
     rendererFactory: RendererFactory2,
@@ -68,6 +71,10 @@ export class UiService {
 
   closeMobileMenu(): void {
     this._isMobileMenuOpenSource.next(false);
+  }
+
+  notifyLibraryChanged(): void {
+    this._libraryChangedSource.next();
   }
 
   stopPropagation(event: Event): void {

@@ -34,6 +34,12 @@ export class LibraryService {
     return this.http.delete<void>(url);
   }
 
+  getLibrary(userId: string): Observable<UserGame[]> {
+    const url = `${environment.apiUrl}/users/${userId}/games`;
+    return this.http.get<any>(url).pipe(
+      map(response => Array.isArray(response) ? response : (response.content || []))
+    );
+  }
 
   getFavorites(userId: string): Observable<UserGame[]> {
     const url = `${environment.apiUrl}/users/${userId}/favorites`;

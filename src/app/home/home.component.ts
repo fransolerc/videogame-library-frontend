@@ -1,12 +1,11 @@
 import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, AfterViewInit, ElementRef, ViewChild, OnDestroy } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 import { GameService } from '../game.service';
-import { Observable, combineLatest, BehaviorSubject, of, Subscription, fromEvent, forkJoin } from 'rxjs';
+import { Observable, combineLatest, BehaviorSubject, of, Subscription, fromEvent } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, tap, map } from 'rxjs/operators';
 import { Game, GameFilterRequest } from '../game.model';
 import { PlatformService } from '../platform.service';
 import { Platform } from '../platform.model';
-import { LibraryService } from '../library/library.service';
 import { UiService } from '../ui.service';
 import { Router } from '@angular/router';
 import { AuthService } from '../auth/auth.service';
@@ -23,20 +22,16 @@ import { GameCardComponent } from '../game-card/game-card.component';
 export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('latestReleasesList') latestReleasesList!: ElementRef<HTMLUListElement>;
   @ViewChild('searchResultsList') searchResultsList!: ElementRef<HTMLUListElement>;
-  @ViewChild('favoritesList') favoritesList!: ElementRef<HTMLUListElement>;
 
   latestGames$: Observable<Game[]>;
   searchResults$: Observable<Game[]>;
   isSearching$: Observable<boolean>;
-  favorites$ = new BehaviorSubject<Game[]>([]);
-  sortedFavorites$: Observable<Game[]>;
   platforms$: Observable<Platform[]>;
   isAuthenticated$: Observable<boolean>;
 
   private readonly searchInput = new BehaviorSubject<string>('');
   private readonly sortInput = new BehaviorSubject<string>('relevance');
   private readonly platformFilterInput = new BehaviorSubject<number | 'all'>('all');
-  private readonly favoritesSortInput = new BehaviorSubject<string>('name-asc');
 
   lastSearchTerm: string | null = null;
   hasResults: boolean = true;
@@ -50,7 +45,6 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   constructor(
     private readonly gameService: GameService,
     private readonly platformService: PlatformService,
-    private readonly libraryService: LibraryService,
     private readonly authService: AuthService,
     private readonly uiService: UiService,
     private readonly router: Router,
@@ -58,30 +52,6 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   ) {
     this.platforms$ = this.platformService.getPlatforms();
     this.isAuthenticated$ = this.authService.isAuthenticated$;
-
-    this.sortedFavorites$ = combineLatest([
-      this.favorites$,
-      this.favoritesSortInput
-    ]).pipe(
-      map(([games, sortKey]) => {
-        if (!games || games.length === 0) return [];
-        const sortedGames = [...games];
-        switch (sortKey) {
-          case 'name-asc':
-            return sortedGames.sort((a, b) => a.name.localeCompare(b.name));
-          case 'name-desc':
-            return sortedGames.sort((a, b) => b.name.localeCompare(a.name));
-          case 'date-desc':
-            return sortedGames.sort((a, b) => new Date(b.releaseDate!).getTime() - new Date(a.releaseDate!).getTime());
-          case 'date-asc':
-            return sortedGames.sort((a, b) => new Date(a.releaseDate!).getTime() - new Date(b.releaseDate!).getTime());
-          case 'rating-desc':
-            return sortedGames.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-          default:
-            return games;
-        }
-      })
-    );
 
     this.latestGames$ = combineLatest([this.sortInput, this.platformFilterInput]).pipe(
       switchMap(([sortKey, platformId]) => {
@@ -154,12 +124,6 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
       tap(isAuthenticated => {
         if (isAuthenticated) {
           this.uiService.closeLoginModal();
-          const userId = this.authService.getUserId();
-          if (userId) {
-            this.loadFavorites(userId);
-          }
-        } else {
-          this.favorites$.next([]);
         }
       })
     ).subscribe();
@@ -169,7 +133,6 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   ngAfterViewInit(): void {
     if (this.latestReleasesList) this.setupDragToScroll(this.latestReleasesList);
     if (this.searchResultsList) this.setupDragToScroll(this.searchResultsList);
-    if (this.favoritesList) this.setupDragToScroll(this.favoritesList);
   }
 
   ngOnDestroy(): void {
@@ -241,25 +204,5 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     const select = event.target as HTMLSelectElement;
     const value = select.value;
     this.platformFilterInput.next(value === 'all' ? 'all' : Number(value));
-  }
-
-  onFavoritesSortChange(event: Event) {
-    const select = event.target as HTMLSelectElement;
-    this.favoritesSortInput.next(select.value);
-  }
-
-  private loadFavorites(userId: string): void {
-    this.libraryService.getFavorites(userId).pipe(
-      switchMap(favoriteUserGames => {
-        if (favoriteUserGames.length === 0) {
-          return of([]);
-        }
-        const gameObservables = favoriteUserGames.map(fav => this.gameService.getGameById(fav.gameId.toString()));
-        return forkJoin(gameObservables);
-      })
-    ).subscribe(games => {
-      this.favorites$.next(games);
-      this.cdr.detectChanges();
-    });
   }
 }
