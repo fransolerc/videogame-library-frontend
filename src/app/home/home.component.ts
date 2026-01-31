@@ -86,8 +86,8 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     this.latestGames$ = combineLatest([this.sortInput, this.platformFilterInput]).pipe(
       switchMap(([sortKey, platformId]) => {
         const initialRequest: GameFilterRequest = {
-          filter: `first_release_date <= ${Math.floor(Date.now() / 1000)}`,
-          limit: 20
+          filter: `involved_companies != null & first_release_date <= ${Math.floor(Date.now() / 1000)}`,
+          limit: 50
         };
         if (platformId !== 'all') {
           initialRequest.filter += ` & platforms.id = ${platformId}`;
@@ -153,6 +153,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     const authSubscription = this.authService.isAuthenticated$.pipe(
       tap(isAuthenticated => {
         if (isAuthenticated) {
+          this.uiService.closeLoginModal();
           const userId = this.authService.getUserId();
           if (userId) {
             this.loadFavorites(userId);
