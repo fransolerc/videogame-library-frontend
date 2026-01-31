@@ -1,78 +1,183 @@
+/* Contenedor principal que define los márgenes de toda la página */
 .library-container {
-  padding: 20px;
+  padding: 2rem;
 }
 
-.main-title {
-  font-size: 2.2rem;
-  font-weight: bold;
-  margin-bottom: 40px;
-  color: #fff;
+/* Se eliminan los max-width y márgenes automáticos para un alineamiento consistente */
+.library-header,
+.home-controls,
+.empty-library-message {
+  max-width: none;
+  margin-left: 0;
+  margin-right: 0;
+}
+
+.library-header {
+  padding-top: 2rem;
+  margin-bottom: 2rem;
+}
+
+.home-controls {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  width: 100%;
+  box-sizing: border-box;
+  margin-bottom: 2rem;
+}
+
+/* Las secciones de juegos NO tienen max-width, ocupan el ancho del contenedor padre */
+.game-section {
+  margin-bottom: 3rem;
+}
+
+.empty-library-message {
   text-align: center;
-  text-transform: uppercase;
-  letter-spacing: 2px;
+  color: #aaa;
+  padding: 4rem;
+  border: 2px dashed #444;
+  border-radius: 10px;
+  margin-top: 2rem;
 }
 
-.section-container {
-  margin-bottom: 40px;
+.library-header h1 {
+  color: #fff;
+  font-size: 2.5rem;
+}
+
+.filter-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.filter-icon {
+  position: absolute;
+  left: 12px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 18px;
+  height: 18px;
+  color: rgba(255, 255, 255, 0.6);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.sort-select {
+  padding: 10px 15px 10px 40px;
+  font-size: 0.9rem;
+  font-family: 'Poppins', sans-serif;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 25px;
+  -webkit-appearance: none;
+  appearance: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-width: 200px;
+  text-overflow: ellipsis;
+}
+
+.sort-select:hover {
+  background-color: rgba(56, 189, 248, 0.2);
+  color: #38bdf8;
+  border-color: rgba(56, 189, 248, 0.3);
+}
+
+.sort-select:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.sort-select option {
+  background: #2c5364;
+  color: #fff;
 }
 
 .section-title {
   display: flex;
   align-items: center;
-  font-size: 1.6rem;
+  font-size: 1.8rem;
   font-weight: bold;
-  margin-bottom: 20px;
+  margin-bottom: 1.5rem;
   color: #fff;
   border-bottom: 2px solid #444;
-  padding-bottom: 10px;
+  padding-bottom: 0.5rem;
 }
 
 .section-icon {
   width: 28px;
   height: 28px;
   margin-right: 15px;
-  fill: #ffc107; /* Un color dorado para los iconos */
+  fill: #ffc107; /* Color dorado por defecto */
 }
 
-.scroll-list {
+/* Colores específicos para cada icono si es necesario */
+.game-section:nth-of-type(1) .section-icon { fill: #ffc107; } /* Favoritos */
+.game-section:nth-of-type(2) .section-icon { fill: #38bdf8; } /* Quiero Jugar */
+.game-section:nth-of-type(3) .section-icon { fill: #34d399; } /* Jugando */
+.game-section:nth-of-type(4) .section-icon { fill: #a78bfa; } /* Completados */
+
+
+.horizontal-scroll-container {
+  position: relative;
+}
+
+.game-list {
   display: flex;
   overflow-x: auto;
-  padding-bottom: 15px;
+  padding-bottom: 1.5rem;
+  list-style: none;
+  margin: 0;
   scrollbar-width: thin;
-  scrollbar-color: #555 #333;
-  cursor: grab;
-  user-select: none;
+  scrollbar-color: #555 #2a2a2a;
 }
 
-.scroll-list.active {
-  cursor: grabbing;
-}
-
-.scroll-list::-webkit-scrollbar {
+.game-list::-webkit-scrollbar {
   height: 8px;
 }
 
-.scroll-list::-webkit-scrollbar-track {
-  background: #333;
-  border-radius: 4px;
+.game-list::-webkit-scrollbar-track {
+  background: #2a2a2a;
 }
 
-.scroll-list::-webkit-scrollbar-thumb {
+.game-list::-webkit-scrollbar-thumb {
   background-color: #555;
   border-radius: 4px;
 }
 
-.game-item {
-  flex: 0 0 auto;
-  margin-right: 20px;
-  width: 200px;
+.game-list::-webkit-scrollbar-thumb:hover {
+  background-color: #777;
 }
 
-.empty-section {
-  text-align: center;
-  margin-top: 20px;
-  color: #888;
-  background-color: #2a2a2a;
-  padding: 20px;
-  border-radius: 8px;
+.game-list-item {
+  width: 240px;
+  margin-right: 1.5rem;
+  flex-shrink: 0;
+  transition: transform 0.2s ease-in-out;
+}
+
+.game-list-item:hover {
+  transform: translateY(-5px);
+}
+
+@media (max-width: 768px) {
+  .home-controls {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 1.5rem;
+  }
+
+  .home-controls .filter-container {
+    width: 100%;
+  }
+
+  .home-controls .sort-select {
+    width: 100%;
+    min-width: 0;
+  }
 }
