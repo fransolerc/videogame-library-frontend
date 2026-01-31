@@ -22,8 +22,10 @@ import { GameCardComponent } from '../game-card/game-card.component';
 export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('latestReleasesList') latestReleasesList!: ElementRef<HTMLUListElement>;
   @ViewChild('searchResultsList') searchResultsList!: ElementRef<HTMLUListElement>;
+  @ViewChild('topRatedList') topRatedList!: ElementRef<HTMLUListElement>;
 
   latestGames$: Observable<Game[]>;
+  topRatedGames$: Observable<Game[]>;
   searchResults$: Observable<Game[]>;
   isSearching$: Observable<boolean>;
   platforms$: Observable<Platform[]>;
@@ -52,6 +54,12 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   ) {
     this.platforms$ = this.platformService.getPlatforms();
     this.isAuthenticated$ = this.authService.isAuthenticated$;
+
+    this.topRatedGames$ = this.gameService.filterGames({
+      filter: 'rating > 75 & total_rating_count > 1000 & involved_companies != null',
+      sort: 'rating desc',
+      limit: 50
+    });
 
     this.latestGames$ = combineLatest([this.sortInput, this.platformFilterInput]).pipe(
       switchMap(([sortKey, platformId]) => {
@@ -133,6 +141,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   ngAfterViewInit(): void {
     if (this.latestReleasesList) this.setupDragToScroll(this.latestReleasesList);
     if (this.searchResultsList) this.setupDragToScroll(this.searchResultsList);
+    if (this.topRatedList) this.setupDragToScroll(this.topRatedList);
   }
 
   ngOnDestroy(): void {
