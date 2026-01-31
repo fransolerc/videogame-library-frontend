@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { Observable } from 'rxjs';
 import { AuthService } from './auth/auth.service';
 import { UiService } from './ui.service';
@@ -35,7 +35,8 @@ export class App {
 
   constructor(
     public readonly authService: AuthService,
-    public readonly uiService: UiService
+    public readonly uiService: UiService,
+    private readonly router: Router
   ) {
     this.isAuthenticated$ = this.authService.isAuthenticated$;
     this.currentUser$ = this.authService.currentUser$;
@@ -48,5 +49,6 @@ export class App {
   logout(): void {
     this.authService.logout();
     this.uiService.closeMobileMenu();
+    this.router.navigate(['/']);
   }
 }
