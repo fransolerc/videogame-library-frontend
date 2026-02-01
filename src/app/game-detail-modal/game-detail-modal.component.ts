@@ -19,6 +19,7 @@ import { forkJoin } from 'rxjs';
 })
 export class GameDetailModalComponent implements OnInit {
   @Input({ required: true }) gameId!: number;
+  @Input() platforms?: string[];
   @Output() closeModalEvent = new EventEmitter<void>();
 
   game: Game | null = null;
@@ -26,6 +27,8 @@ export class GameDetailModalComponent implements OnInit {
   isCurrentGameFavorite = false;
   isAddingToLibrary = false;
   enlargedScreenshot: string | null = null;
+  isSummaryExpanded = false;
+  isStorylineExpanded = false;
 
   GameStatus = GameStatus;
 
@@ -50,7 +53,7 @@ export class GameDetailModalComponent implements OnInit {
       const gameStatus$ = this.libraryService.getGameFromLibrary(userId, this.gameId);
 
       forkJoin({ details: gameDetails$, status: gameStatus$ }).subscribe(({ details, status }) => {
-        this.game = details;
+        this.game = { ...details, platforms: this.platforms };
         if (status) {
           this.currentLibraryStatus = status.status;
           this.isCurrentGameFavorite = status.isFavorite || false;
@@ -59,7 +62,7 @@ export class GameDetailModalComponent implements OnInit {
       });
     } else {
       gameDetails$.subscribe(details => {
-        this.game = details;
+        this.game = { ...details, platforms: this.platforms };
         this.cdr.detectChanges();
       });
     }

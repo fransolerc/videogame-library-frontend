@@ -62,8 +62,12 @@
     <p>Copyright © 2026 Francisco José Soler Conchello. Todos los derechos reservados.</p>
   </footer>
 
-  @if (selectedGameId$ | async; as gameId) {
-    <app-game-detail-modal [gameId]="gameId" (closeModalEvent)="uiService.closeGameModal()"></app-game-detail-modal>
+  @if (selectedGame$ | async; as selectedGame) {
+    <app-game-detail-modal
+      [gameId]="selectedGame.id"
+      [platforms]="selectedGame.platforms"
+      (closeModalEvent)="uiService.closeGameModal()"
+    ></app-game-detail-modal>
   }
   @if (showLoginModal$ | async) {
     <div class="modal-overlay" (click)="uiService.closeLoginModal()">

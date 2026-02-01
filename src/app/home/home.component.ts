@@ -172,12 +172,12 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     }));
   }
 
-  openModal(gameId: number): void {
+  openModal(game: GameSummary): void {
     if (this.isDragging) {
       this.isDragging = false;
       return;
     }
-    this.uiService.openGameModal(gameId);
+    this.uiService.openGameModal(game.id, game.platforms);
   }
 
   navigateToPlatformPage(platformName: string): void {

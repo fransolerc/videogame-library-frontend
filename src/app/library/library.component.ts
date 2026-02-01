@@ -96,15 +96,29 @@ export class LibraryComponent implements OnInit, AfterViewInit, OnDestroy {
         if (!userGames || userGames.length === 0) {
           return of([]);
         }
-        const gameObservables: Observable<LibraryDisplayGame | null>[] = userGames.map(userGame =>
-          this.gameService.getGameById(userGame.gameId).pipe(
-            map(game => ({ ...game, status: userGame.status, isFavorite: userGame.isFavorite })),
+        const gameObservables: Observable<LibraryDisplayGame | null>[] = userGames.map(userGame => {
+          const details$ = this.gameService.getGameById(userGame.gameId);
+          // filterGames returns a GameSummary, which contains the platforms
+          const summary$ = this.gameService.filterGames({ filter: `id = ${userGame.gameId}` }).pipe(
+            map(games => (games && games.length > 0) ? games[0] : null)
+          );
+
+          return forkJoin({ details: details$, summary: summary$ }).pipe(
+            map(({ details, summary }) => {
+              if (!details) return null;
+              return {
+                ...summary,
+                ...details,
+                status: userGame.status,
+                isFavorite: userGame.isFavorite
+              } as LibraryDisplayGame;
+            }),
             catchError(error => {
-              console.warn(`Could not load game with ID ${userGame.gameId}:`, error);
+              console.warn(`Could not load combined data for game ID ${userGame.gameId}:`, error);
               return of(null);
             })
-          )
-        );
+          );
+        });
         return forkJoin(gameObservables);
       })
     ).subscribe(games => {
@@ -165,12 +179,12 @@ export class LibraryComponent implements OnInit, AfterViewInit, OnDestroy {
     this.platformFilterInput.next(value === 'all' ? 'all' : Number(value));
   }
 
-  openGameModal(gameId: number): void {
+  openGameModal(game: Game): void {
     if (this.isDragging) {
       this.isDragging = false;
       return;
     }
-    this.uiService.openGameModal(gameId);
+    this.uiService.openGameModal(game.id, game.platforms);
   }
 
   private setupAllDragToScroll(): void {

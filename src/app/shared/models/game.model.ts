@@ -16,6 +16,7 @@ export interface Game extends GameSummary {
   videos?: string[];
   screenshots?: string[];
   artworks?: Artwork[];
+  platforms?: string[];
 }
 
 export interface Artwork {
