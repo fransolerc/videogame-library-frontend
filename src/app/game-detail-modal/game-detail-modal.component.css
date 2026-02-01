@@ -3,8 +3,8 @@
   position: fixed;
   top: 0;
   left: 0;
-  right: 0; /* Añadido */
-  bottom: 0; /* Añadido */
+  right: 0;
+  bottom: 0;
   background: rgba(0, 0, 0, 0.8);
   backdrop-filter: blur(5px);
   z-index: 2000;
@@ -27,7 +27,7 @@
   border: none;
   animation: slideUp 0.3s ease;
   box-sizing: border-box;
-  padding-bottom: 5rem; /* Espacio seguro en la parte inferior */
+  padding-bottom: 5rem;
 }
 
 .close-button {
@@ -55,22 +55,43 @@
 }
 
 .modal-header {
+  position: relative;
+  background-size: cover;
+  background-position: center;
+  padding: 0;
+  color: #fff;
+}
+
+.header-overlay {
+  background: linear-gradient(to top, #1a2a33 10%, rgba(26, 42, 51, 0.7) 50%, rgba(26, 42, 51, 0.4) 100%);
+  padding: 5rem 1rem 2rem 1rem;
+}
+
+.header-content {
   display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 1rem;
-  padding: 5rem 1rem 2rem 1rem;
-  background: rgba(0, 0, 0, 0.2);
+  gap: 1.5rem;
+}
+
+.modal-cover-container {
+  flex-shrink: 0;
 }
 
 .modal-cover {
-  width: 120px;
-  height: 180px;
+  width: 150px;
+  height: 225px;
   object-fit: cover;
   border-radius: 10px;
   box-shadow: 0 10px 20px rgba(0,0,0,0.3);
-  flex-shrink: 0;
+}
+
+.modal-info-container {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  width: 100%;
 }
 
 .modal-title-info {
@@ -102,13 +123,14 @@
   color: #fff;
   line-height: 1.2;
   word-break: break-word;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
 }
 
 .favorite-button {
   background: none;
   border: none;
   cursor: pointer;
-  color: rgba(255, 255, 255, 0.3);
+  color: rgba(255, 255, 255, 0.7);
   transition: all 0.3s ease;
   padding: 5px;
   display: flex;
@@ -118,12 +140,12 @@
 
 .favorite-button:hover {
   transform: scale(1.1);
-  color: rgba(255, 255, 255, 0.6);
+  color: #fff;
 }
 
 .favorite-button.is-favorite {
   color: #ff4757;
-  filter: drop-shadow(0 0 5px rgba(255, 71, 87, 0.5));
+  filter: drop-shadow(0 0 8px rgba(255, 71, 87, 0.7));
 }
 
 .favorite-button svg {
@@ -152,57 +174,63 @@
 
 .modal-date {
   font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.7);
+  color: rgba(255, 255, 255, 0.8);
   margin-bottom: 1rem;
 }
 
 .modal-genres {
   display: flex;
+  align-items: baseline;
   flex-wrap: wrap;
-  gap: 6px;
-  margin: 0 auto 1rem auto;
+  gap: 8px;
   justify-content: center;
+  margin-bottom: 1rem;
+}
+
+.genres-label {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 0.9rem;
+  margin-right: 4px;
+  flex-shrink: 0;
 }
 
 .genre-tag {
   background: rgba(255, 255, 255, 0.1);
   color: rgba(255, 255, 255, 0.8);
-  padding: 5px 12px;
-  border-radius: 15px;
-  font-size: 0.75rem;
-  font-weight: 400;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
 }
 
 .modal-platforms {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
   justify-content: center;
 }
 
 .platforms-label {
-  color: rgba(255, 255, 255, 0.6);
+  color: rgba(255, 255, 255, 0.7);
   font-size: 0.9rem;
-  width: 100%;
-  text-align: center;
-  margin-bottom: 0.5rem;
+  margin-right: 4px;
+  flex-shrink: 0;
 }
 
 .platform-tag-modal {
   background: rgba(79, 172, 254, 0.2);
   color: #4facfe;
-  padding: 5px 10px;
+  padding: 4px 8px;
   border-radius: 6px;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 500;
   border: 1px solid rgba(79, 172, 254, 0.3);
 }
 
 .library-actions {
-  margin-top: 1.5rem;
-  padding-top: 1.5rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 0;
+  border-top: none;
   display: flex;
   flex-direction: column;
   gap: 0.8rem;
@@ -359,7 +387,6 @@
 @media (min-width: 769px) {
   .modal-overlay {
     padding: 2rem;
-    height: 100%; /* Volver a 100% en desktop */
   }
 
   .modal-content {
@@ -369,7 +396,7 @@
     max-height: 90vh;
     border-radius: 20px;
     border: 1px solid rgba(255, 255, 255, 0.1);
-    padding-bottom: 2rem; /* Restaurar padding en desktop */
+    padding-bottom: 2rem;
   }
 
   .close-button {
@@ -381,11 +408,14 @@
     font-size: 2rem;
   }
 
-  .modal-header {
+  .header-overlay {
+    padding: 2rem;
+  }
+
+  .header-content {
     flex-direction: row;
     align-items: flex-start;
     text-align: left;
-    padding: 2rem;
     gap: 2rem;
   }
 
@@ -394,10 +424,14 @@
     height: 300px;
   }
 
+  .modal-info-container {
+    align-items: flex-start;
+  }
+
   .modal-top-row {
     flex-direction: row;
-    align-items: flex-start;
-    gap: 1rem;
+    align-items: center;
+    gap: 1.5rem;
   }
 
   .modal-title-wrapper {
@@ -419,5 +453,10 @@
 
   .screenshot-img {
     height: 150px;
+  }
+
+  .modal-genres,
+  .modal-platforms {
+    justify-content: flex-start;
   }
 }

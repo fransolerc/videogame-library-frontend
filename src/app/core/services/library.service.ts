@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
-import { AddGameToLibraryRequest, UserGame } from '../../shared/models/library.model';
+import { AddGameToLibraryRequest, UserGame } from '../../shared/models/game.model';
 
 @Injectable({
   providedIn: 'root'
@@ -17,7 +17,7 @@ export class LibraryService {
     return this.http.put<UserGame>(url, { status: request.status });
   }
 
-  getGameFromLibrary(userId: string, gameId: string): Observable<UserGame | null> {
+  getGameFromLibrary(userId: string, gameId: number): Observable<UserGame | null> {
     const url = `${environment.apiUrl}/users/${userId}/games/${gameId}`;
     return this.http.get<UserGame>(url).pipe(
       catchError(error => {
@@ -29,7 +29,7 @@ export class LibraryService {
     );
   }
 
-  removeGameFromLibrary(userId: string, gameId: string): Observable<void> {
+  removeGameFromLibrary(userId: string, gameId: number): Observable<void> {
     const url = `${environment.apiUrl}/users/${userId}/games/${gameId}`;
     return this.http.delete<void>(url);
   }
@@ -48,12 +48,12 @@ export class LibraryService {
     );
   }
 
-  addFavorite(userId: string, gameId: string): Observable<void> {
+  addFavorite(userId: string, gameId: number): Observable<void> {
     const url = `${environment.apiUrl}/users/${userId}/games/${gameId}/favorite`;
     return this.http.post<void>(url, {});
   }
 
-  removeFavorite(userId: string, gameId: string): Observable<void> {
+  removeFavorite(userId: string, gameId: number): Observable<void> {
     const url = `${environment.apiUrl}/users/${userId}/games/${gameId}/favorite`;
     return this.http.delete<void>(url);
   }

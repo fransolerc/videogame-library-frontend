@@ -3,12 +3,11 @@ import { CommonModule } from '@angular/common';
 import { GameService } from '../core/services/game.service';
 import { LibraryService } from '../core/services/library.service';
 import { AuthService } from '../core/services/auth.service';
-import { Game } from '../shared/models/game.model';
+import { Game, GameStatus, UserGame } from '../shared/models/game.model';
 import { forkJoin, of, Subscription, fromEvent, Subject, BehaviorSubject, combineLatest, Observable } from 'rxjs';
 import { switchMap, map, takeUntil, catchError } from 'rxjs/operators';
 import { GameCardComponent } from '../game-card/game-card.component';
 import { UiService } from '../core/services/ui.service';
-import { GameStatus, UserGame } from '../shared/models/library.model';
 import { PlatformService } from '../core/services/platform.service';
 import { Platform } from '../shared/models/platform.model';
 
@@ -70,9 +69,13 @@ export class LibraryComponent implements OnInit, AfterViewInit, OnDestroy {
       }
     });
 
-    combineLatest([this.sortInput, this.platformFilterInput, this.platforms$]).pipe(
+    combineLatest({
+      sortKey: this.sortInput,
+      platformId: this.platformFilterInput,
+      allPlatforms: this.platforms$
+    }).pipe(
       takeUntil(this.destroy$)
-    ).subscribe(([sortKey, platformId, allPlatforms]) => {
+    ).subscribe(({ sortKey, platformId, allPlatforms }) => {
       this.applyFilters(sortKey, platformId, allPlatforms);
     });
   }
@@ -90,12 +93,11 @@ export class LibraryComponent implements OnInit, AfterViewInit, OnDestroy {
   private loadLibrary(userId: string): void {
     this.libraryService.getLibrary(userId).pipe(
       switchMap((userGames: UserGame[]) => {
-        if (userGames.length === 0) {
-          this.allGames = [];
+        if (!userGames || userGames.length === 0) {
           return of([]);
         }
-        const gameObservables = userGames.map(userGame =>
-          this.gameService.getGameById(userGame.gameId.toString()).pipe(
+        const gameObservables: Observable<LibraryDisplayGame | null>[] = userGames.map(userGame =>
+          this.gameService.getGameById(userGame.gameId).pipe(
             map(game => ({ ...game, status: userGame.status, isFavorite: userGame.isFavorite })),
             catchError(error => {
               console.warn(`Could not load game with ID ${userGame.gameId}:`, error);
@@ -163,12 +165,12 @@ export class LibraryComponent implements OnInit, AfterViewInit, OnDestroy {
     this.platformFilterInput.next(value === 'all' ? 'all' : Number(value));
   }
 
-  openGameModal(game: Game): void {
+  openGameModal(gameId: number): void {
     if (this.isDragging) {
       this.isDragging = false;
       return;
     }
-    this.uiService.openGameModal(game);
+    this.uiService.openGameModal(gameId);
   }
 
   private setupAllDragToScroll(): void {

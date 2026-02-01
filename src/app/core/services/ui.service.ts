@@ -1,7 +1,6 @@
 import { Injectable, Inject, Renderer2, RendererFactory2 } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { BehaviorSubject, Subject } from 'rxjs';
-import { Game } from '../../shared/models/game.model';
 
 @Injectable({
   providedIn: 'root'
@@ -9,8 +8,8 @@ import { Game } from '../../shared/models/game.model';
 export class UiService {
   private readonly renderer: Renderer2;
 
-  private readonly _selectedGameSource = new BehaviorSubject<Game | null>(null);
-  selectedGame$ = this._selectedGameSource.asObservable();
+  private readonly _selectedGameIdSource = new BehaviorSubject<number | null>(null);
+  selectedGameId$ = this._selectedGameIdSource.asObservable();
 
   private readonly _showLoginModalSource = new BehaviorSubject<boolean>(false);
   showLoginModal$ = this._showLoginModalSource.asObservable();
@@ -31,13 +30,13 @@ export class UiService {
     this.renderer = rendererFactory.createRenderer(null, null);
   }
 
-  openGameModal(game: Game): void {
-    this._selectedGameSource.next(game);
+  openGameModal(gameId: number): void {
+    this._selectedGameIdSource.next(gameId);
     this.updateBodyScroll();
   }
 
   closeGameModal(): void {
-    this._selectedGameSource.next(null);
+    this._selectedGameIdSource.next(null);
     this.updateBodyScroll();
   }
 
@@ -82,7 +81,7 @@ export class UiService {
   }
 
   private isModalOpen(): boolean {
-    return !!this._selectedGameSource.value || this._showLoginModalSource.value || this._showRegisterModalSource.value;
+    return !!this._selectedGameIdSource.value || this._showLoginModalSource.value || this._showRegisterModalSource.value;
   }
 
   private updateBodyScroll(): void {

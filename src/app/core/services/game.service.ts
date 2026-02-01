@@ -1,29 +1,30 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Game, GameFilterRequest } from '../../shared/models/game.model';
+import { Game, GameFilterRequest, GameSummary } from '../../shared/models/game.model';
 import { environment } from '../../../environments/environment';
+import { map } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
 })
 export class GameService {
 
-  private readonly searchApiUrl = `${environment.apiUrl}/games/search`;
-  private readonly filterApiUrl = `${environment.apiUrl}/games/filter`;
-  private readonly gamesApiUrl = `${environment.apiUrl}/games`;
+  private readonly apiUrl = environment.apiUrl + '/games';
 
   constructor(private readonly http: HttpClient) { }
 
-  searchGames(query: string): Observable<Game[]> {
-    return this.http.get<Game[]>(`${this.searchApiUrl}?name=${query}`);
+  getGameById(id: number): Observable<Game> {
+    return this.http.get<Game>(`${this.apiUrl}/${id}`);
   }
 
-  filterGames(requestBody: GameFilterRequest): Observable<any> {
-    return this.http.post<any>(this.filterApiUrl, requestBody);
+  searchGames(name: string): Observable<GameSummary[]> {
+    return this.http.get<GameSummary[]>(`${this.apiUrl}/search?name=${name}`);
   }
 
-  getGameById(id: string): Observable<Game> {
-    return this.http.get<Game>(`${this.gamesApiUrl}/${id}`);
+  filterGames(request: GameFilterRequest): Observable<GameSummary[]> {
+    return this.http.post<any>(`${this.apiUrl}/filter`, request).pipe(
+      map(response => response?.content ? response.content : response)
+    );
   }
 }

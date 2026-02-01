@@ -1,12 +1,13 @@
 import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectorRef, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Game } from '../shared/models/game.model';
-import { GameStatus } from '../shared/models/library.model';
+import { Game, GameStatus } from '../shared/models/game.model';
 import { LibraryService } from '../core/services/library.service';
 import { AuthService } from '../core/services/auth.service';
 import { finalize } from 'rxjs/operators';
 import '@justinribeiro/lite-youtube';
 import { UiService } from '../core/services/ui.service';
+import { GameService } from '../core/services/game.service';
+import { forkJoin } from 'rxjs';
 
 @Component({
   selector: 'app-game-detail-modal',
@@ -17,9 +18,10 @@ import { UiService } from '../core/services/ui.service';
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class GameDetailModalComponent implements OnInit {
-  @Input({ required: true }) game!: Game;
+  @Input({ required: true }) gameId!: number;
   @Output() closeModalEvent = new EventEmitter<void>();
 
+  game: Game | null = null;
   currentLibraryStatus: GameStatus | null = null;
   isCurrentGameFavorite = false;
   isAddingToLibrary = false;
@@ -30,24 +32,35 @@ export class GameDetailModalComponent implements OnInit {
   constructor(
     private readonly libraryService: LibraryService,
     private readonly authService: AuthService,
+    private readonly gameService: GameService,
     private readonly uiService: UiService,
     private readonly cdr: ChangeDetectorRef
   ) {}
 
   ngOnInit(): void {
     document.body.style.overflow = 'hidden';
-    this.loadInitialStatus();
+    this.loadInitialData();
   }
 
-  loadInitialStatus(): void {
+  loadInitialData(): void {
     const userId = this.authService.getUserId();
+    const gameDetails$ = this.gameService.getGameById(this.gameId);
+
     if (userId) {
-      this.libraryService.getGameFromLibrary(userId, this.game.id).subscribe(userGame => {
-        if (userGame) {
-          this.currentLibraryStatus = userGame.status;
-          this.isCurrentGameFavorite = userGame.isFavorite || false;
-          this.cdr.detectChanges();
+      const gameStatus$ = this.libraryService.getGameFromLibrary(userId, this.gameId);
+
+      forkJoin({ details: gameDetails$, status: gameStatus$ }).subscribe(({ details, status }) => {
+        this.game = details;
+        if (status) {
+          this.currentLibraryStatus = status.status;
+          this.isCurrentGameFavorite = status.isFavorite || false;
         }
+        this.cdr.detectChanges();
+      });
+    } else {
+      gameDetails$.subscribe(details => {
+        this.game = details;
+        this.cdr.detectChanges();
       });
     }
   }
@@ -59,7 +72,7 @@ export class GameDetailModalComponent implements OnInit {
 
   handleLibraryAction(status: GameStatus): void {
     const userId = this.authService.getUserId();
-    if (!userId) {
+    if (!userId || !this.game) {
       return;
     }
     this.isAddingToLibrary = true;
@@ -84,7 +97,7 @@ export class GameDetailModalComponent implements OnInit {
 
   toggleFavorite(): void {
     const userId = this.authService.getUserId();
-    if (!userId) {
+    if (!userId || !this.game) {
       return;
     }
     const action$ = this.isCurrentGameFavorite
