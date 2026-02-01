@@ -3,7 +3,7 @@
     <div class="modal-content" (click)="stopPropagation($event)">
       <button class="close-button" (click)="closeModal()" aria-label="Cerrar detalles">&times;</button>
 
-      <div class="modal-header" [style.background-image]="'url(' + (game.artworks?.[0]?.url || game.coverImageUrl) + ')'">
+      <div class="modal-header" [style.background-image]="'url(' + getArtworkUrl() + ')'">
         <div class="header-overlay">
           <div class="header-content">
             <div class="modal-cover-container">

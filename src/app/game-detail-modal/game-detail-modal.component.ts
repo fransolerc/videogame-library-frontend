@@ -68,6 +68,13 @@ export class GameDetailModalComponent implements OnInit {
     }
   }
 
+  getArtworkUrl(): string {
+    if (this.game?.artworks?.[0]?.url) {
+      return this.game.artworks[0].url.replace('t_thumb', 't_1080p');
+    }
+    return this.game?.coverImageUrl || '';
+  }
+
   closeModal(): void {
     document.body.style.overflow = 'auto';
     this.closeModalEvent.emit();
