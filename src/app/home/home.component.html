@@ -50,7 +50,7 @@
         @if (hasResults) {
           <div class="latest-releases-scroll-list" #searchResultsList>
             @for (game of games; track game.id) {
-              <app-game-card class="game-item" [game]="game" (click)="openModal(game)" (platformClick)="navigateToPlatformPage($event)"></app-game-card>
+              <app-game-card class="game-item" [game]="game" (click)="openModal(game.id)" (platformClick)="navigateToPlatformPage($event)"></app-game-card>
             }
           </div>
         } @else {
@@ -72,7 +72,7 @@
     @if (latestGames$ | async; as games) {
       <div class="latest-releases-scroll-list" #latestReleasesList>
         @for (game of games; track game.id) {
-          <app-game-card class="game-item" [game]="game" (click)="openModal(game)" (platformClick)="navigateToPlatformPage($event)"></app-game-card>
+          <app-game-card class="game-item" [game]="game" (click)="openModal(game.id)" (platformClick)="navigateToPlatformPage($event)"></app-game-card>
         }
       </div>
     }
@@ -88,7 +88,7 @@
     @if (topRatedGames$ | async; as games) {
     <div class="latest-releases-scroll-list" #topRatedList>
       @for (game of games; track game.id) {
-      <app-game-card class="game-item" [game]="game" (click)="openModal(game)" (platformClick)="navigateToPlatformPage($event)"></app-game-card>
+      <app-game-card class="game-item" [game]="game" (click)="openModal(game.id)" (platformClick)="navigateToPlatformPage($event)"></app-game-card>
       }
     </div>
     }

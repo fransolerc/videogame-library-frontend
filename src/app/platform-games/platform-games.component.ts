@@ -1,7 +1,7 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
-import { ActivatedRoute, Router } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { GameService } from '../core/services/game.service';
-import { Game } from '../shared/models/game.model';
+import { GameSummary } from '../shared/models/game.model';
 import { CommonModule } from '@angular/common';
 import { of, combineLatest } from 'rxjs';
 import { switchMap, tap } from 'rxjs/operators';
@@ -17,17 +17,16 @@ import { GameCardComponent } from '../game-card/game-card.component';
   styleUrls: ['./platform-games.component.css']
 })
 export class PlatformGamesComponent implements OnInit {
-  games: Game[] = [];
+  games: GameSummary[] = [];
   platformId: string | null = null;
   platformName: string = '';
   currentPage = 0;
   totalPages = 0;
   totalElements = 0;
-  pageSize = 20;
+  pageSize = 50;
 
   constructor(
     private readonly route: ActivatedRoute,
-    private readonly router: Router,
     private readonly gameService: GameService,
     private readonly platformService: PlatformService,
     private readonly cdr: ChangeDetectorRef,
@@ -44,8 +43,6 @@ export class PlatformGamesComponent implements OnInit {
         const foundPlatform = platforms.find(p => p.id.toString() === this.platformId);
         this.platformName = foundPlatform ? foundPlatform.name : 'Plataforma Desconocida';
 
-        console.log(`Cargando juegos para ${this.platformName} (ID: ${this.platformId})`);
-
         this.currentPage = 0;
         this.games = [];
         this.cdr.detectChanges();
@@ -56,26 +53,20 @@ export class PlatformGamesComponent implements OnInit {
 
   loadGames() {
     if (!this.platformId) {
-      return of({ content: [], totalPages: 0, totalElements: 0 });
+      return of([]);
     }
 
     const request = {
-      filter: `involved_companies != null & platforms = (${this.platformId})`,
-      limit: 50,
-      offset: this.currentPage * 50,
+      filter: `platforms = (${this.platformId})`,
+      limit: this.pageSize,
+      offset: this.currentPage * this.pageSize,
       sort: 'rating desc'
     };
 
     return this.gameService.filterGames(request).pipe(
-      tap((response: any) => {
-        if (Array.isArray(response)) {
-             this.games = response;
-             this.totalElements = response.length;
-        } else {
-             this.games = response.content || [];
-             this.totalPages = response.totalPages || 0;
-             this.totalElements = response.totalElements || 0;
-        }
+      tap(response => {
+        this.games = response;
+        this.totalElements = response.length; // This might not be accurate if the API doesn't return total elements
         this.cdr.detectChanges();
       })
     );
@@ -86,7 +77,7 @@ export class PlatformGamesComponent implements OnInit {
     this.loadGames().subscribe();
   }
 
-  openGameModal(game: Game): void {
-    this.uiService.openGameModal(game);
+  openGameModal(gameId: number): void {
+    this.uiService.openGameModal(gameId);
   }
 }

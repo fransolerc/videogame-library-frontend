@@ -3,7 +3,7 @@ import { AsyncPipe } from '@angular/common';
 import { GameService } from '../core/services/game.service';
 import { Observable, combineLatest, BehaviorSubject, of, Subscription, fromEvent } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, tap, map } from 'rxjs/operators';
-import { Game, GameFilterRequest } from '../shared/models/game.model';
+import { GameSummary, GameFilterRequest } from '../shared/models/game.model';
 import { PlatformService } from '../core/services/platform.service';
 import { Platform } from '../shared/models/platform.model';
 import { UiService } from '../core/services/ui.service';
@@ -24,9 +24,9 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('searchResultsList') searchResultsList!: ElementRef<HTMLUListElement>;
   @ViewChild('topRatedList') topRatedList!: ElementRef<HTMLUListElement>;
 
-  latestGames$: Observable<Game[]>;
-  topRatedGames$: Observable<Game[]>;
-  searchResults$: Observable<Game[]>;
+  latestGames$: Observable<GameSummary[]>;
+  topRatedGames$: Observable<GameSummary[]>;
+  searchResults$: Observable<GameSummary[]>;
   isSearching$: Observable<boolean>;
   platforms$: Observable<Platform[]>;
   isAuthenticated$: Observable<boolean>;
@@ -172,12 +172,12 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     }));
   }
 
-  openModal(game: Game) {
+  openModal(gameId: number): void {
     if (this.isDragging) {
       this.isDragging = false;
       return;
     }
-    this.uiService.openGameModal(game);
+    this.uiService.openGameModal(gameId);
   }
 
   navigateToPlatformPage(platformName: string): void {

@@ -5,7 +5,6 @@ import { Observable } from 'rxjs';
 import { AuthService } from './core/services/auth.service';
 import { UiService } from './core/services/ui.service';
 import { User } from './shared/models/user.model';
-import { Game } from './shared/models/game.model';
 import { GameDetailModalComponent } from './game-detail-modal/game-detail-modal.component';
 import { LoginComponent } from './auth/login/login.component';
 import { RegisterComponent } from './auth/register/register.component';
@@ -28,7 +27,7 @@ import { AuthWidgetComponent } from './auth-widget/auth-widget.component';
 export class App {
   isAuthenticated$: Observable<boolean>;
   currentUser$: Observable<User | null>;
-  selectedGame$: Observable<Game | null>;
+  selectedGameId$: Observable<number | null>;
   showLoginModal$: Observable<boolean>;
   showRegisterModal$: Observable<boolean>;
   isMobileMenuOpen$: Observable<boolean>;
@@ -40,7 +39,7 @@ export class App {
   ) {
     this.isAuthenticated$ = this.authService.isAuthenticated$;
     this.currentUser$ = this.authService.currentUser$;
-    this.selectedGame$ = this.uiService.selectedGame$;
+    this.selectedGameId$ = this.uiService.selectedGameId$;
     this.showLoginModal$ = this.uiService.showLoginModal$;
     this.showRegisterModal$ = this.uiService.showRegisterModal$;
     this.isMobileMenuOpen$ = this.uiService.isMobileMenuOpen$;
