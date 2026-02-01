@@ -27,7 +27,7 @@ import { AuthWidgetComponent } from './auth-widget/auth-widget.component';
 export class App {
   isAuthenticated$: Observable<boolean>;
   currentUser$: Observable<User | null>;
-  selectedGameId$: Observable<number | null>;
+  selectedGame$: Observable<{ id: number; platforms?: string[] } | null>;
   showLoginModal$: Observable<boolean>;
   showRegisterModal$: Observable<boolean>;
   isMobileMenuOpen$: Observable<boolean>;
@@ -39,7 +39,7 @@ export class App {
   ) {
     this.isAuthenticated$ = this.authService.isAuthenticated$;
     this.currentUser$ = this.authService.currentUser$;
-    this.selectedGameId$ = this.uiService.selectedGameId$;
+    this.selectedGame$ = this.uiService.selectedGame$;
     this.showLoginModal$ = this.uiService.showLoginModal$;
     this.showRegisterModal$ = this.uiService.showRegisterModal$;
     this.isMobileMenuOpen$ = this.uiService.isMobileMenuOpen$;

@@ -8,8 +8,8 @@ import { BehaviorSubject, Subject } from 'rxjs';
 export class UiService {
   private readonly renderer: Renderer2;
 
-  private readonly _selectedGameIdSource = new BehaviorSubject<number | null>(null);
-  selectedGameId$ = this._selectedGameIdSource.asObservable();
+  private readonly _selectedGameSource = new BehaviorSubject<{ id: number; platforms?: string[] } | null>(null);
+  selectedGame$ = this._selectedGameSource.asObservable();
 
   private readonly _showLoginModalSource = new BehaviorSubject<boolean>(false);
   showLoginModal$ = this._showLoginModalSource.asObservable();
@@ -30,13 +30,13 @@ export class UiService {
     this.renderer = rendererFactory.createRenderer(null, null);
   }
 
-  openGameModal(gameId: number): void {
-    this._selectedGameIdSource.next(gameId);
+  openGameModal(gameId: number, platforms?: string[]): void {
+    this._selectedGameSource.next({ id: gameId, platforms });
     this.updateBodyScroll();
   }
 
   closeGameModal(): void {
-    this._selectedGameIdSource.next(null);
+    this._selectedGameSource.next(null);
     this.updateBodyScroll();
   }
 
@@ -81,7 +81,7 @@ export class UiService {
   }
 
   private isModalOpen(): boolean {
-    return !!this._selectedGameIdSource.value || this._showLoginModalSource.value || this._showRegisterModalSource.value;
+    return !!this._selectedGameSource.value || this._showLoginModalSource.value || this._showRegisterModalSource.value;
   }
 
   private updateBodyScroll(): void {

@@ -3,7 +3,7 @@
     <div class="modal-content" (click)="stopPropagation($event)">
       <button class="close-button" (click)="closeModal()" aria-label="Cerrar detalles">&times;</button>
 
-      <div class="modal-header" [style.background-image]="'url(' + game.coverImageUrl + ')'">
+      <div class="modal-header" [style.background-image]="'url(' + getArtworkUrl() + ')'">
         <div class="header-overlay">
           <div class="header-content">
             <div class="modal-cover-container">
@@ -77,7 +77,28 @@
         @if (game.summary) {
           <div class="modal-section">
             <h3>Descripción</h3>
-            <p>{{ game.summary }}</p>
+            <p [class.truncated-text]="!isSummaryExpanded">{{ game.summary }}</p>
+            @if (game.summary.length > 200) {
+              <div class="button-container">
+                <button class="expand-button-revamped" (click)="isSummaryExpanded = !isSummaryExpanded">
+                  {{ isSummaryExpanded ? 'Leer menos' : 'Leer más' }}
+                </button>
+              </div>
+            }
+          </div>
+        }
+
+        @if (game.storyline) {
+          <div class="modal-section">
+            <h3>Argumento</h3>
+            <p [class.truncated-text]="!isStorylineExpanded">{{ game.storyline }}</p>
+            @if (game.storyline.length > 200) {
+              <div class="button-container">
+                <button class="expand-button-revamped" (click)="isStorylineExpanded = !isStorylineExpanded">
+                  {{ isStorylineExpanded ? 'Leer menos' : 'Leer más' }}
+                </button>
+              </div>
+            }
           </div>
         }
 
