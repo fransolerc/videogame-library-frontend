@@ -78,6 +78,7 @@ export class PlatformGamesComponent implements OnInit {
   }
 
   openGameModal(gameId: number): void {
-    this.uiService.openGameModal(gameId);
+    const game = this.games.find(g => g.id === gameId);
+    this.uiService.openGameModal(gameId, game?.platforms);
   }
 }
