@@ -1,5 +1,8 @@
 <div class="platform-games-container">
   <header class="platform-header">
+      <svg class="title-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+        <path [attr.d]="getPlatformIcon(platformType)"/>
+      </svg>
     <h1>Juegos para {{ platformName }}</h1>
   </header>
 
