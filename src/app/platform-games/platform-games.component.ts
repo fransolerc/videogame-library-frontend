@@ -3,7 +3,7 @@ import { ActivatedRoute } from '@angular/router';
 import { GameService } from '../core/services/game.service';
 import { GameSummary } from '../shared/models/game.model';
 import { CommonModule } from '@angular/common';
-import { of, combineLatest } from 'rxjs';
+import { of, combineLatest, BehaviorSubject } from 'rxjs';
 import { switchMap, tap } from 'rxjs/operators';
 import { UiService } from '../core/services/ui.service';
 import { PlatformService } from '../core/services/platform.service';
@@ -25,6 +25,7 @@ export class PlatformGamesComponent implements OnInit {
   totalPages = 0;
   totalElements = 0;
   pageSize = 50;
+  sortOrder$ = new BehaviorSubject<string>('rating-desc');
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -37,32 +38,47 @@ export class PlatformGamesComponent implements OnInit {
   ngOnInit(): void {
     combineLatest([
       this.route.paramMap,
-      this.platformService.getPlatforms()
+      this.platformService.getPlatforms(),
+      this.sortOrder$
     ]).pipe(
-      switchMap(([params, platforms]) => {
-        this.platformId = params.get('id');
+      switchMap(([params, platforms, sortOrder]) => {
+        const newPlatformId = params.get('id');
+
+        // Reset pagination if platform changes
+        if (this.platformId !== newPlatformId) {
+          this.currentPage = 0;
+        }
+
+        this.platformId = newPlatformId;
         const foundPlatform = platforms.find(p => p.id.toString() === this.platformId);
         this.platformName = foundPlatform ? foundPlatform.name : 'Plataforma Desconocida';
         this.platformType = foundPlatform ? foundPlatform.platformType : '';
 
-        this.currentPage = 0;
         this.games = [];
         this.cdr.detectChanges();
-        return this.loadGames();
+        return this.loadGames(sortOrder);
       })
     ).subscribe();
   }
 
-  loadGames() {
+  loadGames(sortOrder: string = this.sortOrder$.value) {
     if (!this.platformId) {
       return of([]);
+    }
+
+    let sortString = 'rating desc';
+    switch (sortOrder) {
+      case 'name-asc': sortString = 'name asc'; break;
+      case 'name-desc': sortString = 'name desc'; break;
+      case 'date-desc': sortString = 'first_release_date desc'; break;
+      case 'date-asc': sortString = 'first_release_date asc'; break;
     }
 
     const request = {
       filter: `platforms = (${this.platformId})`,
       limit: this.pageSize,
       offset: this.currentPage * this.pageSize,
-      sort: 'rating desc'
+      sort: sortString
     };
 
     return this.gameService.filterGames(request).pipe(
@@ -77,6 +93,12 @@ export class PlatformGamesComponent implements OnInit {
   onPageChange(page: number): void {
     this.currentPage = page;
     this.loadGames().subscribe();
+  }
+
+  onSortChange(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    this.currentPage = 0; // Reset to first page on sort change
+    this.sortOrder$.next(select.value);
   }
 
   openGameModal(gameId: number): void {
