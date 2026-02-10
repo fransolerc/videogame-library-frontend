@@ -4,7 +4,7 @@ import { Router } from '@angular/router';
 import { PlatformService } from '../core/services/platform.service';
 import { Platform } from '../shared/models/platform.model';
 import { map } from 'rxjs/operators';
-import { Observable } from 'rxjs';
+import { Observable, BehaviorSubject, combineLatest } from 'rxjs';
 
 interface PlatformGroup {
   key: string;
@@ -21,6 +21,7 @@ interface PlatformGroup {
 })
 export class PlatformListComponent implements OnInit {
   groupedPlatforms$: Observable<PlatformGroup[]> | undefined;
+  sortOrder$ = new BehaviorSubject<string>('name-asc');
 
   constructor(
     private readonly platformService: PlatformService,
@@ -28,8 +29,11 @@ export class PlatformListComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.groupedPlatforms$ = this.platformService.getPlatforms().pipe(
-      map(platforms => {
+    this.groupedPlatforms$ = combineLatest([
+      this.platformService.getPlatforms(),
+      this.sortOrder$
+    ]).pipe(
+      map(([platforms, sortOrder]) => {
         const groups = new Map<string, { platforms: Platform[], sortOrder: number }>();
 
         platforms.forEach(platform => {
@@ -63,13 +67,29 @@ export class PlatformListComponent implements OnInit {
 
         const resultGroups: PlatformGroup[] = Array.from(groups.entries()).map(([key, value]) => ({
           key,
-          platforms: [...value.platforms].sort((a, b) => a.name.localeCompare(b.name)),
+          platforms: this.sortPlatforms([...value.platforms], sortOrder),
           sortOrder: value.sortOrder
         }));
 
         return resultGroups.sort((a, b) => b.sortOrder - a.sortOrder);
       })
     );
+  }
+
+  sortPlatforms(platforms: Platform[], sortOrder: string): Platform[] {
+    switch (sortOrder) {
+      case 'name-asc':
+        return platforms.sort((a, b) => a.name.localeCompare(b.name));
+      case 'name-desc':
+        return platforms.sort((a, b) => b.name.localeCompare(a.name));
+      default:
+        return platforms;
+    }
+  }
+
+  onSortChange(event: Event): void {
+    const select = event.target as HTMLSelectElement;
+    this.sortOrder$.next(select.value);
   }
 
   navigateToPlatform(id: number): void {
