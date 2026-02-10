@@ -1,5 +1,5 @@
 .nav-link {
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--text-secondary);
   text-decoration: none;
   font-weight: 500;
   font-size: 0.95rem;
@@ -11,9 +11,9 @@
 }
 
 .nav-link:hover {
-  color: #fff;
-  background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
+  color: var(--text-main);
+  background: var(--bg-card-hover);
+  border-color: var(--border-hover);
 }
 
 .profile-dropdown {
@@ -31,20 +31,20 @@
   border-radius: 20px;
   cursor: pointer;
   transition: all 0.3s ease;
-  border: 1px solid rgba(255, 255, 255, 0.2);
-  background: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  border: 1px solid var(--border-light);
+  background: var(--bg-card-hover);
+  color: var(--text-main);
 }
 
 .profile-button:hover {
   background: rgba(255, 255, 255, 0.2);
-  border-color: rgba(255, 255, 255, 0.4);
+  border-color: var(--border-hover);
 }
 
 .profile-icon {
   width: 20px;
   height: 20px;
-  color: #4facfe;
+  color: var(--primary-color);
 }
 
 .username {
@@ -67,7 +67,7 @@
   right: 0;
   background: rgba(15, 32, 39, 0.95);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--border-light);
   border-radius: 8px;
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
   padding: 0.5rem 0;
@@ -84,7 +84,7 @@
   padding: 10px 15px;
   background: none;
   border: none;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--text-secondary);
   text-align: left;
   cursor: pointer;
   transition: background-color 0.2s;
@@ -92,14 +92,14 @@
 }
 
 .dropdown-item:hover {
-  background-color: rgba(255, 255, 255, 0.1);
-  color: #fff;
+  background-color: var(--bg-card-hover);
+  color: var(--text-main);
 }
 
 .dropdown-icon {
   width: 18px;
   height: 18px;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-muted);
 }
 
 .auth-button {
@@ -121,10 +121,10 @@
 }
 
 .auth-button.login {
-  background-color: #4facfe;
-  color: #fff;
+  background-color: var(--primary-color);
+  color: var(--text-main);
 }
 
 .auth-button.login:hover {
-  background-color: #007bff;
+  background-color: var(--primary-hover);
 }

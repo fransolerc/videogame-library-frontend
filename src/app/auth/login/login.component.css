@@ -3,7 +3,7 @@
   flex-direction: column;
   gap: 1.5rem;
   padding: 3rem 2rem 2rem 2rem;
-  color: #fff;
+  color: var(--text-main);
 }
 
 .login-logo {
@@ -17,13 +17,13 @@
 .logo-icon {
   width: 48px;
   height: 48px;
-  color: #4facfe;
+  color: var(--primary-color);
 }
 
 h2 {
   text-align: center;
   font-weight: 600;
-  color: #fff;
+  color: var(--text-main);
   margin: 0;
   font-size: 1.8rem;
 }
@@ -42,7 +42,7 @@ h2 {
 
 .form-group label {
   font-weight: 500;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--text-secondary);
   font-size: 0.9rem;
   margin-left: 4px;
 }
@@ -58,7 +58,7 @@ h2 {
   left: 12px;
   width: 20px;
   height: 20px;
-  color: rgba(255, 255, 255, 0.5);
+  color: var(--text-muted);
   pointer-events: none;
   transition: color 0.3s ease;
 }
@@ -67,9 +67,9 @@ h2 {
   width: 100%;
   padding: 12px 15px 12px 40px; /* Padding left for icon */
   font-size: 1rem;
-  color: #fff;
+  color: var(--text-main);
   background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--border-light);
   border-radius: 8px;
   transition: all 0.3s ease;
   box-sizing: border-box;
@@ -78,23 +78,23 @@ h2 {
 .form-group input:focus {
   outline: none;
   background: rgba(255, 255, 255, 0.15);
-  border-color: #4facfe;
+  border-color: var(--primary-color);
 }
 
 .form-group input:focus + .input-icon,
 .form-group input:focus ~ .input-icon { /* Select icon when input is focused */
-  color: #4facfe;
+  color: var(--primary-color);
 }
 
 .error-message {
-  color: #ff8a80;
+  color: var(--danger-color);
   font-size: 0.85rem;
   margin-top: 4px;
   margin-left: 4px;
 }
 
 .error-message-server {
-  color: #ff8a80;
+  color: var(--danger-color);
   background: rgba(255, 138, 128, 0.1);
   border: 1px solid rgba(255, 138, 128, 0.3);
   padding: 1rem;
@@ -108,18 +108,18 @@ button {
   padding: 14px;
   font-size: 1.1rem;
   font-weight: 600;
-  color: #fff;
-  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  color: var(--text-main);
+  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
   border: none;
   border-radius: 8px;
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
-  box-shadow: 0 4px 15px rgba(79, 172, 254, 0.4);
+  box-shadow: 0 4px 15px rgba(var(--primary-color-rgb), 0.4);
 }
 
 button:hover:not(:disabled) {
   transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(79, 172, 254, 0.6);
+  box-shadow: 0 6px 20px rgba(var(--primary-color-rgb), 0.6);
 }
 
 button:disabled {
@@ -134,17 +134,17 @@ button:disabled {
   text-align: center;
   margin-top: 1rem;
   font-size: 0.9rem;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-muted);
 }
 
 .signup-link a {
-  color: #4facfe;
+  color: var(--primary-color);
   text-decoration: none;
   font-weight: 500;
   transition: color 0.2s;
 }
 
 .signup-link a:hover {
-  color: #00f2fe;
+  color: var(--primary-hover);
   text-decoration: underline;
 }
