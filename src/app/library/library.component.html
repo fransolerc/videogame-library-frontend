@@ -32,90 +32,108 @@
     </div>
   </div>
 
-  @if (favorites.length > 0) {
-    <section class="game-section">
-      <h2 class="section-title">
-        <svg class="section-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-          <path fill-rule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z" clip-rule="evenodd" />
-        </svg>
-        Favoritos
-      </h2>
-      <div class="horizontal-scroll-container">
-        <ul class="game-list" #favoritesList>
-          @for (game of favorites; track game.id) {
-            <li class="game-list-item" (click)="openGameModal(game)">
-              <app-game-card [game]="game" [isPlatformClickable]="false"></app-game-card>
-            </li>
-          }
-        </ul>
-      </div>
-    </section>
-  }
-
-  @if (wantToPlay.length > 0) {
-    <section class="game-section">
-      <h2 class="section-title">
-        <svg class="section-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-          <path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 9a.75.75 0 00-1.5 0v2.25H9a.75.75 0 000 1.5h2.25V15a.75.75 0 001.5 0v-2.25H15a.75.75 0 000-1.5h-2.25V9z" clip-rule="evenodd" />
-        </svg>
-        Quiero Jugar
-      </h2>
-      <div class="horizontal-scroll-container">
-        <ul class="game-list" #wantToPlayList>
-          @for (game of wantToPlay; track game.id) {
-            <li class="game-list-item" (click)="openGameModal(game)">
-              <app-game-card [game]="game" [isPlatformClickable]="false"></app-game-card>
-            </li>
-          }
-        </ul>
-      </div>
-    </section>
-  }
-
-  @if (playing.length > 0) {
-    <section class="game-section">
-      <h2 class="section-title">
-        <svg class="section-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-          <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm14.024-.983a1.125 1.125 0 010 1.966l-5.604 3.113A1.125 1.125 0 019 15.113V8.887c0-.857.921-1.4 1.619-.983l5.604 3.113z" clip-rule="evenodd" />
-        </svg>
-        Jugando
-      </h2>
-      <div class="horizontal-scroll-container">
-        <ul class="game-list" #playingList>
-          @for (game of playing; track game.id) {
-            <li class="game-list-item" (click)="openGameModal(game)">
-              <app-game-card [game]="game" [isPlatformClickable]="false"></app-game-card>
-            </li>
-          }
-        </ul>
-      </div>
-    </section>
-  }
-
-  @if (completed.length > 0) {
-    <section class="game-section">
-      <h2 class="section-title">
-        <svg class="section-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-          <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clip-rule="evenodd" />
-        </svg>
-        Completados
-      </h2>
-      <div class="horizontal-scroll-container">
-        <ul class="game-list" #completedList>
-          @for (game of completed; track game.id) {
-            <li class="game-list-item" (click)="openGameModal(game)">
-              <app-game-card [game]="game" [isPlatformClickable]="false"></app-game-card>
-            </li>
-          }
-        </ul>
-      </div>
-    </section>
-  }
-
-  @if (favorites.length === 0 && wantToPlay.length === 0 && playing.length === 0 && completed.length === 0) {
-    <div class="empty-library-message">
-      <p>Tu biblioteca está vacía.</p>
-      <p>Añade juegos desde la página principal para verlos aquí.</p>
+  @if (isLoading) {
+    <div class="skeleton-container">
+      @for (i of [].constructor(4); track i) {
+        <div class="game-section">
+          <div class="horizontal-scroll-container">
+            <ul class="game-list">
+              @for (j of [].constructor(5); track j) {
+                <li class="game-list-item">
+                  <app-game-card-skeleton></app-game-card-skeleton>
+                </li>
+              }
+            </ul>
+          </div>
+        </div>
+      }
     </div>
+  } @else {
+    @if (favorites.length > 0) {
+      <section class="game-section">
+        <h2 class="section-title">
+          <svg class="section-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path fill-rule="evenodd" d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.007 5.404.433c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.433 2.082-5.006z" clip-rule="evenodd" />
+          </svg>
+          Favoritos
+        </h2>
+        <div class="horizontal-scroll-container">
+          <ul class="game-list" #favoritesList>
+            @for (game of favorites; track game.id) {
+              <li class="game-list-item" (click)="openGameModal(game)">
+                <app-game-card [game]="game" [isPlatformClickable]="false"></app-game-card>
+              </li>
+            }
+          </ul>
+        </div>
+      </section>
+    }
+
+    @if (wantToPlay.length > 0) {
+      <section class="game-section">
+        <h2 class="section-title">
+          <svg class="section-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path fill-rule="evenodd" d="M12 2.25c-5.385 0-9.75 4.365-9.75 9.75s4.365 9.75 9.75 9.75 9.75-4.365 9.75-9.75S17.385 2.25 12 2.25zM12.75 9a.75.75 0 00-1.5 0v2.25H9a.75.75 0 000 1.5h2.25V15a.75.75 0 001.5 0v-2.25H15a.75.75 0 000-1.5h-2.25V9z" clip-rule="evenodd" />
+          </svg>
+          Quiero Jugar
+        </h2>
+        <div class="horizontal-scroll-container">
+          <ul class="game-list" #wantToPlayList>
+            @for (game of wantToPlay; track game.id) {
+              <li class="game-list-item" (click)="openGameModal(game)">
+                <app-game-card [game]="game" [isPlatformClickable]="false"></app-game-card>
+              </li>
+            }
+          </ul>
+        </div>
+      </section>
+    }
+
+    @if (playing.length > 0) {
+      <section class="game-section">
+        <h2 class="section-title">
+          <svg class="section-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm14.024-.983a1.125 1.125 0 010 1.966l-5.604 3.113A1.125 1.125 0 019 15.113V8.887c0-.857.921-1.4 1.619-.983l5.604 3.113z" clip-rule="evenodd" />
+          </svg>
+          Jugando
+        </h2>
+        <div class="horizontal-scroll-container">
+          <ul class="game-list" #playingList>
+            @for (game of playing; track game.id) {
+              <li class="game-list-item" (click)="openGameModal(game)">
+                <app-game-card [game]="game" [isPlatformClickable]="false"></app-game-card>
+              </li>
+            }
+          </ul>
+        </div>
+      </section>
+    }
+
+    @if (completed.length > 0) {
+      <section class="game-section">
+        <h2 class="section-title">
+          <svg class="section-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path fill-rule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12zm13.36-1.814a.75.75 0 10-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 00-1.06 1.06l2.25 2.25a.75.75 0 001.14-.094l3.75-5.25z" clip-rule="evenodd" />
+          </svg>
+          Completados
+        </h2>
+        <div class="horizontal-scroll-container">
+          <ul class="game-list" #completedList>
+            @for (game of completed; track game.id) {
+              <li class="game-list-item" (click)="openGameModal(game)">
+                <app-game-card [game]="game" [isPlatformClickable]="false"></app-game-card>
+              </li>
+            }
+          </ul>
+        </div>
+      </section>
+    }
+
+    @if (favorites.length === 0 && wantToPlay.length === 0 && playing.length === 0 && completed.length === 0) {
+      <div class="empty-library-message">
+        <p>Tu biblioteca está vacía.</p>
+        <p>Añade juegos desde la página principal para verlos aquí.</p>
+      </div>
+    }
   }
 </div>
