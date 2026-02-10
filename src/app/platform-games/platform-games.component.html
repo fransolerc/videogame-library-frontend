@@ -1,7 +1,25 @@
 <div class="platform-games-container">
   <header class="platform-header">
+      <svg class="title-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+        <path [attr.d]="getPlatformIcon(platformType)"/>
+      </svg>
     <h1>Juegos para {{ platformName }}</h1>
   </header>
+
+  <div class="controls-bar">
+    <div class="filter-container">
+      <svg class="filter-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+        <path d="M3 3a1 1 0 011-1h12a1 1 0 011 1v3a1 1 0 01-.293.707L12 11.414V15a1 1 0 01-.293.707l-2 2A1 1 0 018 17v-5.586L3.293 6.707A1 1 0 013 6V3z" />
+      </svg>
+      <select class="sort-select" (change)="onSortChange($event)">
+        <option value="rating-desc">Mejor valorados</option>
+        <option value="name-asc">Nombre (A-Z)</option>
+        <option value="name-desc">Nombre (Z-A)</option>
+        <option value="date-desc">Lanzamiento (nuevos)</option>
+        <option value="date-asc">Lanzamiento (antiguos)</option>
+      </select>
+    </div>
+  </div>
 
   @if (games.length > 0) {
     <div class="games-grid">
@@ -10,11 +28,43 @@
       }
     </div>
 
-    <!-- Basic pagination example -->
-    <div class="pagination">
-      <button (click)="onPageChange(currentPage - 1)" [disabled]="currentPage === 0">Anterior</button>
-      <span>Página {{ currentPage + 1 }}</span>
-      <button (click)="onPageChange(currentPage + 1)" [disabled]="games.length < pageSize">Siguiente</button>
+    <!-- Advanced pagination -->
+    <div class="pagination-container">
+      <div class="pagination">
+        <button class="page-btn nav-btn" (click)="onPageChange(currentPage - 1)" [disabled]="currentPage === 0">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+          </svg>
+        </button>
+
+        @for (page of getPaginationNumbers(); track $index) {
+          @if (page === '...') {
+            <span class="page-ellipsis">...</span>
+          } @else {
+            <button class="page-btn"
+                    [class.active]="currentPage === (+page) - 1"
+                    (click)="onPageChange((+page) - 1)">
+              {{ page }}
+            </button>
+          }
+        }
+
+        <button class="page-btn nav-btn" (click)="onPageChange(currentPage + 1)" [disabled]="currentPage >= totalPages - 1">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+          </svg>
+        </button>
+      </div>
+
+      <div class="pagination-input">
+        <span>Ir a página:</span>
+        <input type="number"
+               [(ngModel)]="pageInput"
+               (change)="onPageInputChange()"
+               min="1"
+               [max]="totalPages">
+        <span>de {{ totalPages }}</span>
+      </div>
     </div>
   } @else {
     <div class="no-games-found">

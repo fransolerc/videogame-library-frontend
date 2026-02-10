@@ -2,6 +2,7 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Game, GameFilterRequest, GameSummary } from '../../shared/models/game.model';
+import { PaginatedResponse } from '../../shared/models/pagination.model';
 import { environment } from '../../../environments/environment';
 import { map } from 'rxjs/operators';
 
@@ -26,5 +27,9 @@ export class GameService {
     return this.http.post<any>(`${this.apiUrl}/filter`, request).pipe(
       map(response => response?.content ? response.content : response)
     );
+  }
+
+  filterGamesPaginated(request: GameFilterRequest): Observable<PaginatedResponse<GameSummary>> {
+    return this.http.post<PaginatedResponse<GameSummary>>(`${this.apiUrl}/filter`, request);
   }
 }

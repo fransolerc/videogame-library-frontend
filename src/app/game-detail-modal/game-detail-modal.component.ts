@@ -7,7 +7,7 @@ import { finalize } from 'rxjs/operators';
 import '@justinribeiro/lite-youtube';
 import { UiService } from '../core/services/ui.service';
 import { GameService } from '../core/services/game.service';
-import { forkJoin } from 'rxjs';
+import { forkJoin, Observable } from 'rxjs';
 
 @Component({
   selector: 'app-game-detail-modal',
@@ -29,6 +29,7 @@ export class GameDetailModalComponent implements OnInit {
   enlargedScreenshot: string | null = null;
   isSummaryExpanded = false;
   isStorylineExpanded = false;
+  isAuthenticated$: Observable<boolean>;
 
   GameStatus = GameStatus;
 
@@ -38,7 +39,9 @@ export class GameDetailModalComponent implements OnInit {
     private readonly gameService: GameService,
     private readonly uiService: UiService,
     private readonly cdr: ChangeDetectorRef
-  ) {}
+  ) {
+    this.isAuthenticated$ = this.authService.isAuthenticated$;
+  }
 
   ngOnInit(): void {
     document.body.style.overflow = 'hidden';

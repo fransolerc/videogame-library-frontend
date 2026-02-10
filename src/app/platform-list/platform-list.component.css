@@ -2,16 +2,56 @@
   padding: 6rem 2rem 2rem 2rem;
   color: #fff;
   width: 100%;
-  max-width: 1000px; /* Ancho más contenido para lista */
+  max-width: 1200px; /* Increased width for grid */
   margin: 0 auto;
   box-sizing: border-box;
 }
 
+.header-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
 .page-title {
   font-size: 2.5rem;
-  margin-bottom: 2rem;
-  text-align: center;
+  margin: 0;
   font-weight: 600;
+}
+
+.filter-container {
+  display: flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  padding: 5px 15px;
+  gap: 10px;
+}
+
+.filter-icon {
+  width: 20px;
+  height: 20px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.sort-select {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 0.95rem;
+  font-family: inherit;
+  cursor: pointer;
+  outline: none;
+  padding: 5px 0;
+}
+
+.sort-select option {
+  background-color: #1a2a33;
+  color: #fff;
 }
 
 .generation-section {
@@ -22,47 +62,58 @@
   font-size: 1.5rem;
   font-weight: 600;
   color: #4facfe;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
   padding-bottom: 0.5rem;
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .platforms-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.8rem;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1.5rem;
 }
 
 .platform-item {
   background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-  padding: 1rem 1.5rem;
+  border-radius: 15px;
+  padding: 1.5rem;
   display: flex;
+  flex-direction: column;
   align-items: center;
+  text-align: center;
   cursor: pointer;
-  transition: transform 0.2s ease, background-color 0.2s ease;
+  transition: all 0.3s ease;
+  height: 100%;
+  box-sizing: border-box;
 }
 
 .platform-item:hover {
-  transform: translateX(5px);
+  transform: translateY(-5px);
   background: rgba(255, 255, 255, 0.1);
-  border-color: rgba(255, 255, 255, 0.2);
+  border-color: #4facfe;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
 }
 
 .platform-icon {
-  width: 40px;
-  height: 40px;
-  margin-right: 1.5rem;
+  width: 60px;
+  height: 60px;
+  margin-bottom: 1rem;
   color: #4facfe;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(79, 172, 254, 0.1);
   border-radius: 50%;
-  padding: 8px;
+  padding: 12px;
   flex-shrink: 0;
+  transition: all 0.3s ease;
+}
+
+.platform-item:hover .platform-icon {
+  background: rgba(79, 172, 254, 0.2);
+  transform: scale(1.1);
 }
 
 .platform-icon svg {
@@ -75,31 +126,30 @@
   display: flex;
   flex-direction: column;
   justify-content: center;
+  width: 100%;
 }
 
 .platform-info h3 {
-  margin: 0 0 0.2rem 0;
-  font-size: 1.1rem;
-  font-weight: 500;
+  margin: 0 0 0.5rem 0;
+  font-size: 1.2rem;
+  font-weight: 600;
   color: #fff;
+  line-height: 1.3;
 }
 
 .platform-type {
-  font-size: 0.8rem;
+  font-size: 0.85rem;
   color: rgba(255, 255, 255, 0.5);
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 1px;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 4px 10px;
+  border-radius: 12px;
+  display: inline-block;
 }
 
 .platform-arrow {
-  color: rgba(255, 255, 255, 0.3);
-  width: 24px;
-  height: 24px;
-  transition: color 0.2s;
-}
-
-.platform-item:hover .platform-arrow {
-  color: #4facfe;
+  display: none; /* Hide arrow in grid view as it's less necessary */
 }
 
 .loading {
@@ -107,4 +157,30 @@
   font-size: 1.2rem;
   color: rgba(255, 255, 255, 0.6);
   margin-top: 3rem;
+}
+
+@media (max-width: 600px) {
+  .header-controls {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .platforms-list {
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 1rem;
+  }
+
+  .platform-item {
+    padding: 1rem;
+  }
+
+  .platform-icon {
+    width: 40px;
+    height: 40px;
+    padding: 8px;
+  }
+
+  .platform-info h3 {
+    font-size: 1rem;
+  }
 }
