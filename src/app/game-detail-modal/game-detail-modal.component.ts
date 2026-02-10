@@ -7,6 +7,7 @@ import { finalize } from 'rxjs/operators';
 import '@justinribeiro/lite-youtube';
 import { UiService } from '../core/services/ui.service';
 import { GameService } from '../core/services/game.service';
+import { ToastService } from '../core/services/toast.service';
 import { forkJoin, Observable } from 'rxjs';
 
 @Component({
@@ -38,6 +39,7 @@ export class GameDetailModalComponent implements OnInit {
     private readonly authService: AuthService,
     private readonly gameService: GameService,
     private readonly uiService: UiService,
+    private readonly toastService: ToastService,
     private readonly cdr: ChangeDetectorRef
   ) {
     this.isAuthenticated$ = this.authService.isAuthenticated$;
@@ -96,6 +98,7 @@ export class GameDetailModalComponent implements OnInit {
       })).subscribe(() => {
         this.currentLibraryStatus = null;
         this.uiService.notifyLibraryChanged();
+        this.toastService.showSuccess('Juego eliminado de tu biblioteca');
       });
     } else {
       this.libraryService.addOrUpdateGameInLibrary(userId, { gameId: this.game.id, status }).pipe(finalize(() => {
@@ -104,6 +107,7 @@ export class GameDetailModalComponent implements OnInit {
       })).subscribe(userGame => {
         this.currentLibraryStatus = userGame.status;
         this.uiService.notifyLibraryChanged();
+        this.toastService.showSuccess('Biblioteca actualizada');
       });
     }
   }
@@ -121,6 +125,11 @@ export class GameDetailModalComponent implements OnInit {
       this.isCurrentGameFavorite = !this.isCurrentGameFavorite;
       this.uiService.notifyLibraryChanged();
       this.cdr.detectChanges();
+      if (this.isCurrentGameFavorite) {
+        this.toastService.showSuccess('Añadido a favoritos');
+      } else {
+        this.toastService.showInfo('Eliminado de favoritos');
+      }
     });
   }
 
