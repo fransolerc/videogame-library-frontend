@@ -11,7 +11,7 @@ import { Toast, ToastComponent } from './toast.component';
   template: `
     <div class="toast-container">
       @for (toast of toasts; track toast.id) {
-        <app-toast [toast]="toast" (close)="removeToast($event)"></app-toast>
+        <app-toast [toast]="toast" (closeEvent)="removeToast($event)"></app-toast>
       }
     </div>
   `,
@@ -31,7 +31,7 @@ export class ToastContainerComponent implements OnInit, OnDestroy {
   toasts: Toast[] = [];
   private subscription!: Subscription;
 
-  constructor(private toastService: ToastService) {}
+  constructor(private readonly toastService: ToastService) {}
 
   ngOnInit() {
     this.subscription = this.toastService.toastState.subscribe(

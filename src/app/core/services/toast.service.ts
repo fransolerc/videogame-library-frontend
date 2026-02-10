@@ -6,7 +6,7 @@ import { Toast } from '../../shared/components/toast/toast.component';
   providedIn: 'root'
 })
 export class ToastService {
-  private toastSubject = new Subject<Toast>();
+  private readonly toastSubject = new Subject<Toast>();
   toastState = this.toastSubject.asObservable();
 
   private id = 0;
