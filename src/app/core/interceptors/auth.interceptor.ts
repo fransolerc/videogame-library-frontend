@@ -1,24 +1,32 @@
-import { HttpInterceptorFn } from '@angular/common/http';
-import { inject } from '@angular/core';
+import { Injectable } from '@angular/core';
+import {
+  HttpEvent,
+  HttpInterceptor,
+  HttpHandler,
+  HttpRequest,
+} from '@angular/common/http';
+import { Observable } from 'rxjs';
 import { AuthService } from '../services/auth.service';
-import { environment } from '../../../environments/environment';
 
-export const AuthInterceptor: HttpInterceptorFn = (req, next) => {
-  const authService = inject(AuthService);
-  const authToken = authService.getToken();
-  const loginUrl = `${environment.apiUrl}/users/login`;
+@Injectable()
+export class AuthInterceptor implements HttpInterceptor {
 
-  // No añadir el token si es la petición de login
-  if (req.url === loginUrl) {
-    return next(req);
+  constructor(private readonly authService: AuthService) {}
+
+  intercept(req: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
+    const authToken = this.authService.getToken();
+
+    if (authToken) {
+      // Clonar la petición para añadir la nueva cabecera.
+      const authReq = req.clone({
+        headers: req.headers.set('Authorization', `Bearer ${authToken}`)
+      });
+
+      // Enviar la petición clonada con la cabecera de autorización.
+      return next.handle(authReq);
+    }
+
+    // Enviar la petición original si no hay token.
+    return next.handle(req);
   }
-
-  if (authToken) {
-    const authReq = req.clone({
-      headers: req.headers.set('Authorization', `Bearer ${authToken}`)
-    });
-    return next(authReq);
-  }
-
-  return next(req);
-};
+}
