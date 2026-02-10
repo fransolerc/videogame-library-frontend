@@ -33,15 +33,15 @@
 
 .empty-library-message {
   text-align: center;
-  color: #aaa;
+  color: var(--text-muted);
   padding: 4rem;
-  border: 2px dashed #444;
+  border: 2px dashed var(--border-light);
   border-radius: 10px;
   margin-top: 2rem;
 }
 
 .library-header h1 {
-  color: #fff;
+  color: var(--text-main);
   font-size: 2.5rem;
 }
 
@@ -59,7 +59,7 @@
   transform: translateY(-50%);
   width: 18px;
   height: 18px;
-  color: rgba(255, 255, 255, 0.6);
+  color: var(--text-secondary);
   pointer-events: none;
   z-index: 2;
 }
@@ -68,11 +68,11 @@
   padding: 10px 15px 10px 40px;
   font-size: 0.9rem;
   font-family: 'Poppins', sans-serif;
-  color: #fff;
-  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-main);
+  background: var(--bg-card-hover);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid var(--border-hover);
   border-radius: 25px;
   -webkit-appearance: none;
   appearance: none;
@@ -84,18 +84,18 @@
 
 .sort-select:hover {
   background-color: rgba(56, 189, 248, 0.2);
-  color: #38bdf8;
+  color: var(--primary-color);
   border-color: rgba(56, 189, 248, 0.3);
 }
 
 .sort-select:focus {
   outline: none;
-  border-color: rgba(255, 255, 255, 0.4);
+  border-color: var(--border-hover);
 }
 
 .sort-select option {
-  background: #2c5364;
-  color: #fff;
+  background: var(--bg-modal);
+  color: var(--text-main);
 }
 
 .section-title {
@@ -104,8 +104,8 @@
   font-size: 1.8rem;
   font-weight: bold;
   margin-bottom: 1.5rem;
-  color: #fff;
-  border-bottom: 2px solid #444;
+  color: var(--text-main);
+  border-bottom: 2px solid var(--border-light);
   padding-bottom: 0.5rem;
 }
 
@@ -113,14 +113,14 @@
   width: 28px;
   height: 28px;
   margin-right: 15px;
-  fill: #ffc107; /* Color dorado por defecto */
+  fill: var(--secondary-color); /* Color dorado por defecto */
 }
 
 /* Colores específicos para cada icono si es necesario */
-.game-section:nth-of-type(1) .section-icon { fill: #ffc107; } /* Favoritos */
-.game-section:nth-of-type(2) .section-icon { fill: #38bdf8; } /* Quiero Jugar */
-.game-section:nth-of-type(3) .section-icon { fill: #34d399; } /* Jugando */
-.game-section:nth-of-type(4) .section-icon { fill: #a78bfa; } /* Completados */
+.game-section:nth-of-type(1) .section-icon { fill: var(--secondary-color); } /* Favoritos */
+.game-section:nth-of-type(2) .section-icon { fill: var(--status-want-to-play); } /* Quiero Jugar */
+.game-section:nth-of-type(3) .section-icon { fill: var(--status-playing); } /* Jugando */
+.game-section:nth-of-type(4) .section-icon { fill: var(--status-completed); } /* Completados */
 
 
 .horizontal-scroll-container {
