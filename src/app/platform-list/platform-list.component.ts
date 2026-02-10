@@ -5,6 +5,7 @@ import { PlatformService } from '../core/services/platform.service';
 import { Platform } from '../shared/models/platform.model';
 import { map } from 'rxjs/operators';
 import { Observable, BehaviorSubject, combineLatest } from 'rxjs';
+import { PlatformIconPipe } from '../shared/pipes/platform-icon.pipe';
 
 interface PlatformGroup {
   key: string;
@@ -15,7 +16,7 @@ interface PlatformGroup {
 @Component({
   selector: 'app-platform-list',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, PlatformIconPipe],
   templateUrl: './platform-list.component.html',
   styleUrls: ['./platform-list.component.css']
 })
@@ -94,23 +95,5 @@ export class PlatformListComponent implements OnInit {
 
   navigateToPlatform(id: number): void {
     this.router.navigate(['/platforms', id]);
-  }
-
-  getPlatformIconType(platform: Platform): string {
-    const type = platform.platformType ? platform.platformType.toUpperCase() : 'UNKNOWN';
-
-    switch (type) {
-      case 'COMPUTER':
-      case 'OPERATING_SYSTEM':
-        return 'computer';
-      case 'PORTABLE_CONSOLE':
-        return 'portable';
-      case 'ARCADE':
-        return 'arcade';
-      case 'CONSOLE':
-      case 'PLATFORM':
-      default:
-        return 'console';
-    }
   }
 }
