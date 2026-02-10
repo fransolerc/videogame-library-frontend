@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, AfterVie
 import { AsyncPipe } from '@angular/common';
 import { GameService } from '../core/services/game.service';
 import { Observable, combineLatest, BehaviorSubject, of, Subscription, fromEvent } from 'rxjs';
-import { debounceTime, distinctUntilChanged, switchMap, tap, map } from 'rxjs/operators';
+import { debounceTime, distinctUntilChanged, switchMap, tap, map, finalize } from 'rxjs/operators';
 import { GameSummary, GameFilterRequest } from '../shared/models/game.model';
 import { PlatformService } from '../core/services/platform.service';
 import { Platform } from '../shared/models/platform.model';
@@ -10,11 +10,12 @@ import { UiService } from '../core/services/ui.service';
 import { Router } from '@angular/router';
 import { AuthService } from '../core/services/auth.service';
 import { GameCardComponent } from '../game-card/game-card.component';
+import { GameCardSkeletonComponent } from '../game-card-skeleton/game-card-skeleton.component';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [AsyncPipe, GameCardComponent],
+  imports: [AsyncPipe, GameCardComponent, GameCardSkeletonComponent],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
@@ -24,12 +25,16 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('searchResultsList') searchResultsList!: ElementRef<HTMLUListElement>;
   @ViewChild('topRatedList') topRatedList!: ElementRef<HTMLUListElement>;
 
-  latestGames$: Observable<GameSummary[]>;
-  topRatedGames$: Observable<GameSummary[]>;
+  latestGames: GameSummary[] = [];
+  topRatedGames: GameSummary[] = [];
   searchResults$: Observable<GameSummary[]>;
   isSearching$: Observable<boolean>;
   platforms$: Observable<Platform[]>;
   isAuthenticated$: Observable<boolean>;
+
+  isLoadingTopRated = true;
+  isLoadingLatest = true;
+  isLoadingSearch = false;
 
   private readonly searchInput = new BehaviorSubject<string>('');
   private readonly sortInput = new BehaviorSubject<string>('relevance');
@@ -55,41 +60,24 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     this.platforms$ = this.platformService.getPlatforms();
     this.isAuthenticated$ = this.authService.isAuthenticated$;
 
-    this.topRatedGames$ = this.gameService.filterGames({
-      filter: 'rating > 75 & total_rating_count > 1000 & involved_companies != null',
-      sort: 'rating desc',
-      limit: 50
-    });
-
-    this.latestGames$ = combineLatest([this.sortInput, this.platformFilterInput]).pipe(
-      switchMap(([sortKey, platformId]) => {
-        const initialRequest: GameFilterRequest = {
-          filter: `involved_companies != null & first_release_date <= ${Math.floor(Date.now() / 1000)}`,
-          limit: 50
-        };
-        if (platformId !== 'all') {
-          initialRequest.filter += ` & platforms.id = ${platformId}`;
-        }
-        switch (sortKey) {
-          case 'name-asc': initialRequest.sort = 'name asc'; break;
-          case 'name-desc': initialRequest.sort = 'name desc'; break;
-          case 'date-desc': initialRequest.sort = 'first_release_date desc'; break;
-          case 'date-asc': initialRequest.sort = 'first_release_date asc'; break;
-          case 'rating-desc': initialRequest.sort = 'rating desc'; break;
-          default: initialRequest.sort = 'first_release_date desc'; break;
-        }
-        return this.gameService.filterGames(initialRequest);
-      })
-    );
-
     this.isSearching$ = this.searchInput.pipe(map(term => !!term));
 
     const searchResultsRaw$ = combineLatest([this.searchInput, this.platformFilterInput, this.platforms$]).pipe(
       debounceTime(300),
       distinctUntilChanged(),
-      tap(([term]) => this.lastSearchTerm = term),
+      tap(([term]) => {
+        this.lastSearchTerm = term;
+        if (term) {
+          this.isLoadingSearch = true;
+          this.cdr.detectChanges();
+        }
+      }),
       switchMap(([term, platformId, allPlatforms]) => {
-        if (!term) return of([]);
+        if (!term) {
+          this.isLoadingSearch = false;
+          this.cdr.detectChanges();
+          return of([]);
+        }
         return this.gameService.searchGames(term).pipe(
           map(games => {
             if (platformId !== 'all' && allPlatforms) {
@@ -99,6 +87,10 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
               }
             }
             return games;
+          }),
+          finalize(() => {
+            this.isLoadingSearch = false;
+            this.cdr.detectChanges();
           })
         );
       }),
@@ -128,6 +120,9 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.loadTopRatedGames();
+    this.loadLatestGames();
+
     const authSubscription = this.authService.isAuthenticated$.pipe(
       tap(isAuthenticated => {
         if (isAuthenticated) {
@@ -136,6 +131,63 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
       })
     ).subscribe();
     this.subscriptions.add(authSubscription);
+  }
+
+  private loadTopRatedGames(): void {
+    this.isLoadingTopRated = true;
+    this.cdr.detectChanges();
+    this.gameService.filterGames({
+      filter: 'rating > 75 & total_rating_count > 1000 & involved_companies != null',
+      sort: 'rating desc',
+      limit: 50
+    }).subscribe({
+      next: (games) => {
+        this.topRatedGames = games;
+        this.isLoadingTopRated = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error("Failed to load top rated games", err);
+        this.isLoadingTopRated = false;
+        this.cdr.detectChanges();
+      }
+    });
+  }
+
+  private loadLatestGames(): void {
+    this.isLoadingLatest = true;
+    this.cdr.detectChanges();
+    combineLatest([this.sortInput, this.platformFilterInput]).pipe(
+      switchMap(([sortKey, platformId]) => {
+        const initialRequest: GameFilterRequest = {
+          filter: `involved_companies != null & first_release_date <= ${Math.floor(Date.now() / 1000)}`,
+          limit: 50
+        };
+        if (platformId !== 'all') {
+          initialRequest.filter += ` & platforms.id = ${platformId}`;
+        }
+        switch (sortKey) {
+          case 'name-asc': initialRequest.sort = 'name asc'; break;
+          case 'name-desc': initialRequest.sort = 'name desc'; break;
+          case 'date-desc': initialRequest.sort = 'first_release_date desc'; break;
+          case 'date-asc': initialRequest.sort = 'first_release_date asc'; break;
+          case 'rating-desc': initialRequest.sort = 'rating desc'; break;
+          default: initialRequest.sort = 'first_release_date desc'; break;
+        }
+        return this.gameService.filterGames(initialRequest);
+      })
+    ).subscribe({
+      next: (games) => {
+        this.latestGames = games;
+        this.isLoadingLatest = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error("Failed to load latest games", err);
+        this.isLoadingLatest = false;
+        this.cdr.detectChanges();
+      }
+    });
   }
 
   ngAfterViewInit(): void {

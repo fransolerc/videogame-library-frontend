@@ -10,13 +10,14 @@ import { GameCardComponent } from '../game-card/game-card.component';
 import { UiService } from '../core/services/ui.service';
 import { PlatformService } from '../core/services/platform.service';
 import { Platform } from '../shared/models/platform.model';
+import { GameCardSkeletonComponent } from '../game-card-skeleton/game-card-skeleton.component';
 
 type LibraryDisplayGame = Game & { status: GameStatus; isFavorite: boolean | undefined; };
 
 @Component({
   selector: 'app-library',
   standalone: true,
-  imports: [CommonModule, GameCardComponent],
+  imports: [CommonModule, GameCardComponent, GameCardSkeletonComponent],
   templateUrl: './library.component.html',
   styleUrls: ['./library.component.css']
 })
@@ -31,6 +32,7 @@ export class LibraryComponent implements OnInit, AfterViewInit, OnDestroy {
   wantToPlay: LibraryDisplayGame[] = [];
   playing: LibraryDisplayGame[] = [];
   completed: LibraryDisplayGame[] = [];
+  isLoading = true;
 
   isDown = false;
   startX = 0;
@@ -59,6 +61,8 @@ export class LibraryComponent implements OnInit, AfterViewInit, OnDestroy {
     const userId = this.authService.getUserId();
     if (userId) {
       this.loadLibrary(userId);
+    } else {
+      this.isLoading = false;
     }
 
     this.uiService.libraryChanged$.pipe(
@@ -91,6 +95,9 @@ export class LibraryComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   private loadLibrary(userId: string): void {
+    this.isLoading = true;
+    this.cdr.detectChanges();
+
     this.libraryService.getLibrary(userId).pipe(
       switchMap((userGames: UserGame[]) => {
         if (!userGames || userGames.length === 0) {
@@ -98,7 +105,6 @@ export class LibraryComponent implements OnInit, AfterViewInit, OnDestroy {
         }
         const gameObservables: Observable<LibraryDisplayGame | null>[] = userGames.map(userGame => {
           const details$ = this.gameService.getGameById(userGame.gameId);
-          // filterGames returns a GameSummary, which contains the platforms
           const summary$ = this.gameService.filterGames({ filter: `id = ${userGame.gameId}` }).pipe(
             map(games => (games && games.length > 0) ? games[0] : null)
           );
@@ -121,9 +127,18 @@ export class LibraryComponent implements OnInit, AfterViewInit, OnDestroy {
         });
         return forkJoin(gameObservables);
       })
-    ).subscribe(games => {
-      this.allGames = games.filter((game): game is LibraryDisplayGame => game !== null);
-      this.applyFilters(this.sortInput.value, this.platformFilterInput.value, []);
+    ).subscribe({
+      next: (games) => {
+        this.allGames = games.filter((game): game is LibraryDisplayGame => game !== null);
+        this.applyFilters(this.sortInput.value, this.platformFilterInput.value, []);
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error("Failed to load library", err);
+        this.isLoading = false;
+        this.cdr.detectChanges();
+      }
     });
   }
 

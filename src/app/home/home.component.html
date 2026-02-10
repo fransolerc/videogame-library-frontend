@@ -46,7 +46,13 @@
   @if (isSearching$ | async) {
     <div class="section-container">
       <h2 class="section-title">Resultados para "{{ lastSearchTerm }}"</h2>
-      @if (searchResults$ | async; as games) {
+      @if (isLoadingSearch) {
+        <div class="latest-releases-scroll-list">
+          @for (i of [].constructor(10); track i) {
+            <app-game-card-skeleton></app-game-card-skeleton>
+          }
+        </div>
+      } @else if (searchResults$ | async; as games) {
         @if (hasResults) {
           <div class="latest-releases-scroll-list" #searchResultsList>
             @for (game of games; track game.id) {
@@ -69,9 +75,15 @@
       </svg>
       <span>Últimos Lanzamientos</span>
     </h2>
-    @if (latestGames$ | async; as games) {
+    @if (isLoadingLatest) {
+      <div class="latest-releases-scroll-list">
+        @for (i of [].constructor(10); track i) {
+          <app-game-card-skeleton></app-game-card-skeleton>
+        }
+      </div>
+    } @else {
       <div class="latest-releases-scroll-list" #latestReleasesList>
-        @for (game of games; track game.id) {
+        @for (game of latestGames; track game.id) {
           <app-game-card class="game-item" [game]="game" (click)="openModal(game)"></app-game-card>
         }
       </div>
@@ -85,12 +97,18 @@
       </svg>
       <span>Top 50 Mejor Valorados</span>
     </h2>
-    @if (topRatedGames$ | async; as games) {
-    <div class="latest-releases-scroll-list" #topRatedList>
-      @for (game of games; track game.id) {
-      <app-game-card class="game-item" [game]="game" (click)="openModal(game)"></app-game-card>
-      }
-    </div>
+    @if (isLoadingTopRated) {
+      <div class="latest-releases-scroll-list">
+        @for (i of [].constructor(10); track i) {
+          <app-game-card-skeleton></app-game-card-skeleton>
+        }
+      </div>
+    } @else {
+      <div class="latest-releases-scroll-list" #topRatedList>
+        @for (game of topRatedGames; track game.id) {
+          <app-game-card class="game-item" [game]="game" (click)="openModal(game)"></app-game-card>
+        }
+      </div>
     }
   </div>
 </div>

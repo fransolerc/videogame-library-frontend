@@ -21,7 +21,13 @@
     </div>
   </div>
 
-  @if (games.length > 0) {
+  @if (isLoadingGames) {
+    <div class="games-grid">
+      @for (i of [].constructor(20); track i) {
+        <app-game-card-skeleton></app-game-card-skeleton>
+      }
+    </div>
+  } @else if (games.length > 0) {
     <div class="games-grid">
       @for (game of games; track game.id) {
         <app-game-card [game]="game" (click)="openGameModal(game.id)"></app-game-card>
