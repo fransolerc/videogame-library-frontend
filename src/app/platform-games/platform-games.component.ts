@@ -2,17 +2,19 @@ import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { GameService } from '../core/services/game.service';
 import { GameSummary } from '../shared/models/game.model';
+import { PaginatedResponse } from '../shared/models/pagination.model';
 import { CommonModule } from '@angular/common';
 import { of, combineLatest, BehaviorSubject } from 'rxjs';
 import { switchMap, tap } from 'rxjs/operators';
 import { UiService } from '../core/services/ui.service';
 import { PlatformService } from '../core/services/platform.service';
 import { GameCardComponent } from '../game-card/game-card.component';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-platform-games',
   standalone: true,
-  imports: [CommonModule, GameCardComponent],
+  imports: [CommonModule, GameCardComponent, FormsModule],
   templateUrl: './platform-games.component.html',
   styleUrls: ['./platform-games.component.css']
 })
@@ -26,6 +28,7 @@ export class PlatformGamesComponent implements OnInit {
   totalElements = 0;
   pageSize = 50;
   sortOrder$ = new BehaviorSubject<string>('rating-desc');
+  pageInput: number = 1;
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -47,6 +50,7 @@ export class PlatformGamesComponent implements OnInit {
         // Reset pagination if platform changes
         if (this.platformId !== newPlatformId) {
           this.currentPage = 0;
+          this.pageInput = 1;
         }
 
         this.platformId = newPlatformId;
@@ -63,7 +67,14 @@ export class PlatformGamesComponent implements OnInit {
 
   loadGames(sortOrder: string = this.sortOrder$.value) {
     if (!this.platformId) {
-      return of([]);
+      // Ensure a consistent return type: Observable<PaginatedResponse<GameSummary>>
+      return of({
+        content: [],
+        totalElements: 0,
+        totalPages: 0,
+        size: this.pageSize,
+        number: 0
+      });
     }
 
     let sortString = 'rating desc';
@@ -81,23 +92,58 @@ export class PlatformGamesComponent implements OnInit {
       sort: sortString
     };
 
-    return this.gameService.filterGames(request).pipe(
-      tap(response => {
-        this.games = response;
-        this.totalElements = response.length; // This might not be accurate if the API doesn't return total elements
+    return this.gameService.filterGamesPaginated(request).pipe(
+      tap((response: PaginatedResponse<GameSummary> | GameSummary[]) => {
+        // Usamos un type guard para diferenciar entre respuesta paginada y array directo
+        if (response && 'content' in response) {
+          this.games = response.content;
+          this.totalElements = response.totalElements || 0;
+          this.totalPages = response.totalPages || 0;
+        } else if (Array.isArray(response)) {
+          // Fallback para cuando la API devuelve un array directamente
+          this.games = response;
+          this.totalElements = response.length;
+          // Estimamos las páginas totales
+          this.totalPages = this.games.length === this.pageSize ? this.currentPage + 2 : this.currentPage + 1;
+        } else {
+          // Si la respuesta es inválida o vacía
+          this.games = [];
+          this.totalElements = 0;
+          this.totalPages = 0;
+        }
+
+        // Asegurar que haya al menos 1 página si hay juegos pero totalPages es 0
+        if (this.totalPages === 0 && this.games.length > 0) {
+          this.totalPages = 1;
+        }
+
         this.cdr.detectChanges();
       })
     );
   }
 
   onPageChange(page: number): void {
-    this.currentPage = page;
-    this.loadGames().subscribe();
+    if (page >= 0 && page < this.totalPages) {
+      this.currentPage = page;
+      this.pageInput = page + 1;
+      this.loadGames().subscribe();
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  }
+
+  onPageInputChange(): void {
+    if (this.pageInput >= 1 && this.pageInput <= this.totalPages) {
+      this.onPageChange(this.pageInput - 1);
+    } else {
+      // Reset input if invalid
+      this.pageInput = this.currentPage + 1;
+    }
   }
 
   onSortChange(event: Event): void {
     const select = event.target as HTMLSelectElement;
     this.currentPage = 0; // Reset to first page on sort change
+    this.pageInput = 1;
     this.sortOrder$.next(select.value);
   }
 
@@ -121,5 +167,47 @@ export class PlatformGamesComponent implements OnInit {
       default:
         return 'M21 6H3c-1.1 0-2 .9-2 2v8c0 1.1.9 2 2 2h18c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm-10 7H8v3H6v-3H3v-2h3V8h2v3h3v2zm4.5 2c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5zm4 0c-.83 0-1.5-.67-1.5-1.5s.67-1.5 1.5-1.5 1.5.67 1.5 1.5-.67 1.5-1.5 1.5z';
     }
+  }
+
+  getPaginationNumbers(): (number | string)[] {
+    const pages: (number | string)[] = [];
+    const maxVisiblePages = 5;
+
+    if (this.totalPages <= maxVisiblePages) {
+      for (let i = 0; i < this.totalPages; i++) {
+        pages.push(i + 1);
+      }
+    } else {
+      // Always show first page
+      pages.push(1);
+
+      let startPage = Math.max(2, this.currentPage - 1);
+      let endPage = Math.min(this.totalPages - 1, this.currentPage + 3);
+
+      if (this.currentPage < 3) {
+        endPage = Math.min(this.totalPages - 1, 5);
+      }
+
+      if (this.currentPage > this.totalPages - 4) {
+        startPage = Math.max(2, this.totalPages - 4);
+      }
+
+      if (startPage > 2) {
+        pages.push('...');
+      }
+
+      for (let i = startPage; i <= endPage; i++) {
+        pages.push(i);
+      }
+
+      if (endPage < this.totalPages - 1) {
+        pages.push('...');
+      }
+
+      // Always show last page
+      pages.push(this.totalPages);
+    }
+
+    return pages;
   }
 }
