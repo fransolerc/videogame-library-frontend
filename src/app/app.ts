@@ -9,6 +9,7 @@ import { GameDetailModalComponent } from './game-detail-modal/game-detail-modal.
 import { LoginComponent } from './auth/login/login.component';
 import { RegisterComponent } from './auth/register/register.component';
 import { AuthWidgetComponent } from './auth-widget/auth-widget.component';
+import { ToastContainerComponent } from './shared/components/toast/toast-container.component';
 
 @Component({
   selector: 'app-root',
@@ -19,7 +20,8 @@ import { AuthWidgetComponent } from './auth-widget/auth-widget.component';
     GameDetailModalComponent,
     LoginComponent,
     RegisterComponent,
-    AuthWidgetComponent
+    AuthWidgetComponent,
+    ToastContainerComponent
   ],
   templateUrl: './app.html',
   styleUrls: ['./app.css']

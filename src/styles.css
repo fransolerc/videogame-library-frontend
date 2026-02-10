@@ -21,6 +21,9 @@
   --bg-modal: #1a2a33;            /* Fondo sólido para modales */
   --bg-overlay: rgba(0, 0, 0, 0.8); /* Fondo oscuro para overlays */
   --bg-navbar: rgba(15, 32, 49, 0.9); /* Fondo navbar */
+  --bg-toast-success: #28a745;
+  --bg-toast-error: #dc3545;
+  --bg-toast-info: #007bff;
 
   /* Texto */
   --text-main: #ffffff;           /* Texto blanco puro */
