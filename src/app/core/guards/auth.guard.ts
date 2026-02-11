@@ -11,9 +11,9 @@ import { ToastService } from '../services/toast.service';
 export class AuthGuard implements CanActivate {
 
   constructor(
-    private authService: AuthService,
-    private router: Router,
-    private toastService: ToastService
+    private readonly authService: AuthService,
+    private readonly router: Router,
+    private readonly toastService: ToastService
   ) {}
 
   canActivate(
