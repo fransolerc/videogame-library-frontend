@@ -103,33 +103,29 @@ export class LibraryComponent implements OnInit, AfterViewInit, OnDestroy {
         if (!userGames || userGames.length === 0) {
           return of([]);
         }
-        const gameObservables: Observable<LibraryDisplayGame | null>[] = userGames.map(userGame => {
-          const details$ = this.gameService.getGameById(userGame.gameId);
-          const summary$ = this.gameService.filterGames({ filter: `id = ${userGame.gameId}` }).pipe(
-            map(games => (games && games.length > 0) ? games[0] : null)
-          );
 
-          return forkJoin({ details: details$, summary: summary$ }).pipe(
-            map(({ details, summary }) => {
-              if (!details) return null;
-              return {
-                ...summary,
-                ...details,
+        const gameIds = userGames.map(ug => ug.gameId);
+        return this.gameService.getGamesByIds(gameIds).pipe(
+          map((games: Game[]) => {
+            const gamesMap = new Map(games.map(g => [g.id, g]));
+            return userGames.map(userGame => {
+              const gameDetails = gamesMap.get(userGame.gameId);
+              return gameDetails ? {
+                ...gameDetails,
                 status: userGame.status,
                 isFavorite: userGame.isFavorite
-              } as LibraryDisplayGame;
-            }),
-            catchError(error => {
-              console.warn(`Could not load combined data for game ID ${userGame.gameId}:`, error);
-              return of(null);
-            })
-          );
-        });
-        return forkJoin(gameObservables);
+              } : null;
+            }).filter((g): g is LibraryDisplayGame => g !== null);
+          }),
+          catchError(error => {
+            console.error(`Failed to load batch game data:`, error);
+            return of([]);
+          })
+        );
       })
     ).subscribe({
       next: (games) => {
-        this.allGames = games.filter((game): game is LibraryDisplayGame => game !== null);
+        this.allGames = games;
         this.applyFilters(this.sortInput.value, this.platformFilterInput.value, []);
         this.isLoading = false;
         this.cdr.detectChanges();

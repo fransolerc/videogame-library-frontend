@@ -19,6 +19,10 @@ export class GameService {
     return this.http.get<Game>(`${this.apiUrl}/${id}`);
   }
 
+  getGamesByIds(ids: number[]): Observable<Game[]> {
+    return this.http.post<Game[]>(`${this.apiUrl}/batch`, ids);
+  }
+
   searchGames(name: string): Observable<GameSummary[]> {
     return this.http.get<GameSummary[]>(`${this.apiUrl}/search?name=${name}`);
   }
