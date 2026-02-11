@@ -27,7 +27,7 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 
   latestGames: GameSummary[] = [];
   topRatedGames: GameSummary[] = [];
-  searchResults$: Observable<GameSummary[]>;
+  searchResults: GameSummary[] = [];
   isSearching$: Observable<boolean>;
   platforms$: Observable<Platform[]>;
   isAuthenticated$: Observable<boolean>;
@@ -62,59 +62,63 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 
     this.isSearching$ = this.searchInput.pipe(map(term => !!term));
 
-    const searchResultsRaw$ = combineLatest([this.searchInput, this.platformFilterInput, this.platforms$]).pipe(
-      debounceTime(300),
-      distinctUntilChanged(),
-      tap(([term]) => {
-        this.lastSearchTerm = term;
-        if (term) {
-          this.isLoadingSearch = true;
-          this.cdr.detectChanges();
-        }
-      }),
-      switchMap(([term, platformId, allPlatforms]) => {
-        if (!term) {
-          this.isLoadingSearch = false;
-          this.cdr.detectChanges();
-          return of([]);
-        }
-        return this.gameService.searchGames(term).pipe(
-          map(games => {
-            if (platformId !== 'all' && allPlatforms) {
-              const selectedPlatformName = allPlatforms.find(p => p.id === platformId)?.name;
-              if (selectedPlatformName) {
-                return games.filter(game => game.platforms?.includes(selectedPlatformName));
-              }
-            }
-            return games;
-          }),
-          finalize(() => {
-            this.isLoadingSearch = false;
-            this.cdr.detectChanges();
-          })
-        );
-      }),
-      tap(games => this.hasResults = games.length > 0)
-    );
 
-    this.searchResults$ = combineLatest([searchResultsRaw$, this.sortInput]).pipe(
-      map(([games, sortKey]) => {
-        if (!games || games.length === 0) return [];
-        const sortedGames = [...games];
-        switch (sortKey) {
-          case 'name-asc':
-            return sortedGames.sort((a, b) => a.name.localeCompare(b.name));
-          case 'name-desc':
-            return sortedGames.sort((a, b) => b.name.localeCompare(a.name));
-          case 'date-desc':
-            return sortedGames.sort((a, b) => new Date(b.releaseDate!).getTime() - new Date(a.releaseDate!).getTime());
-          case 'date-asc':
-            return sortedGames.sort((a, b) => new Date(a.releaseDate!).getTime() - new Date(b.releaseDate!).getTime());
-          case 'rating-desc':
-            return sortedGames.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-          default:
-            return games;
-        }
+    this.subscriptions.add(
+      combineLatest([this.searchInput, this.platformFilterInput, this.platforms$, this.sortInput]).pipe(
+        debounceTime(300),
+        distinctUntilChanged((
+          [prevTerm, prevPlatform, prevPlatforms, prevSort],
+          [currTerm, currPlatform, currPlatforms, currSort]
+        ) => prevTerm === currTerm && prevPlatform === currPlatform && prevSort === currSort),
+        tap(([term]) => {
+          this.lastSearchTerm = term;
+          if (term) {
+            this.isLoadingSearch = true;
+            this.cdr.detectChanges();
+          } else {
+            this.isLoadingSearch = false;
+            this.searchResults = [];
+            this.cdr.detectChanges();
+          }
+        }),
+        switchMap(([term, platformId, allPlatforms, sortKey]) => {
+          if (!term) return of([]);
+
+          return this.gameService.searchGames(term).pipe(
+            map(games => {
+              if (platformId !== 'all' && allPlatforms) {
+                const selectedPlatformName = allPlatforms.find(p => p.id === platformId)?.name;
+                if (selectedPlatformName) {
+                  games = games.filter(game => game.platforms?.includes(selectedPlatformName));
+                }
+              }
+
+              const sortedGames = [...games];
+              switch (sortKey) {
+                case 'name-asc':
+                  return sortedGames.sort((a, b) => a.name.localeCompare(b.name));
+                case 'name-desc':
+                  return sortedGames.sort((a, b) => b.name.localeCompare(a.name));
+                case 'date-desc':
+                  return sortedGames.sort((a, b) => new Date(b.releaseDate!).getTime() - new Date(a.releaseDate!).getTime());
+                case 'date-asc':
+                  return sortedGames.sort((a, b) => new Date(a.releaseDate!).getTime() - new Date(b.releaseDate!).getTime());
+                case 'rating-desc':
+                  return sortedGames.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+                default:
+                  return games;
+              }
+            }),
+            finalize(() => {
+              this.isLoadingSearch = false;
+              this.cdr.detectChanges();
+            }),
+            tap(games => this.hasResults = games.length > 0)
+          );
+        })
+      ).subscribe(games => {
+        this.searchResults = games;
+        this.cdr.detectChanges();
       })
     );
   }
@@ -157,37 +161,39 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   private loadLatestGames(): void {
     this.isLoadingLatest = true;
     this.cdr.detectChanges();
-    combineLatest([this.sortInput, this.platformFilterInput]).pipe(
-      switchMap(([sortKey, platformId]) => {
-        const initialRequest: GameFilterRequest = {
-          filter: `involved_companies != null & first_release_date <= ${Math.floor(Date.now() / 1000)}`,
-          limit: 50
-        };
-        if (platformId !== 'all') {
-          initialRequest.filter += ` & platforms.id = ${platformId}`;
+    this.subscriptions.add(
+      combineLatest([this.sortInput, this.platformFilterInput]).pipe(
+        switchMap(([sortKey, platformId]) => {
+          const initialRequest: GameFilterRequest = {
+            filter: `involved_companies != null & first_release_date <= ${Math.floor(Date.now() / 1000)}`,
+            limit: 50
+          };
+          if (platformId !== 'all') {
+            initialRequest.filter += ` & platforms.id = ${platformId}`;
+          }
+          switch (sortKey) {
+            case 'name-asc': initialRequest.sort = 'name asc'; break;
+            case 'name-desc': initialRequest.sort = 'name desc'; break;
+            case 'date-desc': initialRequest.sort = 'first_release_date desc'; break;
+            case 'date-asc': initialRequest.sort = 'first_release_date asc'; break;
+            case 'rating-desc': initialRequest.sort = 'rating desc'; break;
+            default: initialRequest.sort = 'first_release_date desc'; break;
+          }
+          return this.gameService.filterGames(initialRequest);
+        })
+      ).subscribe({
+        next: (games) => {
+          this.latestGames = games;
+          this.isLoadingLatest = false;
+          this.cdr.detectChanges();
+        },
+        error: (err) => {
+          console.error("Failed to load latest games", err);
+          this.isLoadingLatest = false;
+          this.cdr.detectChanges();
         }
-        switch (sortKey) {
-          case 'name-asc': initialRequest.sort = 'name asc'; break;
-          case 'name-desc': initialRequest.sort = 'name desc'; break;
-          case 'date-desc': initialRequest.sort = 'first_release_date desc'; break;
-          case 'date-asc': initialRequest.sort = 'first_release_date asc'; break;
-          case 'rating-desc': initialRequest.sort = 'rating desc'; break;
-          default: initialRequest.sort = 'first_release_date desc'; break;
-        }
-        return this.gameService.filterGames(initialRequest);
       })
-    ).subscribe({
-      next: (games) => {
-        this.latestGames = games;
-        this.isLoadingLatest = false;
-        this.cdr.detectChanges();
-      },
-      error: (err) => {
-        console.error("Failed to load latest games", err);
-        this.isLoadingLatest = false;
-        this.cdr.detectChanges();
-      }
-    });
+    );
   }
 
   ngAfterViewInit(): void {

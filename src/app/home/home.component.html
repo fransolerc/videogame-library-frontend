@@ -52,10 +52,10 @@
             <app-game-card-skeleton></app-game-card-skeleton>
           }
         </div>
-      } @else if (searchResults$ | async; as games) {
+      } @else {
         @if (hasResults) {
           <div class="latest-releases-scroll-list" #searchResultsList>
-            @for (game of games; track game.id) {
+            @for (game of searchResults; track game.id) {
               <app-game-card class="game-item" [game]="game" (click)="openModal(game)"></app-game-card>
             }
           </div>
