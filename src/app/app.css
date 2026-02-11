@@ -5,6 +5,19 @@
   overflow-x: hidden;
 }
 
+/* Visually Hidden Utility */
+.visually-hidden {
+  border: 0;
+  clip: rect(0 0 0 0);
+  height: 1px;
+  margin: -1px;
+  overflow: hidden;
+  padding: 0;
+  position: absolute;
+  width: 1px;
+  white-space: nowrap; /* 1 */
+}
+
 /* Navbar Styles */
 .navbar {
   position: fixed;
@@ -211,7 +224,22 @@
 }
 
 .mobile-menu-overlay {
-  display: none;
+  /* Reset button styles */
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  color: inherit;
+  text-align: inherit;
+
+  /* Original styles */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1001;
+  display: block;
 }
 
 .main-content {
@@ -246,6 +274,13 @@
 
 /* Modal Styles */
 .modal-overlay {
+  /* Reset button styles */
+  border: none;
+  font-family: inherit;
+  color: inherit;
+  text-align: inherit;
+
+  /* Original styles */
   position: fixed;
   top: 0;
   left: 0;
@@ -597,17 +632,6 @@
   .mobile-menu-button svg {
     width: 28px;
     height: 28px;
-  }
-
-  .mobile-menu-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 1001;
-    display: block;
   }
 
   .mobile-menu {

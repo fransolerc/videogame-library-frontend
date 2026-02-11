@@ -30,7 +30,9 @@
   } @else if (games.length > 0) {
     <div class="games-grid">
       @for (game of games; track game.id) {
-        <app-game-card [game]="game" (click)="openGameModal(game.id)"></app-game-card>
+        <button class="game-item-button" (click)="openGameModal(game.id)">
+          <app-game-card [game]="game"></app-game-card>
+        </button>
       }
     </div>
 

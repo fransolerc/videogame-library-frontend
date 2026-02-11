@@ -18,7 +18,7 @@
         <h2 class="generation-title">{{ group.key }}</h2>
         <div class="platforms-list">
           @for (platform of group.platforms; track platform.id) {
-            <div class="platform-item" (click)="navigateToPlatform(platform.id)">
+            <button class="platform-item" (click)="navigateToPlatform(platform.id)">
               <div class="platform-icon">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
                   <path [attr.d]="platform.platformType | platformIcon"/>
@@ -28,7 +28,7 @@
                 <h3>{{ platform.name }}</h3>
                 <span class="platform-type">{{ platform.platformType }}</span>
               </div>
-            </div>
+            </button>
           }
         </div>
       </div>

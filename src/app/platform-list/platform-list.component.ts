@@ -5,7 +5,7 @@ import { PlatformService } from '../core/services/platform.service';
 import { Platform } from '../shared/models/platform.model';
 import { map } from 'rxjs/operators';
 import { Observable, BehaviorSubject, combineLatest } from 'rxjs';
-import { PlatformIconPipe } from '../shared/pipes/platform-icon.pipe';
+import { PlatformIconPipe } from '../shared/pipes';
 
 interface PlatformGroup {
   key: string;

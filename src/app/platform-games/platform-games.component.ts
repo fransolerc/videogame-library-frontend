@@ -10,7 +10,7 @@ import { UiService } from '../core/services/ui.service';
 import { PlatformService } from '../core/services/platform.service';
 import { GameCardComponent } from '../game-card/game-card.component';
 import { FormsModule } from '@angular/forms';
-import { PlatformIconPipe } from '../shared/pipes/platform-icon.pipe';
+import { PlatformIconPipe } from '../shared/pipes';
 import { GameCardSkeletonComponent } from '../game-card-skeleton/game-card-skeleton.component';
 
 @Component({
@@ -102,12 +102,13 @@ export class PlatformGamesComponent implements OnInit {
   }
 
   private processResponse(response: PaginatedResponse<GameSummary> | GameSummary[]): void {
+    let games: GameSummary[] = [];
     if (response && 'content' in response) {
-      this.games = response.content;
+      games = response.content;
       this.totalElements = response.totalElements || 0;
       this.totalPages = response.totalPages || 0;
     } else if (Array.isArray(response)) {
-      this.games = response;
+      games = response;
       this.totalElements = response.length;
       this.totalPages = this.games.length === this.pageSize ? this.currentPage + 2 : this.currentPage + 1;
     } else {
@@ -115,6 +116,14 @@ export class PlatformGamesComponent implements OnInit {
       this.totalElements = 0;
       this.totalPages = 0;
     }
+
+    const uniqueGames = new Map<number, GameSummary>();
+    games.forEach(game => {
+      if (!uniqueGames.has(game.id)) {
+        uniqueGames.set(game.id, game);
+      }
+    });
+    this.games = Array.from(uniqueGames.values());
 
     if (this.totalPages === 0 && this.games.length > 0) {
       this.totalPages = 1;
