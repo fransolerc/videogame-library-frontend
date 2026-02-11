@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectorRef, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectorRef, CUSTOM_ELEMENTS_SCHEMA, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Game, GameStatus } from '../shared/models/game.model';
 import { LibraryService } from '../core/services/library.service';
@@ -43,6 +43,11 @@ export class GameDetailModalComponent implements OnInit {
     private readonly cdr: ChangeDetectorRef
   ) {
     this.isAuthenticated$ = this.authService.isAuthenticated$;
+  }
+
+  @HostListener('document:keydown.escape', ['$event'])
+  onKeydownHandler(event: Event) {
+    this.closeModal();
   }
 
   ngOnInit(): void {

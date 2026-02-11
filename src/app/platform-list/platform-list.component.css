@@ -74,6 +74,13 @@
 }
 
 .platform-item {
+  /* Reset button default styles */
+  font-family: inherit;
+  font-size: inherit;
+  color: inherit;
+  cursor: pointer;
+
+  /* Existing styles */
   background: var(--bg-card);
   backdrop-filter: blur(10px);
   border: 1px solid var(--border-light);
@@ -83,7 +90,6 @@
   flex-direction: column;
   align-items: center;
   text-align: center;
-  cursor: pointer;
   transition: all 0.3s ease;
   height: 100%;
   box-sizing: border-box;
@@ -104,7 +110,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(79, 172, 254, 0.1);
+  background: rgba(var(--primary-color-rgb), 0.1);
   border-radius: 50%;
   padding: 12px;
   flex-shrink: 0;
@@ -112,7 +118,7 @@
 }
 
 .platform-item:hover .platform-icon {
-  background: rgba(79, 172, 254, 0.2);
+  background: rgba(var(--primary-color-rgb), 0.2);
   transform: scale(1.1);
 }
 

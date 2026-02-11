@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, HostListener } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { Observable } from 'rxjs';
@@ -45,6 +45,13 @@ export class App {
     this.showLoginModal$ = this.uiService.showLoginModal$;
     this.showRegisterModal$ = this.uiService.showRegisterModal$;
     this.isMobileMenuOpen$ = this.uiService.isMobileMenuOpen$;
+  }
+
+  @HostListener('document:keydown.escape', ['$event'])
+  onKeydownHandler(event: Event) {
+    this.uiService.closeGameModal();
+    this.uiService.closeLoginModal();
+    this.uiService.closeRegisterModal();
   }
 
   logout(): void {

@@ -1,5 +1,12 @@
 /* Estilos base (Mobile First) */
 .modal-overlay {
+  /* Reset button styles */
+  border: none;
+  font-family: inherit;
+  color: inherit;
+  text-align: inherit;
+
+  /* Original styles */
   position: fixed;
   top: 0;
   left: 0;
@@ -310,16 +317,26 @@
   gap: 0.5rem;
 }
 
+.screenshot-button {
+  /* Reset button styles */
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  color: inherit;
+  text-align: inherit;
+  cursor: pointer;
+}
+
 .screenshot-img {
   width: 100%;
   height: 100px;
   object-fit: cover;
   border-radius: 8px;
   transition: transform 0.2s;
-  cursor: pointer;
 }
 
-.screenshot-img:hover {
+.screenshot-button:hover .screenshot-img {
   transform: scale(1.05);
 }
 
@@ -343,6 +360,13 @@
 }
 
 .lightbox-overlay {
+  /* Reset button styles */
+  border: none;
+  font-family: inherit;
+  color: inherit;
+  text-align: inherit;
+
+  /* Original styles */
   position: fixed;
   top: 0;
   left: 0;

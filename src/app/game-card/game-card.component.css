@@ -90,6 +90,11 @@
 }
 
 .platform-tag {
+  /* Reset button styles */
+  font-family: inherit;
+  text-align: inherit;
+
+  /* Original styles */
   background: var(--bg-card);
   color: var(--text-secondary);
   padding: 3px 8px;

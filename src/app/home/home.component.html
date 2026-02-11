@@ -56,7 +56,9 @@
         @if (hasResults) {
           <div class="latest-releases-scroll-list" #searchResultsList>
             @for (game of searchResults; track game.id) {
-              <app-game-card class="game-item" [game]="game" (click)="openModal(game)"></app-game-card>
+              <button class="game-item-button" (click)="openModal(game)">
+                <app-game-card class="game-item" [game]="game"></app-game-card>
+              </button>
             }
           </div>
         } @else {
@@ -84,7 +86,9 @@
     } @else {
       <div class="latest-releases-scroll-list" #latestReleasesList>
         @for (game of latestGames; track game.id) {
-          <app-game-card class="game-item" [game]="game" (click)="openModal(game)"></app-game-card>
+          <button class="game-item-button" (click)="openModal(game)">
+            <app-game-card class="game-item" [game]="game"></app-game-card>
+          </button>
         }
       </div>
     }
@@ -106,7 +110,9 @@
     } @else {
       <div class="latest-releases-scroll-list" #topRatedList>
         @for (game of topRatedGames; track game.id) {
-          <app-game-card class="game-item" [game]="game" (click)="openModal(game)"></app-game-card>
+          <button class="game-item-button" (click)="openModal(game)">
+            <app-game-card class="game-item" [game]="game"></app-game-card>
+          </button>
         }
       </div>
     }

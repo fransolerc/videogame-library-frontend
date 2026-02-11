@@ -17,7 +17,7 @@
   @if (game.platforms; as platforms) {
     <div class="game-platforms">
       @for (platform of platforms.slice(0, 3); track platform) {
-        <span class="platform-tag" [class.clickable]="isPlatformClickable" (click)="onPlatformClick(platform, $event)">{{ platform }}</span>
+        <button class="platform-tag" [class.clickable]="isPlatformClickable" (click)="onPlatformClick(platform, $event)">{{ platform }}</button>
       }
       @if (platforms.length > 3) {
         <span class="platform-more">+{{ platforms.length - 3 }}</span>

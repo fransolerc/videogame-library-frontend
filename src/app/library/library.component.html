@@ -60,9 +60,9 @@
         <div class="horizontal-scroll-container">
           <ul class="game-list" #favoritesList>
             @for (game of favorites; track game.id) {
-              <li class="game-list-item" (click)="openGameModal(game)">
+              <button class="game-list-item" (click)="openGameModal(game)">
                 <app-game-card [game]="game" [isPlatformClickable]="false"></app-game-card>
-              </li>
+              </button>
             }
           </ul>
         </div>
@@ -80,9 +80,9 @@
         <div class="horizontal-scroll-container">
           <ul class="game-list" #wantToPlayList>
             @for (game of wantToPlay; track game.id) {
-              <li class="game-list-item" (click)="openGameModal(game)">
+              <button class="game-list-item" (click)="openGameModal(game)">
                 <app-game-card [game]="game" [isPlatformClickable]="false"></app-game-card>
-              </li>
+              </button>
             }
           </ul>
         </div>
@@ -100,9 +100,9 @@
         <div class="horizontal-scroll-container">
           <ul class="game-list" #playingList>
             @for (game of playing; track game.id) {
-              <li class="game-list-item" (click)="openGameModal(game)">
+              <button class="game-list-item" (click)="openGameModal(game)">
                 <app-game-card [game]="game" [isPlatformClickable]="false"></app-game-card>
-              </li>
+              </button>
             }
           </ul>
         </div>
@@ -120,9 +120,9 @@
         <div class="horizontal-scroll-container">
           <ul class="game-list" #completedList>
             @for (game of completed; track game.id) {
-              <li class="game-list-item" (click)="openGameModal(game)">
+              <button class="game-list-item" (click)="openGameModal(game)">
                 <app-game-card [game]="game" [isPlatformClickable]="false"></app-game-card>
-              </li>
+              </button>
             }
           </ul>
         </div>

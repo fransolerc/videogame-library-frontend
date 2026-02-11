@@ -2,6 +2,7 @@ import { Component, EventEmitter, Output } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
 import { CommonModule } from '@angular/common';
+import { UiService } from '../../core/services/ui.service';
 
 @Component({
   selector: 'app-login',
@@ -17,7 +18,8 @@ export class LoginComponent {
 
   constructor(
     private readonly fb: FormBuilder,
-    private readonly authService: AuthService
+    private readonly authService: AuthService,
+    private readonly uiService: UiService
   ) {
     this.loginForm = this.fb.group({
       email: ['', [Validators.required, Validators.email]],
@@ -35,7 +37,7 @@ export class LoginComponent {
 
     this.authService.login(email, password).subscribe({
       next: () => {
-        // El login fue exitoso, el modal se cerrará desde el componente principal
+        this.uiService.closeLoginModal();
       },
       error: (err) => {
         this.errorMessage = 'Email o contraseña incorrectos. Por favor, inténtalo de nuevo.';

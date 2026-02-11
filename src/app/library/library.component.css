@@ -155,6 +155,16 @@
 }
 
 .game-list-item {
+  /* Reset button styles */
+  background: none;
+  border: none;
+  padding: 0;
+  font-family: inherit;
+  color: inherit;
+  text-align: inherit;
+  cursor: pointer;
+
+  /* Original styles */
   width: 240px;
   margin-right: 1.5rem;
   flex-shrink: 0;
