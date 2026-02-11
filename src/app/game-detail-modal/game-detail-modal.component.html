@@ -108,17 +108,46 @@
           </div>
         }
 
-        @if (game.screenshots?.length) {
-          <div class="modal-section">
-            <h3>Galería</h3>
-            <div class="screenshots-grid">
-              @for (screenshot of game.screenshots; track screenshot) {
-                <button class="screenshot-button" (click)="openLightbox(screenshot)">
-                  <img [src]="screenshot" alt="Screenshot" class="screenshot-img">
-                </button>
-              }
+        @if (game.screenshots; as screenshots) {
+          @if (screenshots.length > 0) {
+            <div class="modal-section">
+              <h3>Galería</h3>
+              <div class="carousel-container">
+                <div #carouselTrack class="carousel-track"
+                     (mousedown)="dragStart($event)"
+                     (mousemove)="dragMove($event)"
+                     (mouseup)="dragEnd()"
+                     (mouseleave)="dragEnd()">
+                  <!-- Clon de la última imagen -->
+                  @if (screenshots.length > 1) {
+                    <div class="carousel-slide">
+                      <img [src]="screenshots[screenshots.length - 1]" alt="Screenshot" class="screenshot-img" (dragstart)="$event.preventDefault()">
+                    </div>
+                  }
+                  <!-- Imágenes originales -->
+                  @for (screenshot of screenshots; track screenshot) {
+                    <div class="carousel-slide">
+                      <img [src]="screenshot" alt="Screenshot" class="screenshot-img" (dragstart)="$event.preventDefault()">
+                    </div>
+                  }
+                  <!-- Clon de la primera imagen -->
+                  @if (screenshots.length > 1) {
+                    <div class="carousel-slide">
+                      <img [src]="screenshots[0]" alt="Screenshot" class="screenshot-img" (dragstart)="$event.preventDefault()">
+                    </div>
+                  }
+                </div>
+                @if (screenshots.length > 1) {
+                  <button class="carousel-button prev" (click)="prevScreenshot()" aria-label="Anterior" title="Anterior">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/></svg>
+                  </button>
+                  <button class="carousel-button next" (click)="nextScreenshot()" aria-label="Siguiente" title="Siguiente">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/></svg>
+                  </button>
+                }
+              </div>
             </div>
-          </div>
+          }
         }
 
         @if (game.videos?.length) {

@@ -1,9 +1,9 @@
-import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectorRef, CUSTOM_ELEMENTS_SCHEMA, HostListener } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectorRef, CUSTOM_ELEMENTS_SCHEMA, HostListener, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Game, GameStatus } from '../shared/models/game.model';
 import { LibraryService } from '../core/services/library.service';
 import { AuthService } from '../core/services/auth.service';
-import { finalize } from 'rxjs/operators';
+import { tap } from 'rxjs/operators'; // Cambiado de finalize a tap
 import '@justinribeiro/lite-youtube';
 import { UiService } from '../core/services/ui.service';
 import { GameService } from '../core/services/game.service';
@@ -22,6 +22,7 @@ export class GameDetailModalComponent implements OnInit {
   @Input({ required: true }) gameId!: number;
   @Input() platforms?: string[];
   @Output() closeModalEvent = new EventEmitter<void>();
+  @ViewChild('carouselTrack') carouselTrack!: ElementRef<HTMLDivElement>;
 
   game: Game | null = null;
   currentLibraryStatus: GameStatus | null = null;
@@ -31,6 +32,14 @@ export class GameDetailModalComponent implements OnInit {
   isSummaryExpanded = false;
   isStorylineExpanded = false;
   isAuthenticated$: Observable<boolean>;
+  currentIndex = 1;
+  isCarouselSetup = false;
+
+  // Propiedades para el carrusel arrastrable
+  isDragging = false;
+  startX = 0;
+  currentTranslate = 0;
+  prevTranslate = 0;
 
   GameStatus = GameStatus;
 
@@ -59,22 +68,44 @@ export class GameDetailModalComponent implements OnInit {
     const userId = this.authService.getUserId();
     const gameDetails$ = this.gameService.getGameById(this.gameId);
 
+    const handleGameLoaded = (gameData: Game) => {
+      this.game = { ...gameData, platforms: this.platforms };
+      this.cdr.detectChanges();
+      setTimeout(() => this.setupCarousel(), 0);
+    };
+
     if (userId) {
       const gameStatus$ = this.libraryService.getGameFromLibrary(userId, this.gameId);
-
       forkJoin({ details: gameDetails$, status: gameStatus$ }).subscribe(({ details, status }) => {
-        this.game = { ...details, platforms: this.platforms };
         if (status) {
           this.currentLibraryStatus = status.status;
           this.isCurrentGameFavorite = status.isFavorite || false;
         }
-        this.cdr.detectChanges();
+        handleGameLoaded(details);
       });
     } else {
-      gameDetails$.subscribe(details => {
-        this.game = { ...details, platforms: this.platforms };
-        this.cdr.detectChanges();
-      });
+      gameDetails$.subscribe(handleGameLoaded);
+    }
+  }
+
+  setupCarousel(): void {
+    if (this.isCarouselSetup || !this.carouselTrack?.nativeElement || !this.game?.screenshots?.length) return;
+
+    this.carouselTrack.nativeElement.addEventListener('transitionend', () => this.handleTransitionEnd());
+    this.updatePosition(false);
+    this.isCarouselSetup = true;
+  }
+
+  handleTransitionEnd(): void {
+    if (!this.game?.screenshots) return;
+    const numScreenshots = this.game.screenshots.length;
+
+    if (this.currentIndex === 0) {
+      this.currentIndex = numScreenshots;
+      this.updatePosition(false);
+    } else if (this.currentIndex === numScreenshots + 1) {
+      this.currentIndex = 1;
+      this.updatePosition(false);
     }
   }
 
@@ -92,36 +123,36 @@ export class GameDetailModalComponent implements OnInit {
 
   handleLibraryAction(status: GameStatus): void {
     const userId = this.authService.getUserId();
-    if (!userId || !this.game) {
-      return;
-    }
+    if (!userId || !this.game) return;
+
     this.isAddingToLibrary = true;
-    if (this.currentLibraryStatus === status) {
-      this.libraryService.removeGameFromLibrary(userId, this.game.id).pipe(finalize(() => {
-        this.isAddingToLibrary = false;
-        this.cdr.detectChanges();
-      })).subscribe(() => {
+    const action$: Observable<any> = this.currentLibraryStatus === status
+      ? this.libraryService.removeGameFromLibrary(userId, this.game.id)
+      : this.libraryService.addOrUpdateGameInLibrary(userId, { gameId: this.game.id, status });
+
+    action$.pipe(
+      tap({
+        finalize: () => {
+          this.isAddingToLibrary = false;
+          this.cdr.detectChanges();
+        }
+      })
+    ).subscribe((result: any) => {
+      if (this.currentLibraryStatus === status) {
         this.currentLibraryStatus = null;
-        this.uiService.notifyLibraryChanged();
         this.toastService.showSuccess('Juego eliminado de tu biblioteca');
-      });
-    } else {
-      this.libraryService.addOrUpdateGameInLibrary(userId, { gameId: this.game.id, status }).pipe(finalize(() => {
-        this.isAddingToLibrary = false;
-        this.cdr.detectChanges();
-      })).subscribe(userGame => {
-        this.currentLibraryStatus = userGame.status;
-        this.uiService.notifyLibraryChanged();
+      } else if (result) {
+        this.currentLibraryStatus = result.status;
         this.toastService.showSuccess('Biblioteca actualizada');
-      });
-    }
+      }
+      this.uiService.notifyLibraryChanged();
+    });
   }
 
   toggleFavorite(): void {
     const userId = this.authService.getUserId();
-    if (!userId || !this.game) {
-      return;
-    }
+    if (!userId || !this.game) return;
+
     const action$ = this.isCurrentGameFavorite
       ? this.libraryService.removeFavorite(userId, this.game.id)
       : this.libraryService.addFavorite(userId, this.game.id);
@@ -130,11 +161,7 @@ export class GameDetailModalComponent implements OnInit {
       this.isCurrentGameFavorite = !this.isCurrentGameFavorite;
       this.uiService.notifyLibraryChanged();
       this.cdr.detectChanges();
-      if (this.isCurrentGameFavorite) {
-        this.toastService.showSuccess('Añadido a favoritos');
-      } else {
-        this.toastService.showInfo('Eliminado de favoritos');
-      }
+      this.toastService.showSuccess(this.isCurrentGameFavorite ? 'Añadido a favoritos' : 'Eliminado de favoritos');
     });
   }
 
@@ -154,5 +181,59 @@ export class GameDetailModalComponent implements OnInit {
 
   stopPropagation(event: Event): void {
     event.stopPropagation();
+  }
+
+  nextScreenshot(): void {
+    if (!this.game?.screenshots || this.game.screenshots.length <= 1) return;
+    this.currentIndex++;
+    this.updatePosition(true);
+  }
+
+  prevScreenshot(): void {
+    if (!this.game?.screenshots || this.game.screenshots.length <= 1) return;
+    this.currentIndex--;
+    this.updatePosition(true);
+  }
+
+  dragStart(event: MouseEvent): void {
+    this.isDragging = true;
+    this.startX = event.pageX;
+    this.prevTranslate = this.currentTranslate;
+    this.carouselTrack.nativeElement.classList.add('grabbing');
+  }
+
+  dragMove(event: MouseEvent): void {
+    if (!this.isDragging) return;
+    const currentPosition = event.pageX;
+    this.currentTranslate = this.prevTranslate + currentPosition - this.startX;
+    this.setSliderPosition(false);
+  }
+
+  dragEnd(): void {
+    this.isDragging = false;
+    this.carouselTrack.nativeElement.classList.remove('grabbing');
+    const movedBy = this.currentTranslate - this.prevTranslate;
+
+    if (movedBy < -100) {
+      this.nextScreenshot();
+    } else if (movedBy > 100) {
+      this.prevScreenshot();
+    } else {
+      this.updatePosition(true);
+    }
+  }
+
+  updatePosition(withTransition = false): void {
+    if (!this.carouselTrack?.nativeElement) return;
+    const slideWidth = this.carouselTrack.nativeElement.clientWidth;
+    this.currentTranslate = this.currentIndex * -slideWidth;
+    this.prevTranslate = this.currentTranslate;
+    this.setSliderPosition(withTransition);
+  }
+
+  setSliderPosition(withTransition = false): void {
+    if (!this.carouselTrack?.nativeElement) return;
+    this.carouselTrack.nativeElement.style.transition = withTransition ? 'transform 0.3s ease-out' : 'none';
+    this.carouselTrack.nativeElement.style.transform = `translateX(${this.currentTranslate}px)`;
   }
 }
