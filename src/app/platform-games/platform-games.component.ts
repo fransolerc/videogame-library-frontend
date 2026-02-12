@@ -110,7 +110,7 @@ export class PlatformGamesComponent implements OnInit {
     } else if (Array.isArray(response)) {
       games = response;
       this.totalElements = response.length;
-      this.totalPages = this.games.length === this.pageSize ? this.currentPage + 2 : this.currentPage + 1;
+      this.totalPages = games.length === this.pageSize ? this.currentPage + 2 : this.currentPage + 1;
     } else {
       this.games = [];
       this.totalElements = 0;
