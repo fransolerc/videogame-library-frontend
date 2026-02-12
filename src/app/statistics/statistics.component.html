@@ -42,7 +42,9 @@
             yAxisLabel="Plataforma"
             [animations]="true"
             [roundEdges]="true"
-            [barPadding]="8">
+            [barPadding]="8"
+            [showGridLines]="true"
+            [xAxisTickFormatting]="integerAxisTickFormatting">
           </ngx-charts-bar-horizontal>
         </div>
       </div>
@@ -51,23 +53,48 @@
     @if (releaseYearData.length > 0) {
       <div class="statistic-section chart-section">
         <h2>Años de Lanzamiento Favoritos</h2>
-        <div class="chart-container vertical">
-          <ngx-charts-bar-vertical
-            [results]="releaseYearData"
-            [scheme]="colorScheme"
-            [xAxis]="true"
-            [yAxis]="true"
-            [legend]="false"
-            [showXAxisLabel]="true"
-            [showYAxisLabel]="true"
-            xAxisLabel="Año"
-            yAxisLabel="Número de Juegos"
-            [animations]="true"
-            [roundEdges]="true"
-            [barPadding]="8"
-            (select)="onSelectYear($event)">
-          </ngx-charts-bar-vertical>
-        </div>
+        @if (isSmallScreen$ | async) {
+          <!-- Gráfica Horizontal para Móvil -->
+          <div class="chart-container horizontal" [style.--bar-count]="releaseYearData.length">
+            <ngx-charts-bar-horizontal
+              [results]="releaseYearData"
+              [scheme]="colorScheme"
+              [xAxis]="true"
+              [yAxis]="true"
+              [legend]="false"
+              [showXAxisLabel]="true"
+              [showYAxisLabel]="true"
+              xAxisLabel="Número de Juegos"
+              yAxisLabel="Año"
+              [animations]="true"
+              [roundEdges]="true"
+              [barPadding]="8"
+              [showGridLines]="true"
+              [xAxisTickFormatting]="integerAxisTickFormatting">
+            </ngx-charts-bar-horizontal>
+          </div>
+        } @else {
+          <!-- Gráfica Vertical para Escritorio -->
+          <div class="chart-container vertical" [style.--year-count]="releaseYearData.length">
+            <ngx-charts-bar-vertical
+              [results]="releaseYearData"
+              [scheme]="colorScheme"
+              [xAxis]="true"
+              [yAxis]="true"
+              [legend]="false"
+              [showXAxisLabel]="true"
+              [showYAxisLabel]="true"
+              xAxisLabel="Año"
+              yAxisLabel="Número de Juegos"
+              [animations]="true"
+              [roundEdges]="true"
+              [barPadding]="8"
+              [showGridLines]="true"
+              [yAxisTickFormatting]="integerAxisTickFormatting"
+              (select)="onSelectYear($event)">
+            </ngx-charts-bar-vertical>
+          </div>
+        }
       </div>
     }
 

@@ -28,7 +28,7 @@
 
   @if (isLoadingGames) {
     <div class="games-grid">
-      @for (i of [].constructor(20); track i) {
+      @for (i of [].constructor(20); track $index) {
         <app-game-card-skeleton></app-game-card-skeleton>
       }
     </div>
