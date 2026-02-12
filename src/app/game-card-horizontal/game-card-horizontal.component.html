@@ -3,9 +3,31 @@
     <img [src]="game.coverImageUrl" [alt]="game.name" class="game-cover">
   </div>
   <div class="game-info">
-    <h3 class="game-name">{{ game.name }}</h3>
-    @if (game.releaseDate) {
-      <span class="game-year">({{ game.releaseDate | date: 'yyyy' }})</span>
+    <div class="info-line">
+      <div class="title-year-group">
+        <h3 class="game-name">{{ game.name }}</h3>
+        @if (game.releaseDate) {
+          <span class="game-year">({{ game.releaseDate | date: 'yyyy' }})</span>
+        }
+      </div>
+      @if (game.rating !== undefined && game.rating !== null) {
+        <div class="card-rating">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="star-icon">
+            <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63L2,9.24l5.46 4.73L5.82 21z"/>
+          </svg>
+          <span>{{ game.rating | number:'1.1-1' }}</span>
+        </div>
+      }
+    </div>
+    @if (game.platforms && game.platforms.length > 0) {
+      <div class="game-platforms">
+        @for (platform of game.platforms.slice(0, 4); track platform) {
+          <span class="platform-tag">{{ platform }}</span>
+        }
+        @if (game.platforms.length > 4) {
+          <span class="platform-more">+{{ game.platforms.length - 4 }}</span>
+        }
+      </div>
     }
   </div>
 </div>
