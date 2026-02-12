@@ -74,9 +74,19 @@
 }
 
 .chart-container {
-  height: 400px;
   width: 100%;
   margin-top: 1rem;
+}
+
+/* Default height for vertical bar chart */
+.chart-container.vertical {
+  height: 400px;
+}
+
+/* Dynamic height for horizontal bar charts */
+.chart-container.horizontal {
+  height: calc(var(--bar-count, 5) * 50px + 40px); /* 50px per bar + padding */
+  max-height: 400px; /* Max height to avoid excessive space */
 }
 
 /* Improve chart text visibility on dark backgrounds */
