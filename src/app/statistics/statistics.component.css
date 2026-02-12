@@ -1,0 +1,89 @@
+.statistics-container {
+  padding: 0;
+}
+
+.loading-indicator, .error-message {
+  text-align: center;
+  padding: 20px;
+  color: var(--text-main);
+}
+
+.error-message {
+  color: var(--secondary-color);
+}
+
+.statistics-content {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.statistic-section {
+  border: 1px solid var(--border-light);
+  padding: 1.5rem;
+  border-radius: 8px;
+  background-color: var(--bg-card);
+}
+
+.statistic-section h2 {
+  margin-top: 0;
+  color: var(--text-main);
+  font-size: 1.2rem;
+  text-align: center;
+}
+
+.statistic-section ul {
+  padding-left: 0;
+  list-style: none;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.empty-statistics-message {
+  text-align: center;
+  padding: 20px;
+  grid-column: 1 / -1;
+  color: var(--text-muted);
+}
+
+.main-stats .statistic-section h2 {
+  font-size: 1rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.main-stats {
+  grid-column: 1 / -1;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.main-stat-value {
+  font-size: 3rem;
+  font-weight: bold;
+  text-align: center;
+  margin: 0;
+  color: var(--primary-color);
+}
+
+.chart-section {
+  grid-column: 1 / -1;
+}
+
+.chart-container {
+  height: 400px;
+  width: 100%;
+  margin-top: 1rem;
+}
+
+/* Improve chart text visibility on dark backgrounds */
+:host ::ng-deep .ngx-charts text {
+  fill: var(--text-secondary) !important;
+}
+
+:host ::ng-deep .ngx-charts .grid-line {
+  stroke: var(--border-light) !important;
+}
