@@ -1,0 +1,55 @@
+:host {
+  display: block;
+  background: var(--bg-card);
+  border-radius: 8px;
+  overflow: hidden;
+  transition: background-color 0.3s ease;
+  cursor: pointer;
+}
+
+:host:hover {
+  background: var(--bg-card-hover);
+}
+
+.card-horizontal {
+  display: flex;
+  align-items: center;
+  padding: 8px;
+}
+
+.image-container {
+  width: 60px;
+  height: 80px;
+  flex-shrink: 0;
+  margin-right: 12px;
+}
+
+.game-cover {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.game-info {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  color: var(--text-main);
+  overflow: hidden;
+}
+
+.game-name {
+  font-size: 0.9rem;
+  font-weight: 500;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.game-year {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  flex-shrink: 0;
+}
