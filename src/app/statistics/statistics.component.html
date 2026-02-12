@@ -57,9 +57,22 @@
             [showXAxisLabel]="true"
             [showYAxisLabel]="true"
             xAxisLabel="Año"
-            yAxisLabel="Número de Juegos">
+            yAxisLabel="Número de Juegos"
+            [animations]="true"
+            [roundEdges]="true"
+            [barPadding]="8"
+            (select)="onSelectYear($event)">
           </ngx-charts-bar-vertical>
         </div>
+      </div>
+    }
+
+    @if (selectedYear && selectedYearGames.length > 0) {
+      <div class="statistic-section selected-games-section">
+        <h3>Juegos del año {{ selectedYear }}</h3>
+        <ul>
+          <li *ngFor="let game of selectedYearGames">{{ game.name }}</li>
+        </ul>
       </div>
     }
 

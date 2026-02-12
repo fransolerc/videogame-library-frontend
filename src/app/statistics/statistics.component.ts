@@ -24,14 +24,15 @@ export class StatisticsComponent implements OnInit {
   error: string | null = null;
 
   releaseYearData: { name: string; value: number }[] = [];
+  allGames: Game[] = [];
+  selectedYear: string | null = null;
+  selectedYearGames: Game[] = [];
 
   colorScheme: Color = {
-    name: 'vivid',
+    name: 'yearGradient',
     selectable: true,
     group: ScaleType.Ordinal,
-    domain: [
-      '#38bdf8', '#fbbf24', '#34d399', '#f87171', '#a78bfa',
-    ]
+    domain: []
   };
 
   constructor(
@@ -59,7 +60,10 @@ export class StatisticsComponent implements OnInit {
         }
         const gameIds = favoriteUserGames.map(ug => ug.gameId);
         return this.gameService.getGamesByIds(gameIds).pipe(
-          map(games => ({ games, userGames: favoriteUserGames }))
+          map(games => {
+            this.allGames = games;
+            return { games, userGames: favoriteUserGames };
+          })
         );
       })
     );
@@ -104,6 +108,8 @@ export class StatisticsComponent implements OnInit {
           this.releaseYearData = Array.from(fullYearRange.entries())
             .map(([year, count]) => ({ name: year.toString(), value: count }))
             .sort((a, b) => Number(a.name) - Number(b.name));
+
+          this.generateColorScheme(minYear, maxYear);
         }
 
         this.loading = false;
@@ -116,6 +122,37 @@ export class StatisticsComponent implements OnInit {
         this.cdr.detectChanges();
       }
     });
+  }
+
+  onSelectYear(event: { name: string; value: number }): void {
+    this.selectedYear = event.name;
+    const year = Number(this.selectedYear);
+    this.selectedYearGames = this.allGames.filter(game => {
+      return game.releaseDate && new Date(game.releaseDate).getFullYear() === year;
+    });
+  }
+
+  private generateColorScheme(minYear: number, maxYear: number): void {
+    const startColor = '#e0f2fe';
+    const endColor = '#3b82f6';
+
+    const colors = this.releaseYearData.map(data => {
+      const year = Number(data.name);
+      const factor = (maxYear - minYear) === 0 ? 0.5 : (year - minYear) / (maxYear - minYear);
+      return this.interpolateColor(startColor, endColor, factor);
+    });
+
+    this.colorScheme.domain = colors;
+  }
+
+  private interpolateColor(color1: string, color2: string, factor: number): string {
+    const result = color1.slice(1).match(/.{2}/g)!.map((hex, i) => {
+      const c1 = Number.parseInt(hex, 16);
+      const c2 = Number.parseInt(color2.slice(1).match(/.{2}/g)![i], 16);
+      const c = Math.round(c1 + factor * (c2 - c1));
+      return ('0' + c.toString(16)).slice(-2);
+    }).join('');
+    return `#${result}`;
   }
 
   private calculateGenreStats(games: Game[]): GenrePreference[] {
