@@ -57,15 +57,34 @@
           </svg>
           Favoritos
         </h2>
-        <div class="horizontal-scroll-container">
-          <ul class="game-list" #favoritesList>
-            @for (game of favorites; track game.id) {
-              <button class="game-list-item" (click)="openGameModal(game)">
+
+        <div class="paginated-grid-container">
+          <ul class="game-grid">
+            @for (game of paginatedFavorites; track game.id) {
+              <button class="game-grid-item" (click)="openGameModal(game)">
                 <app-game-card [game]="game" [isPlatformClickable]="false"></app-game-card>
               </button>
             }
           </ul>
         </div>
+
+        @if (pagination.favorites.totalPages > 1) {
+          <div class="pagination-controls">
+            <button class="pagination-btn" (click)="changePage('favorites', 'prev')" [disabled]="pagination.favorites.currentPage === 1">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+              </svg>
+              Anterior
+            </button>
+            <span class="page-indicator">Página {{ pagination.favorites.currentPage }} de {{ pagination.favorites.totalPages }}</span>
+            <button class="pagination-btn" (click)="changePage('favorites', 'next')" [disabled]="pagination.favorites.currentPage === pagination.favorites.totalPages">
+              Siguiente
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+              </svg>
+            </button>
+          </div>
+        }
       </section>
     }
 
@@ -77,15 +96,33 @@
           </svg>
           Quiero Jugar
         </h2>
-        <div class="horizontal-scroll-container">
-          <ul class="game-list" #wantToPlayList>
-            @for (game of wantToPlay; track game.id) {
-              <button class="game-list-item" (click)="openGameModal(game)">
+        <div class="paginated-grid-container">
+          <ul class="game-grid">
+            @for (game of paginatedWantToPlay; track game.id) {
+              <button class="game-grid-item" (click)="openGameModal(game)">
                 <app-game-card [game]="game" [isPlatformClickable]="false"></app-game-card>
               </button>
             }
           </ul>
         </div>
+
+        @if (pagination.wantToPlay.totalPages > 1) {
+          <div class="pagination-controls">
+            <button class="pagination-btn" (click)="changePage('wantToPlay', 'prev')" [disabled]="pagination.wantToPlay.currentPage === 1">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+              </svg>
+              Anterior
+            </button>
+            <span class="page-indicator">Página {{ pagination.wantToPlay.currentPage }} de {{ pagination.wantToPlay.totalPages }}</span>
+            <button class="pagination-btn" (click)="changePage('wantToPlay', 'next')" [disabled]="pagination.wantToPlay.currentPage === pagination.wantToPlay.totalPages">
+              Siguiente
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+              </svg>
+            </button>
+          </div>
+        }
       </section>
     }
 
@@ -97,15 +134,33 @@
           </svg>
           Jugando
         </h2>
-        <div class="horizontal-scroll-container">
-          <ul class="game-list" #playingList>
-            @for (game of playing; track game.id) {
-              <button class="game-list-item" (click)="openGameModal(game)">
+        <div class="paginated-grid-container">
+          <ul class="game-grid">
+            @for (game of paginatedPlaying; track game.id) {
+              <button class="game-grid-item" (click)="openGameModal(game)">
                 <app-game-card [game]="game" [isPlatformClickable]="false"></app-game-card>
               </button>
             }
           </ul>
         </div>
+
+        @if (pagination.playing.totalPages > 1) {
+          <div class="pagination-controls">
+            <button class="pagination-btn" (click)="changePage('playing', 'prev')" [disabled]="pagination.playing.currentPage === 1">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+              </svg>
+              Anterior
+            </button>
+            <span class="page-indicator">Página {{ pagination.playing.currentPage }} de {{ pagination.playing.totalPages }}</span>
+            <button class="pagination-btn" (click)="changePage('playing', 'next')" [disabled]="pagination.playing.currentPage === pagination.playing.totalPages">
+              Siguiente
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+              </svg>
+            </button>
+          </div>
+        }
       </section>
     }
 
@@ -117,15 +172,33 @@
           </svg>
           Completados
         </h2>
-        <div class="horizontal-scroll-container">
-          <ul class="game-list" #completedList>
-            @for (game of completed; track game.id) {
-              <button class="game-list-item" (click)="openGameModal(game)">
+        <div class="paginated-grid-container">
+          <ul class="game-grid">
+            @for (game of paginatedCompleted; track game.id) {
+              <button class="game-grid-item" (click)="openGameModal(game)">
                 <app-game-card [game]="game" [isPlatformClickable]="false"></app-game-card>
               </button>
             }
           </ul>
         </div>
+
+        @if (pagination.completed.totalPages > 1) {
+          <div class="pagination-controls">
+            <button class="pagination-btn" (click)="changePage('completed', 'prev')" [disabled]="pagination.completed.currentPage === 1">
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
+              </svg>
+              Anterior
+            </button>
+            <span class="page-indicator">Página {{ pagination.completed.currentPage }} de {{ pagination.completed.totalPages }}</span>
+            <button class="pagination-btn" (click)="changePage('completed', 'next')" [disabled]="pagination.completed.currentPage === pagination.completed.totalPages">
+              Siguiente
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
+                <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+              </svg>
+            </button>
+          </div>
+        }
       </section>
     }
 
