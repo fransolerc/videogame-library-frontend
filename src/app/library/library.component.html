@@ -134,6 +134,16 @@
         <p>Tu biblioteca está vacía.</p>
         <p>Añade juegos desde la página principal para verlos aquí.</p>
       </div>
+    } @else {
+      <section class="game-section">
+        <h2 class="section-title">
+          <svg class="section-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6h-6z"/>
+          </svg>
+          Estadísticas de Favoritos
+        </h2>
+        <app-statistics></app-statistics>
+      </section>
     }
   }
 </div>

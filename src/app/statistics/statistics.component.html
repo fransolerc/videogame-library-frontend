@@ -1,0 +1,91 @@
+<div class="statistics-container">
+  <div *ngIf="loading" class="loading-indicator">
+    <p>Cargando estadísticas...</p>
+  </div>
+
+  <div *ngIf="error" class="error-message">
+    <p>{{ error }}</p>
+  </div>
+
+  <div *ngIf="!loading && !error && statistics" class="statistics-content">
+    @if (statistics.totalGames || statistics.averageRating) {
+      <div class="main-stats">
+        @if (statistics.totalGames) {
+          <div class="statistic-section">
+            <h2>Juegos Favoritos</h2>
+            <p class="main-stat-value">{{ statistics.totalGames }}</p>
+          </div>
+        }
+
+        @if (statistics.averageRating) {
+          <div class="statistic-section">
+            <h2>Puntuación Media</h2>
+            <p class="main-stat-value">{{ statistics.averageRating.toFixed(2) }}</p>
+          </div>
+        }
+      </div>
+    }
+
+    @if (statistics.favoriteGenres && statistics.favoriteGenres.length > 0) {
+      <div class="statistic-section">
+        <h2>Géneros Favoritos</h2>
+        <ul>
+          <li *ngFor="let genre of statistics.favoriteGenres">{{ genre.genre }}: {{ genre.count }}</li>
+        </ul>
+      </div>
+    }
+
+    @if (statistics.favoritePlatforms && statistics.favoritePlatforms.length > 0) {
+      <div class="statistic-section">
+        <h2>Plataformas Favoritas</h2>
+        <ul>
+          <li *ngFor="let platform of statistics.favoritePlatforms">{{ platform.platform }}: {{ platform.count }}</li>
+        </ul>
+      </div>
+    }
+
+    @if (releaseYearData.length > 0) {
+      <div class="statistic-section chart-section">
+        <h2>Años de Lanzamiento Favoritos</h2>
+        <div class="chart-container">
+          <ngx-charts-bar-vertical
+            [results]="releaseYearData"
+            [scheme]="colorScheme"
+            [xAxis]="true"
+            [yAxis]="true"
+            [legend]="false"
+            [showXAxisLabel]="true"
+            [showYAxisLabel]="true"
+            xAxisLabel="Año"
+            yAxisLabel="Número de Juegos"
+            [animations]="true"
+            [roundEdges]="true"
+            [barPadding]="8"
+            (select)="onSelectYear($event)">
+          </ngx-charts-bar-vertical>
+        </div>
+      </div>
+    }
+
+    @if (selectedYear && selectedYearGames.length > 0) {
+      <div class="statistic-section selected-games-section">
+        <h3>Juegos del año {{ selectedYear }}</h3>
+        <ul>
+          <li *ngFor="let game of selectedYearGames">{{ game.name }}</li>
+        </ul>
+      </div>
+    }
+
+    @if (
+      !statistics.totalGames &&
+      !statistics.averageRating &&
+      (!statistics.favoriteGenres || statistics.favoriteGenres.length === 0) &&
+      (!statistics.favoritePlatforms || statistics.favoritePlatforms.length === 0) &&
+      (!statistics.favoriteReleaseYears || statistics.favoriteReleaseYears.length === 0)
+    ) {
+      <div class="empty-statistics-message">
+        <p>No tienes juegos favoritos para mostrar estadísticas.</p>
+      </div>
+    }
+  </div>
+</div>

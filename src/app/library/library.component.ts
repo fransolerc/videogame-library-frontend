@@ -4,20 +4,21 @@ import { GameService } from '../core/services/game.service';
 import { LibraryService } from '../core/services/library.service';
 import { AuthService } from '../core/services/auth.service';
 import { Game, GameStatus, UserGame } from '../shared/models/game.model';
-import { forkJoin, of, Subscription, fromEvent, Subject, BehaviorSubject, combineLatest, Observable } from 'rxjs';
+import { of, Subscription, fromEvent, Subject, BehaviorSubject, combineLatest, Observable } from 'rxjs';
 import { switchMap, map, takeUntil, catchError } from 'rxjs/operators';
 import { GameCardComponent } from '../game-card/game-card.component';
 import { UiService } from '../core/services/ui.service';
 import { PlatformService } from '../core/services/platform.service';
 import { Platform } from '../shared/models/platform.model';
 import { GameCardSkeletonComponent } from '../game-card-skeleton/game-card-skeleton.component';
+import { StatisticsComponent } from '../statistics/statistics.component';
 
 type LibraryDisplayGame = Game & { status: GameStatus; isFavorite: boolean | undefined; };
 
 @Component({
   selector: 'app-library',
   standalone: true,
-  imports: [CommonModule, GameCardComponent, GameCardSkeletonComponent],
+  imports: [CommonModule, GameCardComponent, GameCardSkeletonComponent, StatisticsComponent],
   templateUrl: './library.component.html',
   styleUrls: ['./library.component.css']
 })
