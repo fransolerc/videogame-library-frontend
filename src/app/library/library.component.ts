@@ -6,19 +6,19 @@ import { AuthService } from '../core/services/auth.service';
 import { Game, GameStatus, UserGame } from '../shared/models/game.model';
 import { of, Subject, BehaviorSubject, combineLatest, Observable } from 'rxjs';
 import { switchMap, map, takeUntil, catchError } from 'rxjs/operators';
-import { GameCardComponent } from '../game-card/game-card.component';
 import { UiService } from '../core/services/ui.service';
 import { PlatformService } from '../core/services/platform.service';
 import { Platform } from '../shared/models/platform.model';
-import { GameCardSkeletonComponent } from '../game-card-skeleton/game-card-skeleton.component';
 import { StatisticsComponent } from '../statistics/statistics.component';
+import { GameCardHorizontalComponent } from '../game-card-horizontal/game-card-horizontal.component';
+import { GameCardHorizontalSkeletonComponent } from '../game-card-horizontal-skeleton/game-card-horizontal-skeleton.component';
 
 type LibraryDisplayGame = Game & { status: GameStatus; isFavorite: boolean | undefined; };
 
 @Component({
   selector: 'app-library',
   standalone: true,
-  imports: [CommonModule, GameCardComponent, GameCardSkeletonComponent, StatisticsComponent],
+  imports: [CommonModule, GameCardHorizontalComponent, GameCardHorizontalSkeletonComponent, StatisticsComponent],
   templateUrl: './library.component.html',
   styleUrls: ['./library.component.css']
 })
@@ -38,7 +38,7 @@ export class LibraryComponent implements OnInit, OnDestroy {
   isLoading = true;
 
   // Pagination properties
-  pageSize = 16;
+  pageSize = 10; // Ajustado para listas verticales
   pagination = {
     favorites: { currentPage: 1, totalPages: 1 },
     wantToPlay: { currentPage: 1, totalPages: 1 },

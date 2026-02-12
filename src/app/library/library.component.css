@@ -1,43 +1,11 @@
-/* Contenedor principal que define los márgenes de toda la página */
 .library-container {
   padding: 2rem;
-}
-
-/* Se eliminan los max-width y márgenes automáticos para un alineamiento consistente */
-.library-header,
-.home-controls,
-.empty-library-message {
-  max-width: none;
-  margin-left: 0;
-  margin-right: 0;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .library-header {
-  padding-top: 2rem;
   margin-bottom: 2rem;
-}
-
-.home-controls {
-  display: flex;
-  gap: 1rem;
-  align-items: center;
-  width: 100%;
-  box-sizing: border-box;
-  margin-bottom: 2rem;
-}
-
-/* Las secciones de juegos NO tienen max-width, ocupan el ancho del contenedor padre */
-.game-section {
-  margin-bottom: 3rem;
-}
-
-.empty-library-message {
-  text-align: center;
-  color: var(--text-muted);
-  padding: 4rem;
-  border: 2px dashed var(--border-light);
-  border-radius: 10px;
-  margin-top: 2rem;
 }
 
 .library-header h1 {
@@ -45,16 +13,22 @@
   font-size: 2.5rem;
 }
 
+.home-controls {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  margin-bottom: 2rem;
+}
+
 .filter-container {
   position: relative;
   display: flex;
   align-items: center;
-  flex-shrink: 0;
 }
 
 .filter-icon {
   position: absolute;
-  left: 12px;
+  left: 15px;
   top: 50%;
   transform: translateY(-50%);
   width: 18px;
@@ -65,27 +39,26 @@
 }
 
 .sort-select {
-  padding: 10px 15px 10px 40px;
+  padding: 10px 20px 10px 45px;
   font-size: 0.9rem;
   font-family: 'Poppins', sans-serif;
   color: var(--text-main);
-  background: var(--bg-card-hover);
+  background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
-  border: 1px solid var(--border-hover);
+  border: 1px solid var(--border-light);
   border-radius: 25px;
   -webkit-appearance: none;
   appearance: none;
   cursor: pointer;
   transition: all 0.3s ease;
   min-width: 200px;
-  text-overflow: ellipsis;
 }
 
 .sort-select:hover {
-  background-color: rgba(56, 189, 248, 0.2);
-  color: var(--primary-color);
-  border-color: rgba(56, 189, 248, 0.3);
+  background-color: rgba(var(--primary-color-rgb), 0.2);
+  border-color: rgba(var(--primary-color-rgb), 0.3);
+  color: var(--primary-color); /* Añadido para consistencia */
 }
 
 .sort-select:focus {
@@ -96,6 +69,10 @@
 .sort-select option {
   background: var(--bg-modal);
   color: var(--text-main);
+}
+
+.game-section {
+  margin-bottom: 3rem;
 }
 
 .section-title {
@@ -113,70 +90,49 @@
   width: 28px;
   height: 28px;
   margin-right: 15px;
-  fill: var(--secondary-color); /* Color dorado por defecto */
+  fill: var(--secondary-color);
 }
 
-/* Colores específicos para cada icono si es necesario */
-.game-section:nth-of-type(1) .section-icon { fill: var(--secondary-color); } /* Favoritos */
-.game-section:nth-of-type(2) .section-icon { fill: var(--status-want-to-play); } /* Quiero Jugar */
-.game-section:nth-of-type(3) .section-icon { fill: var(--status-playing); } /* Jugando */
-.game-section:nth-of-type(4) .section-icon { fill: var(--status-completed); } /* Completados */
-.game-section:last-of-type {
-  margin-bottom: 0;
-}
-.game-section:last-of-type .section-icon { fill: var(--primary-color); } /* Estadísticas */
-
-
-.horizontal-scroll-container {
-  position: relative;
-}
-
-.game-list {
+.vertical-list {
   display: flex;
-  overflow-x: auto;
-  padding-bottom: 1.5rem;
-  list-style: none;
-  margin: 0;
-  scrollbar-width: thin;
-  scrollbar-color: #555 #2a2a2a;
+  flex-direction: column;
+  gap: 1rem;
+  margin-bottom: 2rem;
 }
 
-.game-list::-webkit-scrollbar {
-  height: 8px;
+.pagination-controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
 }
 
-.game-list::-webkit-scrollbar-track {
-  background: #2a2a2a;
-}
-
-.game-list::-webkit-scrollbar-thumb {
-  background-color: #555;
-  border-radius: 4px;
-}
-
-.game-list::-webkit-scrollbar-thumb:hover {
-  background-color: #777;
-}
-
-.game-list-item {
-  /* Reset button styles */
-  background: none;
-  border: none;
-  padding: 0;
-  font-family: inherit;
-  color: inherit;
-  text-align: inherit;
+.pagination-btn {
+  padding: 0.5rem 1rem;
+  background-color: var(--bg-card);
+  border: 1px solid var(--border-light);
+  border-radius: 8px;
+  color: var(--text-main);
   cursor: pointer;
-
-  /* Original styles */
-  width: 240px;
-  margin-right: 1.5rem;
-  flex-shrink: 0;
-  transition: transform 0.2s ease-in-out;
 }
 
-.game-list-item:hover {
-  transform: translateY(-5px);
+.pagination-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.empty-library-message {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 4rem;
+  border: 2px dashed var(--border-light);
+  border-radius: 10px;
+  margin-top: 2rem;
+}
+
+.skeleton-container .vertical-list {
+  margin-bottom: 2rem;
 }
 
 @media (max-width: 768px) {
@@ -186,85 +142,12 @@
     gap: 1.5rem;
   }
 
-  .home-controls .filter-container {
+  .filter-container {
     width: 100%;
   }
 
-  .home-controls .sort-select {
+  .sort-select {
     width: 100%;
     min-width: 0;
   }
-}
-
-/* Estilos para la cuadrícula paginada */
-.paginated-grid-container {
-  margin-bottom: 2rem;
-}
-
-.game-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 1.5rem;
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.game-grid-item {
-  /* Reset button styles */
-  background: none;
-  border: none;
-  padding: 0;
-  font-family: inherit;
-  color: inherit;
-  text-align: inherit;
-  cursor: pointer;
-  width: 100%;
-  transition: transform 0.2s ease-in-out;
-}
-
-.game-grid-item:hover {
-  transform: translateY(-5px);
-}
-
-/* Controles de paginación */
-.pagination-controls {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 1rem;
-  margin-top: 2rem;
-}
-
-.pagination-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  background-color: var(--bg-card);
-  border: 1px solid var(--border-light);
-  border-radius: 8px;
-  color: var(--text-main);
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.pagination-btn:hover:not(:disabled) {
-  background-color: var(--bg-card-hover);
-  border-color: var(--primary-color);
-}
-
-.pagination-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-
-.pagination-btn svg {
-  width: 20px;
-  height: 20px;
-}
-
-.page-indicator {
-  color: var(--text-secondary);
-  font-size: 0.9rem;
 }

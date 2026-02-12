@@ -53,7 +53,7 @@
       </h2>
       @if (isLoadingSearch) {
         <div class="vertical-list">
-          @for (i of [].constructor(10); track i) {
+          @for (i of [].constructor(10); track $index) {
             <app-game-card-horizontal-skeleton></app-game-card-horizontal-skeleton>
           }
         </div>
@@ -86,7 +86,7 @@
         </h2>
         @if (isLoadingLatest) {
           <div class="vertical-list">
-            @for (i of [].constructor(20); track i) {
+            @for (i of [].constructor(20); track $index) {
               <app-game-card-horizontal-skeleton></app-game-card-horizontal-skeleton>
             }
           </div>
@@ -108,7 +108,7 @@
         </h2>
         @if (isLoadingTopRated) {
           <div class="vertical-list">
-            @for (i of [].constructor(20); track i) {
+            @for (i of [].constructor(20); track $index) {
               <app-game-card-horizontal-skeleton></app-game-card-horizontal-skeleton>
             }
           </div>

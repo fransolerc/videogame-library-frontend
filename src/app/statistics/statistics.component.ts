@@ -1,6 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { of } from 'rxjs';
+import { of, Observable } from 'rxjs';
 import { switchMap, map } from 'rxjs/operators';
 import { UserStatistics, PlatformPreference } from '../shared/models/statistics.model';
 import { AuthService } from '../core/services/auth.service';
@@ -8,11 +8,12 @@ import { LibraryService } from '../core/services/library.service';
 import { GameService } from '../core/services/game.service';
 import { UserGame, Game } from '../shared/models/game.model';
 import { NgxChartsModule, Color, ScaleType } from '@swimlane/ngx-charts';
+import { BreakpointObserver, Breakpoints, LayoutModule } from '@angular/cdk/layout';
 
 @Component({
   selector: 'app-statistics',
   standalone: true,
-  imports: [CommonModule, NgxChartsModule],
+  imports: [CommonModule, NgxChartsModule, LayoutModule],
   templateUrl: './statistics.component.html',
   styleUrls: ['./statistics.component.css']
 })
@@ -29,6 +30,8 @@ export class StatisticsComponent implements OnInit {
   selectedYear: string | null = null;
   selectedYearGames: Game[] = [];
 
+  isSmallScreen$: Observable<boolean>;
+
   colorScheme: Color = {
     name: 'yearGradient',
     selectable: true,
@@ -36,12 +39,23 @@ export class StatisticsComponent implements OnInit {
     domain: []
   };
 
+  integerAxisTickFormatting = (value: any): string => {
+    if (Math.floor(value) === value) {
+      return value.toString();
+    }
+    return '';
+  };
+
   constructor(
     private readonly authService: AuthService,
     private readonly libraryService: LibraryService,
     private readonly gameService: GameService,
-    private readonly cdr: ChangeDetectorRef
-  ) { }
+    private readonly cdr: ChangeDetectorRef,
+    private readonly breakpointObserver: BreakpointObserver
+  ) {
+    this.isSmallScreen$ = this.breakpointObserver.observe(Breakpoints.Handset)
+      .pipe(map(result => result.matches));
+  }
 
   ngOnInit(): void {
     const userId = this.authService.getUserId();
@@ -51,7 +65,6 @@ export class StatisticsComponent implements OnInit {
       return;
     }
 
-    // Using only library data for all stats to ensure consistency and correctness.
     this.libraryService.getLibrary(userId).pipe(
       switchMap((userGames: UserGame[]) => {
         const favoriteUserGames = userGames.filter(ug => ug.isFavorite);
@@ -70,44 +83,36 @@ export class StatisticsComponent implements OnInit {
       next: ({ games, userGames }) => {
         const platformStats = this.calculatePlatformStats(games);
         const yearStats = this.calculateYearStats(games);
-
-        // Limit platforms to top 5 + Others
         const processedPlatforms = this.processTopPlatforms(platformStats);
-
         const totalGames = userGames.length;
         const ratedGames = games.filter(g => g.rating !== null && g.rating !== undefined);
         const totalRating = ratedGames.reduce((acc, game) => acc + (game.rating || 0), 0);
         const averageRating = ratedGames.length > 0 ? totalRating / ratedGames.length : 0;
 
         this.statistics = {
-          favoriteGenres: [], // Genres removed as requested due to data unavailability
+          favoriteGenres: [],
           favoritePlatforms: processedPlatforms,
           favoriteReleaseYears: yearStats.map(y => ({ releaseYear: y.year, count: y.count })).sort((a, b) => b.count - a.count),
           totalGames,
           averageRating
         };
 
-        // Prepare data for charts
         this.platformData = this.statistics.favoritePlatforms.map(p => ({ name: p.platform, value: p.count }));
 
         if (this.statistics.favoriteReleaseYears.length > 0) {
           const yearData = this.statistics.favoriteReleaseYears;
           const minYear = Math.min(...yearData.map(y => y.releaseYear));
           const maxYear = Math.max(...yearData.map(y => y.releaseYear));
-
           const fullYearRange = new Map<number, number>();
           for (let year = minYear; year <= maxYear; year++) {
             fullYearRange.set(year, 0);
           }
-
           yearData.forEach(item => {
             fullYearRange.set(item.releaseYear, item.count);
           });
-
           this.releaseYearData = Array.from(fullYearRange.entries())
             .map(([year, count]) => ({ name: year.toString(), value: count }))
             .sort((a, b) => Number(a.name) - Number(b.name));
-
           this.generateColorScheme(minYear, maxYear);
         }
 
@@ -134,13 +139,11 @@ export class StatisticsComponent implements OnInit {
   private generateColorScheme(minYear: number, maxYear: number): void {
     const startColor = '#e0f2fe';
     const endColor = '#3b82f6';
-
     const colors = this.releaseYearData.map(data => {
       const year = Number(data.name);
       const factor = (maxYear - minYear) === 0 ? 0.5 : (year - minYear) / (maxYear - minYear);
       return this.interpolateColor(startColor, endColor, factor);
     });
-
     this.colorScheme.domain = colors;
   }
 
@@ -177,14 +180,12 @@ export class StatisticsComponent implements OnInit {
   }
 
   private processTopPlatforms(platforms: PlatformPreference[]): PlatformPreference[] {
-    const sorted = [...platforms].sort((a: PlatformPreference, b: PlatformPreference) => b.count - a.count);
+    const sorted = [...platforms].sort((a, b) => b.count - a.count);
     if (sorted.length <= 5) {
       return sorted;
     }
-
     const top5 = sorted.slice(0, 5);
-    const othersCount = sorted.slice(5).reduce((acc: number, curr: PlatformPreference) => acc + curr.count, 0);
-
+    const othersCount = sorted.slice(5).reduce((acc, curr) => acc + curr.count, 0);
     return [...top5, { platform: 'Otros', count: othersCount }];
   }
 }
