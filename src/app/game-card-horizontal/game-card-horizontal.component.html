@@ -1,0 +1,11 @@
+<div class="card-horizontal">
+  <div class="image-container">
+    <img [src]="game.coverImageUrl" [alt]="game.name" class="game-cover">
+  </div>
+  <div class="game-info">
+    <h3 class="game-name">{{ game.name }}</h3>
+    @if (game.releaseDate) {
+      <span class="game-year">({{ game.releaseDate | date: 'yyyy' }})</span>
+    }
+  </div>
+</div>
