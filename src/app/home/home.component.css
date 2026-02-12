@@ -138,7 +138,8 @@
 }
 
 /* --- Estilos para Secciones de Juegos --- */
-.section-container {
+.search-results-section {
+  max-width: 800px;
   margin: 2rem auto 0 auto;
 }
 
@@ -153,49 +154,11 @@
   padding-bottom: 10px;
 }
 
-/* Estilo específico para el icono dentro de .section-title */
 .section-title .section-icon {
   width: 28px;
   height: 28px;
   margin-right: 15px;
-  fill: var(--secondary-color); /* Color dorado */
-}
-
-.latest-releases-scroll-list {
-  display: grid;
-  grid-auto-flow: column;
-  grid-auto-columns: 240px;
-  gap: 1.5rem;
-  overflow-x: auto;
-  padding: 1rem 0;
-  list-style-type: none;
-  scrollbar-width: thin;
-  scrollbar-color: rgba(255, 255, 255, 0.2) transparent;
-  cursor: grab;
-}
-
-.latest-releases-scroll-list.active {
-  cursor: grabbing;
-}
-
-.latest-releases-scroll-list::-webkit-scrollbar {
-  height: 8px;
-}
-
-.latest-releases-scroll-list::-webkit-scrollbar-thumb {
-  background-color: rgba(255, 255, 255, 0.2);
-  border-radius: 4px;
-}
-
-.game-item-button {
-  /* Reset button styles */
-  background: none;
-  border: none;
-  padding: 0;
-  font-family: inherit;
-  color: inherit;
-  text-align: inherit;
-  cursor: pointer;
+  fill: var(--secondary-color);
 }
 
 .no-results {
@@ -214,7 +177,31 @@
   font-size: 1.1rem;
 }
 
-/* Responsive adjustments for home controls */
+/* --- Layout de Columnas --- */
+.home-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-top: 2rem;
+}
+
+.column-section {
+  min-width: 0;
+}
+
+.vertical-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* --- Media Queries --- */
+@media (max-width: 992px) {
+  .home-columns {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 768px) {
   .home-container {
     padding: 1rem;

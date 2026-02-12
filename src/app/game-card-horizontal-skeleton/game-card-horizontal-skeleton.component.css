@@ -1,0 +1,58 @@
+:host {
+  display: block;
+  height: 80px;
+}
+
+.card-horizontal-skeleton {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  background-color: var(--bg-card);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.image-skeleton {
+  width: 60px;
+  height: 100%;
+  background-color: var(--bg-skeleton);
+  animation: pulse 1.5s infinite;
+}
+
+.info-skeleton {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 12px;
+  flex: 1;
+}
+
+.line-skeleton {
+  height: 16px;
+  background-color: var(--bg-skeleton);
+  border-radius: 4px;
+  animation: pulse 1.5s infinite;
+}
+
+.line-skeleton.title {
+  width: 70%;
+}
+
+.line-skeleton.score {
+  width: 30%;
+  height: 14px;
+}
+
+@keyframes pulse {
+  0% {
+    background-color: var(--bg-skeleton);
+  }
+  50% {
+    background-color: var(--bg-skeleton-hover);
+  }
+  100% {
+    background-color: var(--bg-skeleton);
+  }
+}

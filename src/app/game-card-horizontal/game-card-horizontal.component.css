@@ -33,13 +33,29 @@
 
 .game-info {
   display: flex;
-  align-items: baseline;
-  gap: 8px;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
   color: var(--text-main);
   overflow: hidden;
   padding: 0 12px;
   min-width: 0;
   flex: 1;
+}
+
+.info-line {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between; /* Clave para separar título y rating */
+  gap: 8px;
+  overflow: hidden;
+}
+
+.title-year-group {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  overflow: hidden; /* Para que el ellipsis funcione */
 }
 
 .game-name {
@@ -54,5 +70,61 @@
 .game-year {
   font-size: 0.8rem;
   color: var(--text-secondary);
-  flex-shrink: 0;
+  flex-shrink: 0; /* Evita que el año se encoja */
+}
+
+.card-rating {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-weight: bold;
+  font-size: 0.9rem;
+  color: var(--secondary-color);
+  flex-shrink: 0; /* Evita que el rating se encoja */
+}
+
+.star-icon {
+  width: 14px;
+  height: 14px;
+  fill: var(--secondary-color);
+}
+
+.game-platforms {
+  display: none; /* Oculto por defecto (móvil) */
+}
+
+/* Estilos para pantallas grandes */
+@media (min-width: 768px) {
+  .game-info {
+    gap: 8px;
+  }
+
+  .game-platforms {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+  }
+
+  .platform-tag {
+    background: var(--bg-card-hover);
+    color: var(--text-secondary);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 500;
+    border: 1px solid var(--border-light);
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
+  }
+
+  .platform-tag:hover {
+    background-color: rgba(var(--primary-color-rgb), 0.2);
+    color: var(--primary-color);
+    border-color: rgba(var(--primary-color-rgb), 0.3);
+  }
+
+  .platform-more {
+    font-size: 0.7rem;
+    color: var(--text-muted);
+    padding: 2px 5px;
+  }
 }

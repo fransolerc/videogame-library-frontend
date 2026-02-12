@@ -1,7 +1,7 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, AfterViewInit, ElementRef, ViewChild, OnDestroy } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 import { GameService } from '../core/services/game.service';
-import { Observable, combineLatest, BehaviorSubject, of, Subscription, fromEvent } from 'rxjs';
+import { Observable, combineLatest, BehaviorSubject, of, Subscription } from 'rxjs';
 import { debounceTime, distinctUntilChanged, switchMap, tap, map, finalize } from 'rxjs/operators';
 import { GameSummary, GameFilterRequest } from '../shared/models/game.model';
 import { PlatformService } from '../core/services/platform.service';
@@ -9,22 +9,18 @@ import { Platform } from '../shared/models/platform.model';
 import { UiService } from '../core/services/ui.service';
 import { Router } from '@angular/router';
 import { AuthService } from '../core/services/auth.service';
-import { GameCardComponent } from '../game-card/game-card.component';
-import { GameCardSkeletonComponent } from '../game-card-skeleton/game-card-skeleton.component';
+import { GameCardHorizontalComponent } from '../game-card-horizontal/game-card-horizontal.component';
+import { GameCardHorizontalSkeletonComponent } from '../game-card-horizontal-skeleton/game-card-horizontal-skeleton.component';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [AsyncPipe, GameCardComponent, GameCardSkeletonComponent],
+  imports: [AsyncPipe, GameCardHorizontalComponent, GameCardHorizontalSkeletonComponent],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
-  @ViewChild('latestReleasesList') latestReleasesList!: ElementRef<HTMLUListElement>;
-  @ViewChild('searchResultsList') searchResultsList!: ElementRef<HTMLUListElement>;
-  @ViewChild('topRatedList') topRatedList!: ElementRef<HTMLUListElement>;
-
+export class HomeComponent implements OnInit, OnDestroy {
   latestGames: GameSummary[] = [];
   topRatedGames: GameSummary[] = [];
   searchResults: GameSummary[] = [];
@@ -42,11 +38,8 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 
   lastSearchTerm: string | null = null;
   hasResults: boolean = true;
+  searchMessage: string | null = null;
 
-  isDown = false;
-  startX = 0;
-  scrollLeft = 0;
-  isDragging = false;
   private readonly subscriptions = new Subscription();
 
   constructor(
@@ -59,20 +52,26 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   ) {
     this.platforms$ = this.platformService.getPlatforms();
     this.isAuthenticated$ = this.authService.isAuthenticated$;
-
-    this.isSearching$ = this.searchInput.pipe(map(term => !!term));
-
+    this.isSearching$ = this.searchInput.pipe(map(term => !!term.trim()));
 
     this.subscriptions.add(
       combineLatest([this.searchInput, this.platformFilterInput, this.platforms$, this.sortInput]).pipe(
         debounceTime(300),
-        distinctUntilChanged((
-          [prevTerm, prevPlatform, prevPlatforms, prevSort],
-          [currTerm, currPlatform, currPlatforms, currSort]
-        ) => prevTerm === currTerm && prevPlatform === currPlatform && prevSort === currSort),
+        distinctUntilChanged(),
         tap(([term]) => {
-          this.lastSearchTerm = term;
-          if (term) {
+          const sanitizedTerm = term.trim();
+          this.lastSearchTerm = sanitizedTerm;
+          this.searchMessage = null;
+
+          if (sanitizedTerm && sanitizedTerm.length < 3) {
+            this.isLoadingSearch = false;
+            this.searchResults = [];
+            this.searchMessage = 'Escribe al menos 3 caracteres para buscar.';
+            this.cdr.detectChanges();
+            return;
+          }
+
+          if (sanitizedTerm) {
             this.isLoadingSearch = true;
             this.cdr.detectChanges();
           } else {
@@ -82,9 +81,13 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
           }
         }),
         switchMap(([term, platformId, allPlatforms, sortKey]) => {
-          if (!term) return of([]);
+          const sanitizedTerm = term.trim().replaceAll(/\s+/g, ' ');
 
-          return this.gameService.searchGames(term).pipe(
+          if (!sanitizedTerm || sanitizedTerm.length < 3) {
+            return of([]);
+          }
+
+          return this.gameService.searchGames(sanitizedTerm).pipe(
             map(games => {
               if (platformId !== 'all' && allPlatforms) {
                 const selectedPlatformName = allPlatforms.find(p => p.id === platformId)?.name;
@@ -95,18 +98,12 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 
               const sortedGames = [...games];
               switch (sortKey) {
-                case 'name-asc':
-                  return sortedGames.sort((a, b) => a.name.localeCompare(b.name));
-                case 'name-desc':
-                  return sortedGames.sort((a, b) => b.name.localeCompare(a.name));
-                case 'date-desc':
-                  return sortedGames.sort((a, b) => new Date(b.releaseDate!).getTime() - new Date(a.releaseDate!).getTime());
-                case 'date-asc':
-                  return sortedGames.sort((a, b) => new Date(a.releaseDate!).getTime() - new Date(b.releaseDate!).getTime());
-                case 'rating-desc':
-                  return sortedGames.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-                default:
-                  return games;
+                case 'name-asc': return sortedGames.sort((a, b) => a.name.localeCompare(b.name));
+                case 'name-desc': return sortedGames.sort((a, b) => b.name.localeCompare(a.name));
+                case 'date-desc': return sortedGames.sort((a, b) => new Date(b.releaseDate!).getTime() - new Date(a.releaseDate!).getTime());
+                case 'date-asc': return sortedGames.sort((a, b) => new Date(a.releaseDate!).getTime() - new Date(b.releaseDate!).getTime());
+                case 'rating-desc': return sortedGames.sort((a, b) => (b.rating || 0) - (a.rating || 0));
+                default: return games;
               }
             }),
             finalize(() => {
@@ -126,15 +123,11 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
   ngOnInit(): void {
     this.loadTopRatedGames();
     this.loadLatestGames();
-
-    const authSubscription = this.authService.isAuthenticated$.pipe(
-      tap(isAuthenticated => {
-        if (isAuthenticated) {
-          this.uiService.closeLoginModal();
-        }
-      })
-    ).subscribe();
-    this.subscriptions.add(authSubscription);
+    this.subscriptions.add(
+      this.authService.isAuthenticated$.pipe(
+        tap(isAuthenticated => isAuthenticated && this.uiService.closeLoginModal())
+      ).subscribe()
+    );
   }
 
   private loadTopRatedGames(): void {
@@ -196,57 +189,12 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
     );
   }
 
-  ngAfterViewInit(): void {
-    if (this.latestReleasesList) this.setupDragToScroll(this.latestReleasesList);
-    if (this.searchResultsList) this.setupDragToScroll(this.searchResultsList);
-    if (this.topRatedList) this.setupDragToScroll(this.topRatedList);
-  }
-
   ngOnDestroy(): void {
     this.subscriptions.unsubscribe();
   }
 
-  private setupDragToScroll(elementRef: ElementRef<HTMLUListElement>): void {
-    if (!elementRef) return;
-    const slider = elementRef.nativeElement;
-    this.subscriptions.add(fromEvent<MouseEvent>(slider, 'mousedown').subscribe((e: MouseEvent) => {
-      this.isDown = true;
-      this.isDragging = false;
-      slider.classList.add('active');
-      this.startX = e.pageX - slider.offsetLeft;
-      this.scrollLeft = slider.scrollLeft;
-    }));
-    this.subscriptions.add(fromEvent<MouseEvent>(document, 'mouseup').subscribe(() => {
-      this.isDown = false;
-      slider.classList.remove('active');
-    }));
-    this.subscriptions.add(fromEvent<MouseEvent>(document, 'mousemove').subscribe((e: MouseEvent) => {
-      if (!this.isDown) return;
-      e.preventDefault();
-      this.isDragging = true;
-      const x = e.pageX - slider.offsetLeft;
-      const walk = (x - this.startX) * 2;
-      slider.scrollLeft = this.scrollLeft - walk;
-    }));
-  }
-
   openModal(game: GameSummary): void {
-    if (this.isDragging) {
-      this.isDragging = false;
-      return;
-    }
     this.uiService.openGameModal(game.id, game.platforms);
-  }
-
-  navigateToPlatformPage(platformName: string): void {
-    this.platforms$.pipe(
-      map(platforms => platforms.find(p => p.name === platformName)),
-      tap(platform => {
-        if (platform) {
-          this.router.navigate(['/platforms', platform.id]);
-        }
-      })
-    ).subscribe();
   }
 
   onSearch(event: Event) {
@@ -256,20 +204,26 @@ export class HomeComponent implements OnInit, AfterViewInit, OnDestroy {
 
   clearSearch() {
     this.searchInput.next('');
-    const inputElement = document.querySelector('.search-input') as HTMLInputElement;
-    if (inputElement) {
-      inputElement.value = '';
-    }
+    const searchInputElement = document.querySelector('.search-input') as HTMLInputElement;
+    if (searchInputElement) searchInputElement.value = '';
+
+    this.sortInput.next('relevance');
+    const sortSelectElement = document.getElementById('sort-by') as HTMLSelectElement;
+    if (sortSelectElement) sortSelectElement.value = 'relevance';
+
+    this.platformFilterInput.next('all');
+    const platformSelectElement = document.getElementById('platform-filter') as HTMLSelectElement;
+    if (platformSelectElement) platformSelectElement.value = 'all';
+
+    this.searchMessage = null;
   }
 
   onSortChange(event: Event) {
-    const select = event.target as HTMLSelectElement;
-    this.sortInput.next(select.value);
+    this.sortInput.next((event.target as HTMLSelectElement).value);
   }
 
   onPlatformFilterChange(event: Event) {
-    const select = event.target as HTMLSelectElement;
-    const value = select.value;
+    const value = (event.target as HTMLSelectElement).value;
     this.platformFilterInput.next(value === 'all' ? 'all' : Number(value));
   }
 }
