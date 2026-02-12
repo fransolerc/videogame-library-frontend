@@ -32,6 +32,7 @@ export class PlatformGamesComponent implements OnInit {
   sortOrder$ = new BehaviorSubject<string>('rating-desc');
   pageInput: number = 1;
   isLoadingGames = true;
+  isTotalKnown = false;
 
   constructor(
     private readonly route: ActivatedRoute,
@@ -107,14 +108,17 @@ export class PlatformGamesComponent implements OnInit {
       games = response.content;
       this.totalElements = response.totalElements || 0;
       this.totalPages = response.totalPages || 0;
+      this.isTotalKnown = true;
     } else if (Array.isArray(response)) {
       games = response;
       this.totalElements = response.length;
-      this.totalPages = this.games.length === this.pageSize ? this.currentPage + 2 : this.currentPage + 1;
+      this.totalPages = games.length === this.pageSize ? this.currentPage + 2 : this.currentPage + 1;
+      this.isTotalKnown = false;
     } else {
       this.games = [];
       this.totalElements = 0;
       this.totalPages = 0;
+      this.isTotalKnown = true;
     }
 
     const uniqueGames = new Map<number, GameSummary>();
@@ -137,7 +141,6 @@ export class PlatformGamesComponent implements OnInit {
       this.isLoadingGames = true;
       this.cdr.detectChanges();
       this.loadGames().subscribe();
-      window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }
 
@@ -162,35 +165,62 @@ export class PlatformGamesComponent implements OnInit {
   }
 
   getPaginationNumbers(): (number | string)[] {
-    const pages: (number | string)[] = [];
-    const maxVisiblePages = 5;
-
-    if (this.totalPages <= maxVisiblePages) {
-      for (let i = 0; i < this.totalPages; i++) {
-        pages.push(i + 1);
-      }
-    } else {
-      pages.push(1);
-      let startPage = Math.max(2, this.currentPage - 1);
-      let endPage = Math.min(this.totalPages - 1, this.currentPage + 3);
-
-      if (this.currentPage < 3) {
-        endPage = Math.min(this.totalPages - 1, 5);
-      }
-      if (this.currentPage > this.totalPages - 4) {
-        startPage = Math.max(2, this.totalPages - 4);
-      }
-      if (startPage > 2) {
-        pages.push('...');
-      }
-      for (let i = startPage; i <= endPage; i++) {
-        pages.push(i);
-      }
-      if (endPage < this.totalPages - 1) {
-        pages.push('...');
-      }
-      pages.push(this.totalPages);
+    if (!this.isTotalKnown) {
+      return this.getPaginationForUnknownTotal();
     }
+
+    const maxVisiblePages = 5;
+    if (this.totalPages <= maxVisiblePages) {
+      return this.getPaginationForSmallTotal();
+    }
+
+    return this.getPaginationForLargeTotal();
+  }
+
+  private getPaginationForUnknownTotal(): number[] {
+    const pages: number[] = [];
+    const startPage = Math.max(0, this.currentPage - 2);
+    const endPage = this.totalPages - 1;
+
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i + 1);
+    }
+    return pages;
+  }
+
+  private getPaginationForSmallTotal(): number[] {
+    const pages: number[] = [];
+    for (let i = 0; i < this.totalPages; i++) {
+      pages.push(i + 1);
+    }
+    return pages;
+  }
+
+  private getPaginationForLargeTotal(): (number | string)[] {
+    const pages: (number | string)[] = [];
+    pages.push(1);
+
+    let startPage = Math.max(2, this.currentPage - 1);
+    let endPage = Math.min(this.totalPages - 1, this.currentPage + 3);
+
+    if (this.currentPage < 3) {
+      endPage = Math.min(this.totalPages - 1, 5);
+    }
+    if (this.currentPage > this.totalPages - 4) {
+      startPage = Math.max(2, this.totalPages - 4);
+    }
+
+    if (startPage > 2) {
+      pages.push('...');
+    }
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+    if (endPage < this.totalPages - 1) {
+      pages.push('...');
+    }
+    pages.push(this.totalPages);
+
     return pages;
   }
 }
