@@ -26,28 +26,32 @@
       </div>
     }
 
-    @if (statistics.favoriteGenres && statistics.favoriteGenres.length > 0) {
-      <div class="statistic-section">
-        <h2>Géneros Favoritos</h2>
-        <ul>
-          <li *ngFor="let genre of statistics.favoriteGenres">{{ genre.genre }}: {{ genre.count }}</li>
-        </ul>
-      </div>
-    }
-
-    @if (statistics.favoritePlatforms && statistics.favoritePlatforms.length > 0) {
-      <div class="statistic-section">
+    @if (platformData.length > 0) {
+      <div class="statistic-section chart-section">
         <h2>Plataformas Favoritas</h2>
-        <ul>
-          <li *ngFor="let platform of statistics.favoritePlatforms">{{ platform.platform }}: {{ platform.count }}</li>
-        </ul>
+        <div class="chart-container horizontal" [style.--bar-count]="platformData.length">
+          <ngx-charts-bar-horizontal
+            [results]="platformData"
+            [scheme]="colorScheme"
+            [xAxis]="true"
+            [yAxis]="true"
+            [legend]="false"
+            [showXAxisLabel]="true"
+            [showYAxisLabel]="true"
+            xAxisLabel="Número de Juegos"
+            yAxisLabel="Plataforma"
+            [animations]="true"
+            [roundEdges]="true"
+            [barPadding]="8">
+          </ngx-charts-bar-horizontal>
+        </div>
       </div>
     }
 
     @if (releaseYearData.length > 0) {
       <div class="statistic-section chart-section">
         <h2>Años de Lanzamiento Favoritos</h2>
-        <div class="chart-container">
+        <div class="chart-container vertical">
           <ngx-charts-bar-vertical
             [results]="releaseYearData"
             [scheme]="colorScheme"
@@ -79,7 +83,6 @@
     @if (
       !statistics.totalGames &&
       !statistics.averageRating &&
-      (!statistics.favoriteGenres || statistics.favoriteGenres.length === 0) &&
       (!statistics.favoritePlatforms || statistics.favoritePlatforms.length === 0) &&
       (!statistics.favoriteReleaseYears || statistics.favoriteReleaseYears.length === 0)
     ) {

@@ -1,9 +1,8 @@
 import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { forkJoin, of } from 'rxjs';
+import { of } from 'rxjs';
 import { switchMap, map } from 'rxjs/operators';
-import { StatisticsService } from '../core/services/statistics.service';
-import { UserStatistics, GenrePreference, PlatformPreference } from '../shared/models/statistics.model';
+import { UserStatistics, PlatformPreference } from '../shared/models/statistics.model';
 import { AuthService } from '../core/services/auth.service';
 import { LibraryService } from '../core/services/library.service';
 import { GameService } from '../core/services/game.service';
@@ -24,6 +23,8 @@ export class StatisticsComponent implements OnInit {
   error: string | null = null;
 
   releaseYearData: { name: string; value: number }[] = [];
+  platformData: { name: string; value: number }[] = [];
+
   allGames: Game[] = [];
   selectedYear: string | null = null;
   selectedYearGames: Game[] = [];
@@ -36,7 +37,6 @@ export class StatisticsComponent implements OnInit {
   };
 
   constructor(
-    private readonly statisticsService: StatisticsService,
     private readonly authService: AuthService,
     private readonly libraryService: LibraryService,
     private readonly gameService: GameService,
@@ -51,8 +51,8 @@ export class StatisticsComponent implements OnInit {
       return;
     }
 
-    const analytics$ = this.statisticsService.getUserStatistics(userId);
-    const libraryGames$ = this.libraryService.getLibrary(userId).pipe(
+    // Using only library data for all stats to ensure consistency and correctness.
+    this.libraryService.getLibrary(userId).pipe(
       switchMap((userGames: UserGame[]) => {
         const favoriteUserGames = userGames.filter(ug => ug.isFavorite);
         if (favoriteUserGames.length === 0) {
@@ -66,30 +66,29 @@ export class StatisticsComponent implements OnInit {
           })
         );
       })
-    );
+    ).subscribe({
+      next: ({ games, userGames }) => {
+        const platformStats = this.calculatePlatformStats(games);
+        const yearStats = this.calculateYearStats(games);
 
-    forkJoin({ analytics: analytics$, library: libraryGames$ }).subscribe({
-      next: ({ analytics, library }) => {
-        const historicalGenres = this.calculateGenreStats(library.games);
-        const historicalPlatforms = this.calculatePlatformStats(library.games);
-        const historicalYears = this.calculateYearStats(library.games);
+        // Limit platforms to top 5 + Others
+        const processedPlatforms = this.processTopPlatforms(platformStats);
 
-        const combinedGenres = this.combineStats(historicalGenres, analytics.favoriteGenres, 'genre');
-        const combinedPlatforms = this.combineStats(historicalPlatforms, analytics.favoritePlatforms, 'platform');
-        const combinedYears = this.combineStats(historicalYears, analytics.favoriteReleaseYears.map(y => ({ year: y.releaseYear, count: y.count })), 'year');
-
-        const totalGames = library.userGames.length;
-        const ratedGames = library.games.filter(g => g.rating !== null && g.rating !== undefined);
+        const totalGames = userGames.length;
+        const ratedGames = games.filter(g => g.rating !== null && g.rating !== undefined);
         const totalRating = ratedGames.reduce((acc, game) => acc + (game.rating || 0), 0);
         const averageRating = ratedGames.length > 0 ? totalRating / ratedGames.length : 0;
 
         this.statistics = {
-          favoriteGenres: combinedGenres,
-          favoritePlatforms: combinedPlatforms,
-          favoriteReleaseYears: combinedYears.map(y => ({ releaseYear: y.year, count: y.count })),
+          favoriteGenres: [], // Genres removed as requested due to data unavailability
+          favoritePlatforms: processedPlatforms,
+          favoriteReleaseYears: yearStats.map(y => ({ releaseYear: y.year, count: y.count })).sort((a, b) => b.count - a.count),
           totalGames,
           averageRating
         };
+
+        // Prepare data for charts
+        this.platformData = this.statistics.favoritePlatforms.map(p => ({ name: p.platform, value: p.count }));
 
         if (this.statistics.favoriteReleaseYears.length > 0) {
           const yearData = this.statistics.favoriteReleaseYears;
@@ -118,7 +117,7 @@ export class StatisticsComponent implements OnInit {
       error: (err) => {
         this.error = 'Error al cargar las estadísticas.';
         this.loading = false;
-        console.error('Error fetching combined statistics:', err);
+        console.error('Error fetching statistics:', err);
         this.cdr.detectChanges();
       }
     });
@@ -155,18 +154,14 @@ export class StatisticsComponent implements OnInit {
     return `#${result}`;
   }
 
-  private calculateGenreStats(games: Game[]): GenrePreference[] {
-    const counts = new Map<string, number>();
-    games.flatMap(g => g.genres || []).forEach(genre => {
-      counts.set(genre, (counts.get(genre) || 0) + 1);
-    });
-    return Array.from(counts.entries()).map(([genre, count]) => ({ genre, count }));
-  }
-
   private calculatePlatformStats(games: Game[]): PlatformPreference[] {
     const counts = new Map<string, number>();
-    games.flatMap(g => g.platforms || []).forEach(platform => {
-      counts.set(platform, (counts.get(platform) || 0) + 1);
+    games.forEach(game => {
+      if (game.platforms && Array.isArray(game.platforms)) {
+        game.platforms.forEach(platform => {
+          counts.set(platform, (counts.get(platform) || 0) + 1);
+        });
+      }
     });
     return Array.from(counts.entries()).map(([platform, count]) => ({ platform, count }));
   }
@@ -181,17 +176,15 @@ export class StatisticsComponent implements OnInit {
     return Array.from(counts.entries()).map(([year, count]) => ({ year, count }));
   }
 
-  private combineStats<T extends { count: number }>(historical: T[], realtime: T[], key: keyof T): T[] {
-    const combined = new Map<any, number>();
-    historical.forEach(item => {
-      combined.set(item[key], (combined.get(item[key]) || 0) + item.count);
-    });
-    realtime.forEach(item => {
-      combined.set(item[key], (combined.get(item[key]) || 0) + item.count);
-    });
-    return Array.from(combined.entries()).map(([keyValue, count]) => ({
-      [key]: keyValue,
-      count
-    } as T)).sort((a, b) => b.count - a.count);
+  private processTopPlatforms(platforms: PlatformPreference[]): PlatformPreference[] {
+    const sorted = [...platforms].sort((a: PlatformPreference, b: PlatformPreference) => b.count - a.count);
+    if (sorted.length <= 5) {
+      return sorted;
+    }
+
+    const top5 = sorted.slice(0, 5);
+    const othersCount = sorted.slice(5).reduce((acc: number, curr: PlatformPreference) => acc + curr.count, 0);
+
+    return [...top5, { platform: 'Otros', count: othersCount }];
   }
 }

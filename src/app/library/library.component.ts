@@ -1,10 +1,10 @@
-import { Component, OnInit, ChangeDetectorRef, ViewChild, ElementRef, AfterViewInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GameService } from '../core/services/game.service';
 import { LibraryService } from '../core/services/library.service';
 import { AuthService } from '../core/services/auth.service';
 import { Game, GameStatus, UserGame } from '../shared/models/game.model';
-import { of, Subscription, fromEvent, Subject, BehaviorSubject, combineLatest, Observable } from 'rxjs';
+import { of, Subject, BehaviorSubject, combineLatest, Observable } from 'rxjs';
 import { switchMap, map, takeUntil, catchError } from 'rxjs/operators';
 import { GameCardComponent } from '../game-card/game-card.component';
 import { UiService } from '../core/services/ui.service';
@@ -22,29 +22,34 @@ type LibraryDisplayGame = Game & { status: GameStatus; isFavorite: boolean | und
   templateUrl: './library.component.html',
   styleUrls: ['./library.component.css']
 })
-export class LibraryComponent implements OnInit, AfterViewInit, OnDestroy {
-  @ViewChild('favoritesList') favoritesList!: ElementRef<HTMLUListElement>;
-  @ViewChild('wantToPlayList') wantToPlayList!: ElementRef<HTMLUListElement>;
-  @ViewChild('playingList') playingList!: ElementRef<HTMLUListElement>;
-  @ViewChild('completedList') completedList!: ElementRef<HTMLUListElement>;
-
+export class LibraryComponent implements OnInit, OnDestroy {
   platforms$: Observable<Platform[]>;
+
   favorites: LibraryDisplayGame[] = [];
   wantToPlay: LibraryDisplayGame[] = [];
   playing: LibraryDisplayGame[] = [];
   completed: LibraryDisplayGame[] = [];
+
+  paginatedFavorites: LibraryDisplayGame[] = [];
+  paginatedWantToPlay: LibraryDisplayGame[] = [];
+  paginatedPlaying: LibraryDisplayGame[] = [];
+  paginatedCompleted: LibraryDisplayGame[] = [];
+
   isLoading = true;
 
-  isDown = false;
-  startX = 0;
-  scrollLeft = 0;
-  isDragging = false;
+  // Pagination properties
+  pageSize = 16;
+  pagination = {
+    favorites: { currentPage: 1, totalPages: 1 },
+    wantToPlay: { currentPage: 1, totalPages: 1 },
+    playing: { currentPage: 1, totalPages: 1 },
+    completed: { currentPage: 1, totalPages: 1 }
+  };
 
   private readonly sortInput = new BehaviorSubject<string>('relevance');
   private readonly platformFilterInput = new BehaviorSubject<number | 'all'>('all');
   private allGames: LibraryDisplayGame[] = [];
 
-  private dragSubscriptions = new Subscription();
   private readonly destroy$ = new Subject<void>();
 
   constructor(
@@ -85,14 +90,9 @@ export class LibraryComponent implements OnInit, AfterViewInit, OnDestroy {
     });
   }
 
-  ngAfterViewInit(): void {
-    this.setupAllDragToScroll();
-  }
-
   ngOnDestroy(): void {
     this.destroy$.next();
     this.destroy$.complete();
-    this.dragSubscriptions.unsubscribe();
   }
 
   private loadLibrary(userId: string): void {
@@ -158,8 +158,40 @@ export class LibraryComponent implements OnInit, AfterViewInit, OnDestroy {
     this.playing = sortedGames.filter(game => game.status === GameStatus.PLAYING);
     this.completed = sortedGames.filter(game => game.status === GameStatus.COMPLETED);
 
+    this.updateAllPaginatedLists();
     this.cdr.detectChanges();
-    this.setupAllDragToScroll();
+  }
+
+  private updateAllPaginatedLists(): void {
+    this.paginatedFavorites = this.updatePaginatedList('favorites', this.favorites);
+    this.paginatedWantToPlay = this.updatePaginatedList('wantToPlay', this.wantToPlay);
+    this.paginatedPlaying = this.updatePaginatedList('playing', this.playing);
+    this.paginatedCompleted = this.updatePaginatedList('completed', this.completed);
+  }
+
+  private updatePaginatedList(
+    category: keyof typeof this.pagination,
+    sourceList: LibraryDisplayGame[]
+  ): LibraryDisplayGame[] {
+    const paginator = this.pagination[category];
+    paginator.totalPages = Math.ceil(sourceList.length / this.pageSize);
+    if (paginator.currentPage > paginator.totalPages) {
+      paginator.currentPage = Math.max(1, paginator.totalPages);
+    }
+
+    const startIndex = (paginator.currentPage - 1) * this.pageSize;
+    const endIndex = startIndex + this.pageSize;
+    return sourceList.slice(startIndex, endIndex);
+  }
+
+  changePage(category: keyof typeof this.pagination, direction: 'next' | 'prev'): void {
+    const paginator = this.pagination[category];
+    if (direction === 'next' && paginator.currentPage < paginator.totalPages) {
+      paginator.currentPage++;
+    } else if (direction === 'prev' && paginator.currentPage > 1) {
+      paginator.currentPage--;
+    }
+    this.updateAllPaginatedLists();
   }
 
   private sortGames(games: LibraryDisplayGame[], sortKey: string): LibraryDisplayGame[] {
@@ -192,52 +224,6 @@ export class LibraryComponent implements OnInit, AfterViewInit, OnDestroy {
   }
 
   openGameModal(game: Game): void {
-    if (this.isDragging) {
-      this.isDragging = false;
-      return;
-    }
     this.uiService.openGameModal(game.id, game.platforms);
-  }
-
-  private setupAllDragToScroll(): void {
-    this.dragSubscriptions.unsubscribe();
-    this.dragSubscriptions = new Subscription();
-
-    const lists = [this.favoritesList, this.wantToPlayList, this.playingList, this.completedList];
-    lists.forEach(list => {
-      if (list) {
-        this.setupDragToScroll(list);
-      }
-    });
-  }
-
-  private setupDragToScroll(elementRef: ElementRef<HTMLUListElement>): void {
-    const slider = elementRef.nativeElement;
-
-    const mouseDown$ = fromEvent<MouseEvent>(slider, 'mousedown');
-    const mouseUp$ = fromEvent<MouseEvent>(document, 'mouseup');
-    const mouseMove$ = fromEvent<MouseEvent>(document, 'mousemove');
-
-    this.dragSubscriptions.add(mouseDown$.subscribe((e: MouseEvent) => {
-      this.isDown = true;
-      this.isDragging = false;
-      slider.classList.add('active');
-      this.startX = e.pageX - slider.offsetLeft;
-      this.scrollLeft = slider.scrollLeft;
-    }));
-
-    this.dragSubscriptions.add(mouseUp$.subscribe(() => {
-      this.isDown = false;
-      slider.classList.remove('active');
-    }));
-
-    this.dragSubscriptions.add(mouseMove$.subscribe((e: MouseEvent) => {
-      if (!this.isDown) return;
-      e.preventDefault();
-      this.isDragging = true;
-      const x = e.pageX - slider.offsetLeft;
-      const walk = (x - this.startX) * 2;
-      slider.scrollLeft = this.scrollLeft - walk;
-    }));
   }
 }
