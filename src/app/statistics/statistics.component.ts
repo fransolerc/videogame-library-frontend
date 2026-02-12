@@ -177,13 +177,13 @@ export class StatisticsComponent implements OnInit {
   }
 
   private processTopPlatforms(platforms: PlatformPreference[]): PlatformPreference[] {
-    const sorted = [...platforms].sort((a: PlatformPreference, b: PlatformPreference) => b.count - a.count);
+    const sorted = platforms.toSorted((a, b) => b.count - a.count);
     if (sorted.length <= 5) {
       return sorted;
     }
 
     const top5 = sorted.slice(0, 5);
-    const othersCount = sorted.slice(5).reduce((acc: number, curr: PlatformPreference) => acc + curr.count, 0);
+    const othersCount = sorted.slice(5).reduce((acc, curr) => acc + curr.count, 0);
 
     return [...top5, { platform: 'Otros', count: othersCount }];
   }
