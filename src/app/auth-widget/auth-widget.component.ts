@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, HostListener } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, HostListener, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { User } from '../shared/models/user.model';
@@ -8,6 +8,7 @@ import { User } from '../shared/models/user.model';
   standalone: true,
   imports: [CommonModule, RouterModule],
   templateUrl: './auth-widget.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./auth-widget.component.css']
 })
 export class AuthWidgetComponent {

@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
 export interface Toast {
@@ -13,6 +13,7 @@ export interface Toast {
   standalone: true,
   imports: [CommonModule],
   templateUrl: './toast.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./toast.component.css']
 })
 export class ToastComponent implements OnInit {

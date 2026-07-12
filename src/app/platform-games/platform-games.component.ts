@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
 import { GameService } from '../core/services/game.service';
 import { GameSummary } from '../shared/models/game.model';
@@ -18,6 +18,7 @@ import { GameCardSkeletonComponent } from '../game-card-skeleton/game-card-skele
   standalone: true,
   imports: [CommonModule, GameCardComponent, FormsModule, PlatformIconPipe, GameCardSkeletonComponent],
   templateUrl: './platform-games.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./platform-games.component.css']
 })
 export class PlatformGamesComponent implements OnInit {

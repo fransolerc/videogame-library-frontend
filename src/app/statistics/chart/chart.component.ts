@@ -1,4 +1,4 @@
-import { Component, Input } from '@angular/core';
+import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { NgxChartsModule, Color, ScaleType } from '@swimlane/ngx-charts';
 
@@ -22,6 +22,7 @@ import { NgxChartsModule, Color, ScaleType } from '@swimlane/ngx-charts';
       </ngx-charts-bar-vertical>
     </div>
   `,
+  changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     .chart-wrapper {
       height: 400px;

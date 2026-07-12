@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GameService } from '../core/services/game.service';
 import { LibraryService } from '../core/services/library.service';
@@ -20,6 +20,7 @@ type LibraryDisplayGame = Game & { status: GameStatus; isFavorite: boolean | und
   standalone: true,
   imports: [CommonModule, GameCardHorizontalComponent, GameCardHorizontalSkeletonComponent, StatisticsComponent],
   templateUrl: './library.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./library.component.css']
 })
 export class LibraryComponent implements OnInit, OnDestroy {

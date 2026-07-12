@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { PlatformService } from '../core/services/platform.service';
@@ -18,6 +18,7 @@ interface PlatformGroup {
   standalone: true,
   imports: [CommonModule, PlatformIconPipe],
   templateUrl: './platform-list.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./platform-list.component.css']
 })
 export class PlatformListComponent implements OnInit {

@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { of, Observable } from 'rxjs';
 import { switchMap, map } from 'rxjs/operators';
@@ -15,6 +15,7 @@ import { BreakpointObserver, Breakpoints, LayoutModule } from '@angular/cdk/layo
   standalone: true,
   imports: [CommonModule, NgxChartsModule, LayoutModule],
   templateUrl: './statistics.component.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./statistics.component.css']
 })
 export class StatisticsComponent implements OnInit {
