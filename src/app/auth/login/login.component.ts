@@ -13,41 +13,43 @@ import { UiService } from '../../core/services/ui.service';
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent {
-  loginForm: FormGroup;
-  errorMessage: string | null = null;
-  @Output() switchToRegister = new EventEmitter<void>();
+  public loginForm: FormGroup;
+  public errorMessage: string | null = null;
+  public isLoading: boolean = false;
+
+  @Output() public switchToRegister = new EventEmitter<void>();
 
   constructor(
     private readonly fb: FormBuilder,
     private readonly authService: AuthService,
-    private readonly uiService: UiService
+    public readonly uiService: UiService
   ) {
     this.loginForm = this.fb.group({
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [Validators.required]]
+      email: ['', { validators: [Validators.required, Validators.email] }],
+      password: ['', { validators: [Validators.required] }]
     });
   }
 
-  onSubmit(): void {
-    if (this.loginForm.invalid) {
-      return;
-    }
+  public onSubmit(): void {
+    if (this.loginForm.invalid) return;
 
     this.errorMessage = null;
+    this.isLoading = true;
     const { email, password } = this.loginForm.value;
 
     this.authService.login(email, password).subscribe({
       next: () => {
+        this.isLoading = false;
         this.uiService.closeLoginModal();
       },
-      error: (err) => {
-        this.errorMessage = 'Email o contraseña incorrectos. Por favor, inténtalo de nuevo.';
-        console.error('Error de login:', err);
+      error: (error) => {
+        this.isLoading = false;
+        this.errorMessage = error.message || 'Error al iniciar sesión';
       }
     });
   }
 
-  onSwitchToRegister() {
+  public onSwitchToRegister(): void {
     this.switchToRegister.emit();
   }
 }

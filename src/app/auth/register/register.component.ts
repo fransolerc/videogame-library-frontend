@@ -2,7 +2,7 @@ import { Component, EventEmitter, Output, ChangeDetectionStrategy } from '@angul
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
 import { CommonModule } from '@angular/common';
-import { RegisterRequest } from '../../shared/models/user.model';
+import { UiService } from '../../core/services/ui.service';
 
 @Component({
   selector: 'app-register',
@@ -13,58 +13,53 @@ import { RegisterRequest } from '../../shared/models/user.model';
   styleUrls: ['./register.component.css']
 })
 export class RegisterComponent {
-  @Output() registerSuccess = new EventEmitter<void>();
-  @Output() switchToLogin = new EventEmitter<void>();
+  public registerForm: FormGroup;
+  public errorMessage: string | null = null;
+  public isLoading: boolean = false;
 
-  registerForm: FormGroup;
-  errorMessage: string | null = null;
+  @Output() public switchToLogin = new EventEmitter<void>();
 
   constructor(
     private readonly fb: FormBuilder,
-    private readonly authService: AuthService
+    private readonly authService: AuthService,
+    public readonly uiService: UiService
   ) {
     this.registerForm = this.fb.group({
-      username: ['', [Validators.required, Validators.minLength(3)]],
-      email: ['', [Validators.required, Validators.email]],
-      password: ['', [
-        Validators.required,
-        Validators.minLength(8),
-        Validators.pattern(String.raw`^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d\W]{8,}$`)
-      ]],
-      confirmPassword: ['', [Validators.required]]
-    }, { validators: this.passwordMatchValidator });
+      username: ['', { validators: [Validators.required, Validators.minLength(3)] }],
+      email: ['', { validators: [Validators.required, Validators.email] }],
+      password: ['', { validators: [Validators.required, Validators.minLength(6)] }],
+      confirmPassword: ['', { validators: [Validators.required] }]
+    }, {
+      validators: [this.passwordMatchValidator]
+    });
   }
 
-  passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
-    const password = control.get('password')?.value;
-    const confirmPassword = control.get('confirmPassword')?.value;
-    return password === confirmPassword ? null : { mismatch: true };
+  private passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
+    const password = control.get('password');
+    const confirmPassword = control.get('confirmPassword');
+    return password && confirmPassword && password.value === confirmPassword.value ? null : { mustMatch: true };
   }
 
-  onSubmit(): void {
-    if (this.registerForm.invalid) {
-      return;
-    }
+  public onSubmit(): void {
+    if (this.registerForm.invalid) return;
 
     this.errorMessage = null;
-    const { email, username, password } = this.registerForm.value;
-    const request: RegisterRequest = { email, username, password };
+    this.isLoading = true;
+    const { username, email, password } = this.registerForm.value;
 
-    this.authService.register(request).subscribe({
+    this.authService.register({ username, email, password }).subscribe({
       next: () => {
-        this.registerSuccess.emit(); // Emitir evento de éxito para cerrar el modal
+        this.isLoading = false;
+        this.uiService.closeRegisterModal();
       },
-      error: (err) => {
-        this.errorMessage = 'Error en el registro. Por favor, inténtalo de nuevo.';
-        if (err.error?.message) {
-          this.errorMessage = err.error.message; // Mensaje de error del backend
-        }
-        console.error('Error de registro:', err);
+      error: (error) => {
+        this.isLoading = false;
+        this.errorMessage = error.message || 'Error al registrarse';
       }
     });
   }
 
-  onSwitchToLogin(): void {
+  public onSwitchToLogin(): void {
     this.switchToLogin.emit();
   }
 }

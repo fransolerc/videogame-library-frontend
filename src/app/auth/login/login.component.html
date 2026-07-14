@@ -13,41 +13,26 @@
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="input-icon">
           <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
         </svg>
-        <input id="email" type="email" formControlName="email" placeholder="Introduce tu email">
+        <input id="email" name="email" type="email" formControlName="email" placeholder="Introduce tu email" autocomplete="email">
       </div>
-      @if (loginForm.get('email')?.invalid && loginForm.get('email')?.touched) {
-        <div class="error-message">
-          @if (loginForm.get('email')?.hasError('required')) {
-            Email es requerido.
-          }
-          @if (loginForm.get('email')?.hasError('email')) {
-            Introduce un email válido.
-          }
-        </div>
-      }
     </div>
 
     <div class="form-group">
       <label for="password">Contraseña:</label>
       <div class="input-wrapper">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" class="input-icon">
-          <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zm-6 9c-1.1 0-2-.9-2-2s.9-2 2-2 2 .9 2 2-.9 2-2 2zm3.1-9H8.9V6c0-1.71 1.39-3.1 3.1-3.1 1.71 0 3.1 1.39 3.1 3.1v2z"/>
+          <path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6zm9 14H6V10h12v10zm-6-3c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z"/>
         </svg>
-        <input id="password" type="password" formControlName="password" placeholder="Introduce tu contraseña">
+        <input id="password" name="password" type="password" formControlName="password" placeholder="Introduce tu contraseña" autocomplete="current-password">
       </div>
-      @if (loginForm.get('password')?.invalid && loginForm.get('password')?.touched) {
-        <div class="error-message">Contraseña es requerida.</div>
-      }
     </div>
 
-    @if (errorMessage) {
-      <div class="error-message-server">{{ errorMessage }}</div>
-    }
-
-    <button type="submit" [disabled]="loginForm.invalid">Entrar</button>
+    <button type="submit" class="submit-button" [disabled]="loginForm.invalid || isLoading">
+      @if (isLoading) { <span class="loader"></span> } @else { Entrar }
+    </button>
   </form>
 
-  <div class="signup-link">
-    <span>¿No tienes cuenta? <a href="javascript:void(0)" (click)="onSwitchToRegister()">Regístrate</a></span>
+  <div class="auth-switch">
+    ¿No tienes cuenta? <button type="button" (click)="onSwitchToRegister()">Regístrate</button>
   </div>
 </div>
