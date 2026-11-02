@@ -33,6 +33,7 @@
   },
   "dependencies": {
     "@angular/animations": "22.0.6",
+    "@angular/cdk": "22.0.4",
     "@angular/common": "22.0.6",
     "@angular/compiler": "22.0.6",
     "@angular/core": "22.0.6",
@@ -50,7 +51,6 @@
     "@angular/compiler-cli": "22.0.6",
     "@vitest/coverage-v8": "^4.0.18",
     "jsdom": "^27.1.0",
-    "karma-sonarqube-unit-reporter": "^0.0.23",
     "typescript": "~6.0.3",
     "vitest": "^4.0.8"
   }
