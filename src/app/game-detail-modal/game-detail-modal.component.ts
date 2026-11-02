@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Game, GameStatus } from '../shared/models/game.model';
 import { LibraryService } from '../core/services/library.service';
 import { AuthService } from '../core/services/auth.service';
-import { tap } from 'rxjs/operators'; // Cambiado de finalize a tap
+import { finalize } from 'rxjs/operators';
 import '@justinribeiro/lite-youtube';
 import { UiService } from '../core/services/ui.service';
 import { GameService } from '../core/services/game.service';
@@ -126,28 +126,29 @@ export class GameDetailModalComponent implements OnInit {
     const userId = this.authService.getUserId();
     if (!userId || !this.game) return;
 
-    this.isAddingToLibrary = true;
-    const action$: Observable<any> = this.currentLibraryStatus === status
-      ? this.libraryService.removeGameFromLibrary(userId, this.game.id)
-      : this.libraryService.addOrUpdateGameInLibrary(userId, { gameId: this.game.id, status });
+    const isTogglingOff = this.currentLibraryStatus === status;
+    const targetStatus = isTogglingOff ? GameStatus.NONE : status;
 
-    action$.pipe(
-      tap({
-        finalize: () => {
-          this.isAddingToLibrary = false;
-          this.cdr.detectChanges();
-        }
-      })
-    ).subscribe((result: any) => {
-      if (this.currentLibraryStatus === status) {
-        this.currentLibraryStatus = null;
-        this.toastService.showSuccess('Juego eliminado de tu biblioteca');
-      } else if (result) {
-        this.currentLibraryStatus = result.status;
-        this.toastService.showSuccess('Biblioteca actualizada');
-      }
-      this.uiService.notifyLibraryChanged();
-    });
+    this.isAddingToLibrary = true;
+    this.libraryService
+      .addOrUpdateGameInLibrary(userId, { gameId: this.game.id, status: targetStatus })
+      .pipe(finalize(() => {
+        this.isAddingToLibrary = false;
+        this.cdr.detectChanges();
+      }))
+      .subscribe({
+        next: (result) => {
+          // result == null (204): la entrada se borró, no era favorita
+          this.currentLibraryStatus =
+            result && result.status !== GameStatus.NONE ? result.status : null;
+          this.isCurrentGameFavorite = result?.isFavorite ?? false;
+          this.toastService.showSuccess(
+            isTogglingOff ? 'Estado del juego eliminado' : 'Biblioteca actualizada'
+          );
+          this.uiService.notifyLibraryChanged();
+        },
+        error: () => this.toastService.showError('No se pudo actualizar la biblioteca')
+      });
   }
 
   toggleFavorite(): void {

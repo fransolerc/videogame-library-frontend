@@ -12,9 +12,9 @@ export class LibraryService {
 
   constructor(private readonly http: HttpClient) { }
 
-  addOrUpdateGameInLibrary(userId: string, request: AddGameToLibraryRequest): Observable<UserGame> {
+  addOrUpdateGameInLibrary(userId: string, request: AddGameToLibraryRequest): Observable<UserGame | null> {
     const url = `${environment.apiUrl}/users/${userId}/games/${request.gameId}`;
-    return this.http.put<UserGame>(url, { status: request.status });
+    return this.http.put<UserGame | null>(url, { status: request.status });
   }
 
   getGameFromLibrary(userId: string, gameId: number): Observable<UserGame | null> {
