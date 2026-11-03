@@ -45,7 +45,17 @@
         </svg>
         <input id="confirmPassword" name="confirmPassword" type="password" formControlName="confirmPassword" placeholder="Repite tu contraseña" autocomplete="new-password">
       </div>
+      @if (registerForm.controls['password'].touched && registerForm.controls['password'].invalid) {
+      <div class="error-message">Mínimo 8 caracteres, con mayúscula, minúscula y número.</div>
+      }
+      @if (registerForm.controls['confirmPassword'].touched && registerForm.hasError('mustMatch')) {
+      <div class="error-message">Las contraseñas no coinciden.</div>
+      }
     </div>
+
+    @if (errorMessage) {
+    <div class="error-message-server" role="alert">{{ errorMessage }}</div>
+    }
 
     <button type="submit" class="submit-button" [disabled]="registerForm.invalid || isLoading">
       @if (isLoading) { <span class="loader"></span> } @else { Registrarse }

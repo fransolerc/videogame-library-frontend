@@ -3,6 +3,11 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractContro
 import { AuthService } from '../../core/services/auth.service';
 import { CommonModule } from '@angular/common';
 import { UiService } from '../../core/services/ui.service';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ToastService } from '../../core/services/toast.service';
+import { extractErrorMessage } from '../../core/utils/http-error';
+
+const PASSWORD_PATTERN = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d\W]{8,}$/;
 
 @Component({
   selector: 'app-register',
@@ -22,12 +27,13 @@ export class RegisterComponent {
   constructor(
     private readonly fb: FormBuilder,
     private readonly authService: AuthService,
-    public readonly uiService: UiService
+    public readonly uiService: UiService,
+    private readonly toastService: ToastService
   ) {
     this.registerForm = this.fb.group({
       username: ['', { validators: [Validators.required, Validators.minLength(3)] }],
       email: ['', { validators: [Validators.required, Validators.email] }],
-      password: ['', { validators: [Validators.required, Validators.minLength(6)] }],
+      password: ['', { validators: [Validators.required, Validators.pattern(PASSWORD_PATTERN)] }],
       confirmPassword: ['', { validators: [Validators.required] }]
     }, {
       validators: [this.passwordMatchValidator]
@@ -50,11 +56,12 @@ export class RegisterComponent {
     this.authService.register({ username, email, password }).subscribe({
       next: () => {
         this.isLoading = false;
-        this.uiService.closeRegisterModal();
+        this.toastService.showSuccess('Cuenta creada. Ya puedes iniciar sesión.');
+        this.uiService.openLoginModal();
       },
-      error: (error) => {
+      error: (err: HttpErrorResponse) => {
         this.isLoading = false;
-        this.errorMessage = error.message || 'Error al registrarse';
+        this.errorMessage = extractErrorMessage(err, 'Error al registrarse');
       }
     });
   }
