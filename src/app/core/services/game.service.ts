@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Game, GameFilterRequest, GameSummary } from '../../shared/models/game.model';
 import { PaginatedResponse } from '../../shared/models/pagination.model';
@@ -24,7 +24,9 @@ export class GameService {
   }
 
   searchGames(name: string): Observable<GameSummary[]> {
-    return this.http.get<GameSummary[]>(`${this.apiUrl}/search?name=${name}`);
+    return this.http.get<GameSummary[]>(`${this.apiUrl}/search`, {
+      params: new HttpParams().set('name', name)
+    });
   }
 
   filterGames(request: GameFilterRequest): Observable<GameSummary[]> {

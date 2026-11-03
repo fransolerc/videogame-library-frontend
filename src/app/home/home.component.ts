@@ -57,7 +57,7 @@ export class HomeComponent implements OnInit, OnDestroy {
     this.subscriptions.add(
       combineLatest([this.searchInput, this.platformFilterInput, this.platforms$, this.sortInput]).pipe(
         debounceTime(300),
-        distinctUntilChanged(),
+        distinctUntilChanged((a, b) => a.length === b.length && a.every((v, i) => v === b[i])),
         tap(([term]) => {
           const sanitizedTerm = term.trim();
           this.lastSearchTerm = sanitizedTerm;
