@@ -3,12 +3,12 @@ import { CommonModule } from '@angular/common';
 import { Game, GameStatus } from '../shared/models/game.model';
 import { LibraryService } from '../core/services/library.service';
 import { AuthService } from '../core/services/auth.service';
-import { finalize } from 'rxjs/operators';
+import { catchError, finalize } from 'rxjs/operators';
 import '@justinribeiro/lite-youtube';
 import { UiService } from '../core/services/ui.service';
 import { GameService } from '../core/services/game.service';
 import { ToastService } from '../core/services/toast.service';
-import { forkJoin, Observable } from 'rxjs';
+import { forkJoin, Observable, of } from 'rxjs';
 
 @Component({
   selector: 'app-game-detail-modal',
@@ -61,7 +61,6 @@ export class GameDetailModalComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    document.body.style.overflow = 'hidden';
     this.loadInitialData();
   }
 
@@ -70,22 +69,32 @@ export class GameDetailModalComponent implements OnInit {
     const gameDetails$ = this.gameService.getGameById(this.gameId);
 
     const handleGameLoaded = (gameData: Game) => {
-      this.game = { ...gameData, platforms: this.platforms };
+      this.game = { ...gameData, platforms: this.platforms ?? gameData.platforms };
       this.cdr.detectChanges();
       setTimeout(() => this.setupCarousel(), 0);
     };
+    const handleError = () => {
+      this.toastService.showError('No se pudo cargar el juego.');
+      this.closeModal();
+    };
 
     if (userId) {
-      const gameStatus$ = this.libraryService.getGameFromLibrary(userId, this.gameId);
-      forkJoin({ details: gameDetails$, status: gameStatus$ }).subscribe(({ details, status }) => {
-        if (status) {
-          this.currentLibraryStatus = status.status;
-          this.isCurrentGameFavorite = status.isFavorite || false;
-        }
-        handleGameLoaded(details);
+      // Si falla solo el estado en biblioteca, el modal debe abrirse igualmente
+      const gameStatus$ = this.libraryService.getGameFromLibrary(userId, this.gameId)
+        .pipe(catchError(() => of(null)));
+
+      forkJoin({ details: gameDetails$, status: gameStatus$ }).subscribe({
+        next: ({ details, status }) => {
+          if (status) {
+            this.currentLibraryStatus = status.status;
+            this.isCurrentGameFavorite = status.isFavorite || false;
+          }
+          handleGameLoaded(details);
+        },
+        error: handleError
       });
     } else {
-      gameDetails$.subscribe(handleGameLoaded);
+      gameDetails$.subscribe({ next: handleGameLoaded, error: handleError });
     }
   }
 
@@ -118,7 +127,6 @@ export class GameDetailModalComponent implements OnInit {
   }
 
   closeModal(): void {
-    document.body.style.overflow = 'auto';
     this.closeModalEvent.emit();
   }
 

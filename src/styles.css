@@ -42,3 +42,7 @@ body {
   color: var(--text-main);
   overflow-x: hidden;
 }
+
+body.modal-open {
+  overflow: hidden;
+}
