@@ -27,6 +27,10 @@
       </div>
     </div>
 
+    @if (errorMessage) {
+    <div class="error-message-server" role="alert">{{ errorMessage }}</div>
+    }
+
     <button type="submit" class="submit-button" [disabled]="loginForm.invalid || isLoading">
       @if (isLoading) { <span class="loader"></span> } @else { Entrar }
     </button>

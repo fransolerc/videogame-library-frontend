@@ -3,6 +3,8 @@ import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angula
 import { AuthService } from '../../core/services/auth.service';
 import { CommonModule } from '@angular/common';
 import { UiService } from '../../core/services/ui.service';
+import { HttpErrorResponse } from '@angular/common/http';
+import { extractErrorMessage } from '../../core/utils/http-error';
 
 @Component({
   selector: 'app-login',
@@ -42,9 +44,11 @@ export class LoginComponent {
         this.isLoading = false;
         this.uiService.closeLoginModal();
       },
-      error: (error) => {
+      error: (err: HttpErrorResponse) => {
         this.isLoading = false;
-        this.errorMessage = error.message || 'Error al iniciar sesión';
+        this.errorMessage = err.status === 401
+          ? 'Email o contraseña incorrectos.'
+          : extractErrorMessage(err, 'Error al iniciar sesión');
       }
     });
   }
