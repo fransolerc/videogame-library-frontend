@@ -8,6 +8,7 @@
   --primary-text-hover: #38bdf8;   /* Azul más claro para texto en hover */
   --secondary-color: #ffc107;     /* Amarillo/Dorado para estrellas, iconos destacados */
   --danger-color: #ff4757;        /* Rojo para favoritos, errores */
+  --danger-color-rgb: 255, 71, 87;
 
   /* Colores de Estado */
   --status-want-to-play: #38bdf8; /* Azul claro */
@@ -24,6 +25,8 @@
   --bg-toast-success: #28a745;
   --bg-toast-error: #dc3545;
   --bg-toast-info: #007bff;
+  --bg-skeleton: rgba(255, 255, 255, 0.1);
+  --bg-skeleton-hover: rgba(255, 255, 255, 0.15);
 
   /* Texto */
   --text-main: #ffffff;           /* Texto blanco puro */

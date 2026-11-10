@@ -80,7 +80,7 @@
   cursor: pointer;
 }
 
-.no-games {
+.no-games-found {
   text-align: center;
   margin-top: 50px;
   color: var(--text-muted);
