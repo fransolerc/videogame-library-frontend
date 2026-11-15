@@ -55,6 +55,30 @@
         </div>
       }
 
+      @if (genreData.length > 0) {
+      <div class="statistic-section chart-section">
+        <h2>Géneros Favoritos</h2>
+        <div class="chart-container horizontal" [style.--bar-count]="genreData.length">
+          <ngx-charts-bar-horizontal
+            [results]="genreData"
+            [scheme]="colorScheme"
+            [xAxis]="true"
+            [yAxis]="true"
+            [legend]="false"
+            [showXAxisLabel]="true"
+            [showYAxisLabel]="true"
+            xAxisLabel="Número de Juegos"
+            yAxisLabel="Género"
+            [animations]="true"
+            [roundEdges]="true"
+            [barPadding]="8"
+            [showGridLines]="true"
+            [xAxisTickFormatting]="integerAxisTickFormatting">
+          </ngx-charts-bar-horizontal>
+        </div>
+      </div>
+      }
+
       @if (releaseYearData.length > 0) {
         <div class="statistic-section chart-section">
           <h2>Años de Lanzamiento Favoritos</h2>

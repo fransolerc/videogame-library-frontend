@@ -2,7 +2,7 @@ import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@
 import { CommonModule } from '@angular/common';
 import { of, Observable } from 'rxjs';
 import { switchMap, map } from 'rxjs/operators';
-import { UserStatistics, PlatformPreference } from '../shared/models/statistics.model';
+import { UserStatistics, PlatformPreference, GenrePreference } from '../shared/models/statistics.model';
 import { AuthService } from '../core/services/auth.service';
 import { LibraryService } from '../core/services/library.service';
 import { GameService } from '../core/services/game.service';
@@ -26,6 +26,7 @@ export class StatisticsComponent implements OnInit {
 
   releaseYearData: { name: string; value: number }[] = [];
   platformData: { name: string; value: number }[] = [];
+  genreData: { name: string; value: number }[] = [];
 
   allGames: Game[] = [];
   selectedYear: string | null = null;
@@ -83,6 +84,7 @@ export class StatisticsComponent implements OnInit {
     ).subscribe({
       next: ({ games, userGames }) => {
         const platformStats = this.calculatePlatformStats(games);
+        const genreStats = this.calculateGenreStats(games);
         const yearStats = this.calculateYearStats(games);
         const processedPlatforms = this.processTopPlatforms(platformStats);
         const totalGames = userGames.length;
@@ -91,7 +93,7 @@ export class StatisticsComponent implements OnInit {
         const averageRating = ratedGames.length > 0 ? totalRating / ratedGames.length : 0;
 
         this.statistics = {
-          favoriteGenres: [],
+          favoriteGenres: genreStats,
           favoritePlatforms: processedPlatforms,
           favoriteReleaseYears: yearStats.map(y => ({ releaseYear: y.year, count: y.count })).sort((a, b) => b.count - a.count),
           totalGames,
@@ -99,6 +101,7 @@ export class StatisticsComponent implements OnInit {
         };
 
         this.platformData = this.statistics.favoritePlatforms.map(p => ({ name: p.platform, value: p.count }));
+        this.genreData = genreStats.slice(0, 8).map(g => ({ name: g.genre, value: g.count }));
 
         if (this.statistics.favoriteReleaseYears.length > 0) {
           const yearData = this.statistics.favoriteReleaseYears;
@@ -168,6 +171,18 @@ export class StatisticsComponent implements OnInit {
       }
     });
     return Array.from(counts.entries()).map(([platform, count]) => ({ platform, count }));
+  }
+
+  private calculateGenreStats(games: Game[]): GenrePreference[] {
+    const counts = new Map<string, number>();
+    games.forEach(game => {
+      game.genres?.forEach(genre => {
+        counts.set(genre, (counts.get(genre) ?? 0) + 1);
+      });
+    });
+    return Array.from(counts.entries())
+      .map(([genre, count]) => ({ genre, count }))
+      .sort((a, b) => b.count - a.count);
   }
 
   private calculateYearStats(games: Game[]): { year: number; count: number }[] {
