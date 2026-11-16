@@ -1,4 +1,5 @@
-import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, DestroyRef, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute } from '@angular/router';
 import { GameService } from '../core/services/game.service';
 import { GameSummary } from '../shared/models/game.model';
@@ -18,28 +19,30 @@ import { GameCardSkeletonComponent } from '../game-card-skeleton/game-card-skele
   standalone: true,
   imports: [CommonModule, GameCardComponent, FormsModule, PlatformIconPipe, GameCardSkeletonComponent],
   templateUrl: './platform-games.component.html',
-  changeDetection: ChangeDetectionStrategy.Eager,
+  changeDetection: ChangeDetectionStrategy.OnPush,
   styleUrls: ['./platform-games.component.css']
 })
 export class PlatformGamesComponent implements OnInit {
-  games: GameSummary[] = [];
+  private readonly destroyRef = inject(DestroyRef);
+
+  games = signal<GameSummary[]>([]);
+  platformName = signal('');
+  platformType = signal('');
+  currentPage = signal(0);
+  totalPages = signal(0);
+  pageInput = signal(1);
+  isLoadingGames = signal(true);
+  isTotalKnown = signal(false);
+
   platformId: string | null = null;
-  platformName: string = '';
-  platformType: string = '';
-  currentPage = 0;
-  totalPages = 0;
   totalElements = 0;
   pageSize = 50;
   sortOrder$ = new BehaviorSubject<string>('rating-desc');
-  pageInput: number = 1;
-  isLoadingGames = true;
-  isTotalKnown = false;
 
   constructor(
     private readonly route: ActivatedRoute,
     private readonly gameService: GameService,
     private readonly platformService: PlatformService,
-    private readonly cdr: ChangeDetectorRef,
     private readonly uiService: UiService
   ) {}
 
@@ -50,35 +53,35 @@ export class PlatformGamesComponent implements OnInit {
       this.sortOrder$
     ]).pipe(
       switchMap(([params, platforms, sortOrder]) => {
-        this.isLoadingGames = true;
-        this.cdr.detectChanges();
+        this.isLoadingGames.set(true);
 
         const newPlatformId = params.get('id');
         if (this.platformId !== newPlatformId) {
-          this.currentPage = 0;
-          this.pageInput = 1;
+          this.currentPage.set(0);
+          this.pageInput.set(1);
         }
 
         this.platformId = newPlatformId;
         const foundPlatform = platforms.find(p => p.id.toString() === this.platformId);
-        this.platformName = foundPlatform ? foundPlatform.name : 'Plataforma Desconocida';
-        this.platformType = foundPlatform ? foundPlatform.platformType : '';
+        this.platformName.set(foundPlatform ? foundPlatform.name : 'Plataforma Desconocida');
+        this.platformType.set(foundPlatform ? foundPlatform.platformType : '');
 
         return this.loadGames(sortOrder);
-      })
+      }),
+      takeUntilDestroyed(this.destroyRef)
     ).subscribe();
   }
 
   loadGames(sortOrder: string = this.sortOrder$.value) {
     if (!this.platformId) {
-      this.isLoadingGames = false;
+      this.isLoadingGames.set(false);
       return of({ content: [], totalElements: 0, totalPages: 0, size: this.pageSize, number: 0 });
     }
 
     const request = {
       filter: `platforms = (${this.platformId})`,
       limit: this.pageSize,
-      offset: this.currentPage * this.pageSize,
+      offset: this.currentPage() * this.pageSize,
       sort: this.getSortString(sortOrder)
     };
 
@@ -86,10 +89,7 @@ export class PlatformGamesComponent implements OnInit {
       tap((response: PaginatedResponse<GameSummary> | GameSummary[]) => {
         this.processResponse(response);
       }),
-      finalize(() => {
-        this.isLoadingGames = false;
-        this.cdr.detectChanges();
-      })
+      finalize(() => this.isLoadingGames.set(false))
     );
   }
 
@@ -108,18 +108,17 @@ export class PlatformGamesComponent implements OnInit {
     if (response && 'content' in response) {
       games = response.content;
       this.totalElements = response.totalElements || 0;
-      this.totalPages = response.totalPages || 0;
-      this.isTotalKnown = true;
+      this.totalPages.set(response.totalPages || 0);
+      this.isTotalKnown.set(true);
     } else if (Array.isArray(response)) {
       games = response;
       this.totalElements = response.length;
-      this.totalPages = games.length === this.pageSize ? this.currentPage + 2 : this.currentPage + 1;
-      this.isTotalKnown = false;
+      this.totalPages.set(games.length === this.pageSize ? this.currentPage() + 2 : this.currentPage() + 1);
+      this.isTotalKnown.set(false);
     } else {
-      this.games = [];
       this.totalElements = 0;
-      this.totalPages = 0;
-      this.isTotalKnown = true;
+      this.totalPages.set(0);
+      this.isTotalKnown.set(true);
     }
 
     const uniqueGames = new Map<number, GameSummary>();
@@ -128,50 +127,50 @@ export class PlatformGamesComponent implements OnInit {
         uniqueGames.set(game.id, game);
       }
     });
-    this.games = Array.from(uniqueGames.values());
+    this.games.set(Array.from(uniqueGames.values()));
 
-    if (this.totalPages === 0 && this.games.length > 0) {
-      this.totalPages = 1;
+    if (this.totalPages() === 0 && this.games().length > 0) {
+      this.totalPages.set(1);
     }
   }
 
   onPageChange(page: number): void {
-    if (page >= 0 && page < this.totalPages) {
-      this.currentPage = page;
-      this.pageInput = page + 1;
-      this.isLoadingGames = true;
-      this.cdr.detectChanges();
+    if (page >= 0 && page < this.totalPages()) {
+      this.currentPage.set(page);
+      this.pageInput.set(page + 1);
+      this.isLoadingGames.set(true);
       this.loadGames().subscribe();
     }
   }
 
   onPageInputChange(): void {
-    if (this.pageInput >= 1 && this.pageInput <= this.totalPages) {
-      this.onPageChange(this.pageInput - 1);
+    const input = this.pageInput();
+    if (input >= 1 && input <= this.totalPages()) {
+      this.onPageChange(input - 1);
     } else {
-      this.pageInput = this.currentPage + 1;
+      this.pageInput.set(this.currentPage() + 1);
     }
   }
 
   onSortChange(event: Event): void {
     const select = event.target as HTMLSelectElement;
-    this.currentPage = 0;
-    this.pageInput = 1;
+    this.currentPage.set(0);
+    this.pageInput.set(1);
     this.sortOrder$.next(select.value);
   }
 
   openGameModal(gameId: number): void {
-    const game = this.games.find(g => g.id === gameId);
+    const game = this.games().find(g => g.id === gameId);
     this.uiService.openGameModal(gameId, game?.platforms);
   }
 
   getPaginationNumbers(): (number | string)[] {
-    if (!this.isTotalKnown) {
+    if (!this.isTotalKnown()) {
       return this.getPaginationForUnknownTotal();
     }
 
     const maxVisiblePages = 5;
-    if (this.totalPages <= maxVisiblePages) {
+    if (this.totalPages() <= maxVisiblePages) {
       return this.getPaginationForSmallTotal();
     }
 
@@ -180,8 +179,8 @@ export class PlatformGamesComponent implements OnInit {
 
   private getPaginationForUnknownTotal(): number[] {
     const pages: number[] = [];
-    const startPage = Math.max(0, this.currentPage - 2);
-    const endPage = this.totalPages - 1;
+    const startPage = Math.max(0, this.currentPage() - 2);
+    const endPage = this.totalPages() - 1;
 
     for (let i = startPage; i <= endPage; i++) {
       pages.push(i + 1);
@@ -191,24 +190,26 @@ export class PlatformGamesComponent implements OnInit {
 
   private getPaginationForSmallTotal(): number[] {
     const pages: number[] = [];
-    for (let i = 0; i < this.totalPages; i++) {
+    for (let i = 0; i < this.totalPages(); i++) {
       pages.push(i + 1);
     }
     return pages;
   }
 
   private getPaginationForLargeTotal(): (number | string)[] {
+    const current = this.currentPage();
+    const total = this.totalPages();
     const pages: (number | string)[] = [];
     pages.push(1);
 
-    let startPage = Math.max(2, this.currentPage - 1);
-    let endPage = Math.min(this.totalPages - 1, this.currentPage + 3);
+    let startPage = Math.max(2, current - 1);
+    let endPage = Math.min(total - 1, current + 3);
 
-    if (this.currentPage < 3) {
-      endPage = Math.min(this.totalPages - 1, 5);
+    if (current < 3) {
+      endPage = Math.min(total - 1, 5);
     }
-    if (this.currentPage > this.totalPages - 4) {
-      startPage = Math.max(2, this.totalPages - 4);
+    if (current > total - 4) {
+      startPage = Math.max(2, total - 4);
     }
 
     if (startPage > 2) {
@@ -217,10 +218,10 @@ export class PlatformGamesComponent implements OnInit {
     for (let i = startPage; i <= endPage; i++) {
       pages.push(i);
     }
-    if (endPage < this.totalPages - 1) {
+    if (endPage < total - 1) {
       pages.push('...');
     }
-    pages.push(this.totalPages);
+    pages.push(total);
 
     return pages;
   }

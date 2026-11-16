@@ -1,9 +1,9 @@
 <div class="platform-games-container">
   <header class="platform-header">
-      <svg class="title-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
-        <path [attr.d]="platformType | platformIcon"/>
-      </svg>
-    <h1>Juegos para {{ platformName }}</h1>
+    <svg class="title-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
+      <path [attr.d]="platformType() | platformIcon"/>
+    </svg>
+    <h1>Juegos para {{ platformName() }}</h1>
   </header>
 
   <div class="controls-bar">
@@ -22,33 +22,33 @@
   </div>
 
   <!-- Pagination Top -->
-  @if (games.length > 0 || (isLoadingGames && totalPages > 0)) {
-    <ng-container *ngTemplateOutlet="paginationTemplate"></ng-container>
+  @if (games().length > 0 || (isLoadingGames() && totalPages() > 0)) {
+  <ng-container *ngTemplateOutlet="paginationTemplate"></ng-container>
   }
 
-  @if (isLoadingGames) {
-    <div class="games-grid">
-      @for (i of [].constructor(20); track $index) {
-        <app-game-card-skeleton></app-game-card-skeleton>
-      }
-    </div>
-  } @else if (games.length > 0) {
-    <div class="games-grid">
-      @for (game of games; track game.id) {
-        <button class="game-item-button" (click)="openGameModal(game.id)">
-          <app-game-card [game]="game"></app-game-card>
-        </button>
-      }
-    </div>
+  @if (isLoadingGames()) {
+  <div class="games-grid">
+    @for (i of [].constructor(20); track $index) {
+    <app-game-card-skeleton></app-game-card-skeleton>
+    }
+  </div>
+  } @else if (games().length > 0) {
+  <div class="games-grid">
+    @for (game of games(); track game.id) {
+    <button class="game-item-button" (click)="openGameModal(game.id)">
+      <app-game-card [game]="game"></app-game-card>
+    </button>
+    }
+  </div>
   } @else {
-    <div class="no-games-found">
-      <p>No se encontraron juegos para esta plataforma.</p>
-    </div>
+  <div class="no-games-found">
+    <p>No se encontraron juegos para esta plataforma.</p>
+  </div>
   }
 
   <!-- Pagination Bottom -->
-  @if (games.length > 0 || (isLoadingGames && totalPages > 0)) {
-    <ng-container *ngTemplateOutlet="paginationTemplate"></ng-container>
+  @if (games().length > 0 || (isLoadingGames() && totalPages() > 0)) {
+  <ng-container *ngTemplateOutlet="paginationTemplate"></ng-container>
   }
 </div>
 
@@ -56,25 +56,25 @@
 <ng-template #paginationTemplate>
   <div class="pagination-container">
     <div class="pagination">
-      <button class="page-btn nav-btn" (click)="onPageChange(currentPage - 1)" [disabled]="currentPage === 0">
+      <button class="page-btn nav-btn" (click)="onPageChange(currentPage() - 1)" [disabled]="currentPage() === 0">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
           <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
         </svg>
       </button>
 
       @for (page of getPaginationNumbers(); track $index) {
-        @if (page === '...') {
-          <span class="page-ellipsis">...</span>
-        } @else {
-          <button class="page-btn"
-                  [class.active]="currentPage === (+page) - 1"
-                  (click)="onPageChange((+page) - 1)">
-            {{ page }}
-          </button>
-        }
+      @if (page === '...') {
+      <span class="page-ellipsis">...</span>
+      } @else {
+      <button class="page-btn"
+              [class.active]="currentPage() === (+page) - 1"
+              (click)="onPageChange((+page) - 1)">
+        {{ page }}
+      </button>
+      }
       }
 
-      <button class="page-btn nav-btn" (click)="onPageChange(currentPage + 1)" [disabled]="currentPage >= totalPages - 1">
+      <button class="page-btn nav-btn" (click)="onPageChange(currentPage() + 1)" [disabled]="currentPage() >= totalPages() - 1">
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor">
           <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
         </svg>
@@ -87,8 +87,10 @@
              [(ngModel)]="pageInput"
              (change)="onPageInputChange()"
              min="1"
-             [max]="totalPages">
-      <span *ngIf="isTotalKnown">de {{ totalPages }}</span>
+             [max]="totalPages()">
+      @if (isTotalKnown()) {
+      <span>de {{ totalPages() }}</span>
+      }
     </div>
   </div>
 </ng-template>
