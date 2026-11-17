@@ -1,5 +1,4 @@
 import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectionStrategy } from '@angular/core';
-import { CommonModule } from '@angular/common';
 
 export interface Toast {
   id: number;
@@ -11,7 +10,7 @@ export interface Toast {
 @Component({
   selector: 'app-toast',
   standalone: true,
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './toast.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./toast.component.css']
