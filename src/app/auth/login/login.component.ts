@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, ChangeDetectionStrategy } from '@angular/core';
+import { Component, EventEmitter, Output, ChangeDetectionStrategy, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
 import { CommonModule } from '@angular/common';
@@ -15,17 +15,17 @@ import { extractErrorMessage } from '../../core/utils/http-error';
   styleUrls: ['./login.component.css']
 })
 export class LoginComponent {
+  private readonly fb = inject(FormBuilder);
+  private readonly authService = inject(AuthService);
+  readonly uiService = inject(UiService);
+
   public loginForm: FormGroup;
   public errorMessage: string | null = null;
   public isLoading: boolean = false;
 
   @Output() public switchToRegister = new EventEmitter<void>();
 
-  constructor(
-    private readonly fb: FormBuilder,
-    private readonly authService: AuthService,
-    public readonly uiService: UiService
-  ) {
+  constructor() {
     this.loginForm = this.fb.group({
       email: ['', { validators: [Validators.required, Validators.email] }],
       password: ['', { validators: [Validators.required] }]

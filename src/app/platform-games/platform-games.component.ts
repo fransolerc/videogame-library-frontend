@@ -23,6 +23,11 @@ import { GameCardSkeletonComponent } from '../game-card-skeleton/game-card-skele
   styleUrls: ['./platform-games.component.css']
 })
 export class PlatformGamesComponent implements OnInit {
+  private readonly route = inject(ActivatedRoute);
+  private readonly gameService = inject(GameService);
+  private readonly platformService = inject(PlatformService);
+  private readonly uiService = inject(UiService);
+
   private readonly destroyRef = inject(DestroyRef);
 
   games = signal<GameSummary[]>([]);
@@ -38,13 +43,6 @@ export class PlatformGamesComponent implements OnInit {
   totalElements = 0;
   pageSize = 50;
   sortOrder$ = new BehaviorSubject<string>('rating-desc');
-
-  constructor(
-    private readonly route: ActivatedRoute,
-    private readonly gameService: GameService,
-    private readonly platformService: PlatformService,
-    private readonly uiService: UiService
-  ) {}
 
   ngOnInit(): void {
     combineLatest([

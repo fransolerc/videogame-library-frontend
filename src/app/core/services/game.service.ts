@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Game, GameFilterRequest, GameSummary } from '../../shared/models/game.model';
@@ -10,10 +10,10 @@ import { map } from 'rxjs/operators';
   providedIn: 'root'
 })
 export class GameService {
+  private readonly http = inject(HttpClient);
+
 
   private readonly apiUrl = environment.apiUrl + '/games';
-
-  constructor(private readonly http: HttpClient) { }
 
   getGameById(id: number): Observable<Game> {
     return this.http.get<Game>(`${this.apiUrl}/${id}`);

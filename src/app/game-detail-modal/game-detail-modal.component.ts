@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectorRef, CUSTOM_ELEMENTS_SCHEMA, HostListener, ElementRef, ViewChild, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectorRef, CUSTOM_ELEMENTS_SCHEMA, HostListener, ElementRef, ViewChild, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Game, GameStatus } from '../shared/models/game.model';
 import { LibraryService } from '../core/services/library.service';
@@ -20,6 +20,13 @@ import { forkJoin, Observable, of } from 'rxjs';
   schemas: [CUSTOM_ELEMENTS_SCHEMA]
 })
 export class GameDetailModalComponent implements OnInit {
+  private readonly libraryService = inject(LibraryService);
+  private readonly authService = inject(AuthService);
+  private readonly gameService = inject(GameService);
+  private readonly uiService = inject(UiService);
+  private readonly toastService = inject(ToastService);
+  private readonly cdr = inject(ChangeDetectorRef);
+
   @Input({ required: true }) gameId!: number;
   @Input() platforms?: string[];
   @Output() closeModalEvent = new EventEmitter<void>();
@@ -44,14 +51,7 @@ export class GameDetailModalComponent implements OnInit {
 
   GameStatus = GameStatus;
 
-  constructor(
-    private readonly libraryService: LibraryService,
-    private readonly authService: AuthService,
-    private readonly gameService: GameService,
-    private readonly uiService: UiService,
-    private readonly toastService: ToastService,
-    private readonly cdr: ChangeDetectorRef
-  ) {
+  constructor() {
     this.isAuthenticated$ = this.authService.isAuthenticated$;
   }
 

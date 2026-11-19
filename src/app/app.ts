@@ -1,4 +1,4 @@
-import { Component, HostListener, ChangeDetectionStrategy } from '@angular/core';
+import { Component, HostListener, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router, RouterModule } from '@angular/router';
 import { Observable } from 'rxjs';
@@ -28,6 +28,10 @@ import { ToastContainerComponent } from './shared/components/toast/toast-contain
   styleUrls: ['./app.css']
 })
 export class App {
+  readonly authService = inject(AuthService);
+  readonly uiService = inject(UiService);
+  private readonly router = inject(Router);
+
   isAuthenticated$: Observable<boolean>;
   currentUser$: Observable<User | null>;
   selectedGame$: Observable<{ id: number; platforms?: string[] } | null>;
@@ -35,11 +39,7 @@ export class App {
   showRegisterModal$: Observable<boolean>;
   isMobileMenuOpen$: Observable<boolean>;
 
-  constructor(
-    public readonly authService: AuthService,
-    public readonly uiService: UiService,
-    private readonly router: Router
-  ) {
+  constructor() {
     this.isAuthenticated$ = this.authService.isAuthenticated$;
     this.currentUser$ = this.authService.currentUser$;
     this.selectedGame$ = this.uiService.selectedGame$;

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, ChangeDetectionStrategy } from '@angular/core';
+import { Component, EventEmitter, Output, ChangeDetectionStrategy, inject } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
 import { CommonModule } from '@angular/common';
@@ -18,18 +18,18 @@ const PASSWORD_PATTERN = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[a-zA-Z\d\W]{8,}$/;
   styleUrls: ['./register.component.css']
 })
 export class RegisterComponent {
+  private readonly fb = inject(FormBuilder);
+  private readonly authService = inject(AuthService);
+  readonly uiService = inject(UiService);
+  private readonly toastService = inject(ToastService);
+
   public registerForm: FormGroup;
   public errorMessage: string | null = null;
   public isLoading: boolean = false;
 
   @Output() public switchToLogin = new EventEmitter<void>();
 
-  constructor(
-    private readonly fb: FormBuilder,
-    private readonly authService: AuthService,
-    public readonly uiService: UiService,
-    private readonly toastService: ToastService
-  ) {
+  constructor() {
     this.registerForm = this.fb.group({
       username: ['', { validators: [Validators.required, Validators.minLength(3)] }],
       email: ['', { validators: [Validators.required, Validators.email] }],

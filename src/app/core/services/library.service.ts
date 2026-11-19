@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
@@ -9,8 +9,8 @@ import { AddGameToLibraryRequest, UserGame } from '../../shared/models/game.mode
   providedIn: 'root'
 })
 export class LibraryService {
+  private readonly http = inject(HttpClient);
 
-  constructor(private readonly http: HttpClient) { }
 
   addOrUpdateGameInLibrary(userId: string, request: AddGameToLibraryRequest): Observable<UserGame | null> {
     const url = `${environment.apiUrl}/users/${userId}/games/${request.gameId}`;

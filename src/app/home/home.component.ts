@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, ChangeDetectorRef, OnDestroy, inject } from '@angular/core';
 import { AsyncPipe } from '@angular/common';
 import { GameService } from '../core/services/game.service';
 import { Observable, combineLatest, BehaviorSubject, of, Subscription } from 'rxjs';
@@ -21,6 +21,13 @@ import { GameCardHorizontalSkeletonComponent } from '../game-card-horizontal-ske
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class HomeComponent implements OnInit, OnDestroy {
+  private readonly gameService = inject(GameService);
+  private readonly platformService = inject(PlatformService);
+  private readonly authService = inject(AuthService);
+  private readonly uiService = inject(UiService);
+  private readonly router = inject(Router);
+  private readonly cdr = inject(ChangeDetectorRef);
+
   latestGames: GameSummary[] = [];
   topRatedGames: GameSummary[] = [];
   searchResults: GameSummary[] = [];
@@ -42,14 +49,7 @@ export class HomeComponent implements OnInit, OnDestroy {
 
   private readonly subscriptions = new Subscription();
 
-  constructor(
-    private readonly gameService: GameService,
-    private readonly platformService: PlatformService,
-    private readonly authService: AuthService,
-    private readonly uiService: UiService,
-    private readonly router: Router,
-    private readonly cdr: ChangeDetectorRef
-  ) {
+  constructor() {
     this.platforms$ = this.platformService.getPlatforms();
     this.isAuthenticated$ = this.authService.isAuthenticated$;
     this.isSearching$ = this.searchInput.pipe(map(term => !!term.trim()));

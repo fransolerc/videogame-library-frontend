@@ -1,4 +1,4 @@
-import { Injectable, Inject, Renderer2, RendererFactory2 } from '@angular/core';
+import { Injectable, Renderer2, RendererFactory2, inject } from '@angular/core';
 import { DOCUMENT } from '@angular/common';
 import { BehaviorSubject, Subject } from 'rxjs';
 
@@ -6,6 +6,8 @@ import { BehaviorSubject, Subject } from 'rxjs';
   providedIn: 'root'
 })
 export class UiService {
+  private readonly document = inject<Document>(DOCUMENT);
+
   private readonly renderer: Renderer2;
 
   private readonly _selectedGameSource = new BehaviorSubject<{ id: number; platforms?: string[] } | null>(null);
@@ -23,10 +25,9 @@ export class UiService {
   private readonly _libraryChangedSource = new Subject<void>();
   libraryChanged$ = this._libraryChangedSource.asObservable();
 
-  constructor(
-    rendererFactory: RendererFactory2,
-    @Inject(DOCUMENT) private readonly document: Document
-  ) {
+  constructor() {
+    const rendererFactory = inject(RendererFactory2);
+
     this.renderer = rendererFactory.createRenderer(null, null);
   }
 

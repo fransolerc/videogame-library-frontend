@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Subscription } from 'rxjs';
 import { ToastService } from '../../../core/services/toast.service';
@@ -29,10 +29,10 @@ import { Toast, ToastComponent } from './toast.component';
   `]
 })
 export class ToastContainerComponent implements OnInit, OnDestroy {
+  private readonly toastService = inject(ToastService);
+
   toasts: Toast[] = [];
   private subscription!: Subscription;
-
-  constructor(private readonly toastService: ToastService) {}
 
   ngOnInit() {
     this.subscription = this.toastService.toastState.subscribe(

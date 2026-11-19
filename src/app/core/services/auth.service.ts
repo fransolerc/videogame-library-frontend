@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject } from 'rxjs';
 import { tap } from 'rxjs/operators';
@@ -9,6 +9,8 @@ import { AuthResponse, User, RegisterRequest } from '../../shared/models/user.mo
   providedIn: 'root'
 })
 export class AuthService {
+  private readonly http = inject(HttpClient);
+
   private readonly tokenKey = 'jwt_token';
   private readonly userKey = 'auth_user';
   private readonly isAuthenticatedSubject = new BehaviorSubject<boolean>(this.hasToken());
@@ -17,7 +19,7 @@ export class AuthService {
   isAuthenticated$ = this.isAuthenticatedSubject.asObservable();
   currentUser$ = this.currentUserSubject.asObservable();
 
-  constructor(private readonly http: HttpClient) {
+  constructor() {
     if (this.hasToken() && !this.getUser()) {
       const token = this.getToken();
       if (token) {

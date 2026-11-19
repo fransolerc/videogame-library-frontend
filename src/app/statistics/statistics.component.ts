@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { of, Observable } from 'rxjs';
 import { switchMap, map } from 'rxjs/operators';
@@ -19,6 +19,12 @@ import { BreakpointObserver, Breakpoints, LayoutModule } from '@angular/cdk/layo
   styleUrls: ['./statistics.component.css']
 })
 export class StatisticsComponent implements OnInit {
+  private readonly authService = inject(AuthService);
+  private readonly libraryService = inject(LibraryService);
+  private readonly gameService = inject(GameService);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly breakpointObserver = inject(BreakpointObserver);
+
 
   statistics: UserStatistics | null = null;
   loading = true;
@@ -48,13 +54,7 @@ export class StatisticsComponent implements OnInit {
     return '';
   };
 
-  constructor(
-    private readonly authService: AuthService,
-    private readonly libraryService: LibraryService,
-    private readonly gameService: GameService,
-    private readonly cdr: ChangeDetectorRef,
-    private readonly breakpointObserver: BreakpointObserver
-  ) {
+  constructor() {
     this.isSmallScreen$ = this.breakpointObserver.observe(Breakpoints.Handset)
       .pipe(map(result => result.matches));
   }

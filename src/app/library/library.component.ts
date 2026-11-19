@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, OnDestroy, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, OnDestroy, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { GameService } from '../core/services/game.service';
 import { LibraryService } from '../core/services/library.service';
@@ -24,6 +24,13 @@ type LibraryDisplayGame = Game & { status: GameStatus; isFavorite: boolean | und
   styleUrls: ['./library.component.css']
 })
 export class LibraryComponent implements OnInit, OnDestroy {
+  private readonly libraryService = inject(LibraryService);
+  private readonly gameService = inject(GameService);
+  private readonly authService = inject(AuthService);
+  private readonly uiService = inject(UiService);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly platformService = inject(PlatformService);
+
   platforms$: Observable<Platform[]>;
 
   favorites: LibraryDisplayGame[] = [];
@@ -53,14 +60,7 @@ export class LibraryComponent implements OnInit, OnDestroy {
 
   private readonly destroy$ = new Subject<void>();
 
-  constructor(
-    private readonly libraryService: LibraryService,
-    private readonly gameService: GameService,
-    private readonly authService: AuthService,
-    private readonly uiService: UiService,
-    private readonly cdr: ChangeDetectorRef,
-    private readonly platformService: PlatformService
-  ) {
+  constructor() {
     this.platforms$ = this.platformService.getPlatforms();
   }
 

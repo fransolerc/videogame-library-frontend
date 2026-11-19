@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { PlatformService } from '../core/services/platform.service';
@@ -22,13 +22,11 @@ interface PlatformGroup {
   styleUrls: ['./platform-list.component.css']
 })
 export class PlatformListComponent implements OnInit {
+  private readonly platformService = inject(PlatformService);
+  private readonly router = inject(Router);
+
   groupedPlatforms$: Observable<PlatformGroup[]> | undefined;
   sortOrder$ = new BehaviorSubject<string>('name-asc');
-
-  constructor(
-    private readonly platformService: PlatformService,
-    private readonly router: Router
-  ) {}
 
   ngOnInit(): void {
     this.groupedPlatforms$ = combineLatest([
