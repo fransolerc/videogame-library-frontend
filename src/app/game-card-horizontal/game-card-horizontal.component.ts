@@ -1,4 +1,4 @@
-import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
+import {Component, ChangeDetectionStrategy, input} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Game } from '../shared/models/game.model';
 
@@ -11,5 +11,5 @@ import { Game } from '../shared/models/game.model';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class GameCardHorizontalComponent {
-  @Input({ required: true }) game!: Game;
+  readonly game = input.required<Game>();
 }

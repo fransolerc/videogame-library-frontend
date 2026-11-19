@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Output, EventEmitter, ChangeDetectionStrategy, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Game } from '../shared/models/game.model';
 
@@ -11,13 +11,13 @@ import { Game } from '../shared/models/game.model';
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class GameCardComponent {
-  @Input({ required: true }) game!: Game;
-  @Input() isPlatformClickable: boolean = true;
+  readonly game = input.required<Game>();
+  readonly isPlatformClickable = input<boolean>(true);
 
   @Output() platformClick = new EventEmitter<string>();
 
   onPlatformClick(platformName: string, event: MouseEvent): void {
-    if (this.isPlatformClickable) {
+    if (this.isPlatformClickable()) {
       event.stopPropagation();
       this.platformClick.emit(platformName);
     }

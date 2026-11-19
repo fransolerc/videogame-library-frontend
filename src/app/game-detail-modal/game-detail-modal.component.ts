@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectorRef, CUSTOM_ELEMENTS_SCHEMA, HostListener, ElementRef, ViewChild, ChangeDetectionStrategy, inject } from '@angular/core';
+import { Component, Output, EventEmitter, OnInit, ChangeDetectorRef, CUSTOM_ELEMENTS_SCHEMA, HostListener, ElementRef, ViewChild, ChangeDetectionStrategy, inject, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Game, GameStatus } from '../shared/models/game.model';
 import { LibraryService } from '../core/services/library.service';
@@ -27,8 +27,8 @@ export class GameDetailModalComponent implements OnInit {
   private readonly toastService = inject(ToastService);
   private readonly cdr = inject(ChangeDetectorRef);
 
-  @Input({ required: true }) gameId!: number;
-  @Input() platforms?: string[];
+  readonly gameId = input.required<number>();
+  readonly platforms = input<string[]>();
   @Output() closeModalEvent = new EventEmitter<void>();
   @ViewChild('carouselTrack') carouselTrack!: ElementRef<HTMLDivElement>;
 
@@ -66,10 +66,10 @@ export class GameDetailModalComponent implements OnInit {
 
   loadInitialData(): void {
     const userId = this.authService.getUserId();
-    const gameDetails$ = this.gameService.getGameById(this.gameId);
+    const gameDetails$ = this.gameService.getGameById(this.gameId());
 
     const handleGameLoaded = (gameData: Game) => {
-      this.game = { ...gameData, platforms: this.platforms ?? gameData.platforms };
+      this.game = { ...gameData, platforms: this.platforms() ?? gameData.platforms };
       this.cdr.detectChanges();
       setTimeout(() => this.setupCarousel(), 0);
     };
@@ -80,7 +80,7 @@ export class GameDetailModalComponent implements OnInit {
 
     if (userId) {
       // Si falla solo el estado en biblioteca, el modal debe abrirse igualmente
-      const gameStatus$ = this.libraryService.getGameFromLibrary(userId, this.gameId)
+      const gameStatus$ = this.libraryService.getGameFromLibrary(userId, this.gameId())
         .pipe(catchError(() => of(null)));
 
       forkJoin({ details: gameDetails$, status: gameStatus$ }).subscribe({

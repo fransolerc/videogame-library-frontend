@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ViewChild, ElementRef, HostListener, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Output, EventEmitter, ViewChild, ElementRef, HostListener, ChangeDetectionStrategy, input } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { User } from '../shared/models/user.model';
@@ -12,9 +12,9 @@ import { User } from '../shared/models/user.model';
   styleUrls: ['./auth-widget.component.css']
 })
 export class AuthWidgetComponent {
-  @Input() isAuthenticated: boolean | null = false;
-  @Input() currentUser: User | null = null;
-  @Input() isMobileView: boolean = false;
+  readonly isAuthenticated = input<boolean | null>(false);
+  readonly currentUser = input<User | null>(null);
+  readonly isMobileView = input<boolean>(false);
   @Output() login = new EventEmitter<void>();
   @Output() logout = new EventEmitter<void>();
   @Output() closeMenu = new EventEmitter<void>();

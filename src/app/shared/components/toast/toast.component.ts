@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, OnInit, ChangeDetectionStrategy } from '@angular/core';
+import { Component, Output, EventEmitter, OnInit, ChangeDetectionStrategy, input } from '@angular/core';
 
 export interface Toast {
   id: number;
@@ -16,21 +16,22 @@ export interface Toast {
   styleUrls: ['./toast.component.css']
 })
 export class ToastComponent implements OnInit {
-  @Input() toast!: Toast;
+  readonly toast = input.required<Toast>();
   @Output() closeEvent = new EventEmitter<number>();
 
   ngOnInit() {
-    if (this.toast.duration) {
-      setTimeout(() => this.closeToast(), this.toast.duration);
+    const toast = this.toast();
+    if (toast.duration) {
+      setTimeout(() => this.closeToast(), toast.duration);
     }
   }
 
   closeToast() {
-    this.closeEvent.emit(this.toast.id);
+    this.closeEvent.emit(this.toast().id);
   }
 
   getIconPath(): string {
-    switch (this.toast.type) {
+    switch (this.toast().type) {
       case 'success':
         return 'M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z';
       case 'error':
