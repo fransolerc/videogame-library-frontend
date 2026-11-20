@@ -76,30 +76,24 @@
     ></app-game-detail-modal>
   }
   @if (showLoginModal$ | async) {
-    <div class="modal-overlay" role="button" tabindex="0" (click)="uiService.closeLoginModal()" (keydown.enter)="uiService.closeLoginModal()" aria-label="Cerrar modal">
-      <div class="modal-content login-modal-content" (click)="uiService.stopPropagation($event)">
-        <button class="close-button" (click)="uiService.closeLoginModal()" aria-label="Cerrar login" title="Cerrar login">
-          &times;
-        </button>
-        <app-login
-          (switchToRegister)="uiService.openRegisterModal()"
-          (loginSuccess)="uiService.closeLoginModal()"
-        ></app-login>
-      </div>
+  <div class="modal-overlay" role="button" tabindex="0" (click)="uiService.closeLoginModal()" (keydown.enter)="uiService.closeLoginModal()" aria-label="Cerrar modal">
+    <div class="modal-content login-modal-content" (click)="uiService.stopPropagation($event)">
+      <button class="close-button" (click)="uiService.closeLoginModal()" aria-label="Cerrar login" title="Cerrar login">
+        &times;
+      </button>
+      <app-login (switchToRegister)="uiService.openRegisterModal()"></app-login>
     </div>
+  </div>
   }
   @if (showRegisterModal$ | async) {
-    <div class="modal-overlay" role="button" tabindex="0" (click)="uiService.closeRegisterModal()" (keydown.enter)="uiService.closeRegisterModal()" aria-label="Cerrar modal">
-      <div class="modal-content login-modal-content" (click)="uiService.stopPropagation($event)">
-        <button class="close-button" (click)="uiService.closeRegisterModal()" aria-label="Cerrar registro" title="Cerrar registro">
-          &times;
-        </button>
-        <app-register
-          (registerSuccess)="uiService.closeRegisterModal()"
-          (switchToLogin)="uiService.openLoginModal()"
-        ></app-register>
-      </div>
+  <div class="modal-overlay" role="button" tabindex="0" (click)="uiService.closeRegisterModal()" (keydown.enter)="uiService.closeRegisterModal()" aria-label="Cerrar modal">
+    <div class="modal-content login-modal-content" (click)="uiService.stopPropagation($event)">
+      <button class="close-button" (click)="uiService.closeRegisterModal()" aria-label="Cerrar registro" title="Cerrar registro">
+        &times;
+      </button>
+      <app-register (switchToLogin)="uiService.openLoginModal()"></app-register>
     </div>
+  </div>
   }
 </div>
 <app-toast-container></app-toast-container>
