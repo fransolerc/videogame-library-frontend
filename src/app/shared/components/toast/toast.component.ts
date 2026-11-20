@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, OnInit, ChangeDetectionStrategy, input } from '@angular/core';
+import { Component, OnInit, ChangeDetectionStrategy, input, output } from '@angular/core';
 
 export interface Toast {
   id: number;
@@ -17,7 +17,7 @@ export interface Toast {
 })
 export class ToastComponent implements OnInit {
   readonly toast = input.required<Toast>();
-  @Output() closeEvent = new EventEmitter<number>();
+  readonly closeEvent = output<number>();
 
   ngOnInit() {
     const toast = this.toast();

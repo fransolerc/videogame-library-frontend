@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, ViewChild, ElementRef, HostListener, ChangeDetectionStrategy, input } from '@angular/core';
+import { Component, ViewChild, ElementRef, HostListener, ChangeDetectionStrategy, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { User } from '../shared/models/user.model';
@@ -15,9 +15,9 @@ export class AuthWidgetComponent {
   readonly isAuthenticated = input<boolean | null>(false);
   readonly currentUser = input<User | null>(null);
   readonly isMobileView = input<boolean>(false);
-  @Output() login = new EventEmitter<void>();
-  @Output() logout = new EventEmitter<void>();
-  @Output() closeMenu = new EventEmitter<void>();
+  readonly login = output<void>();
+  readonly logout = output<void>();
+  readonly closeMenu = output<void>();
 
   @ViewChild('profileMenu') profileMenu!: ElementRef;
 

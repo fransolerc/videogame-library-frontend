@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, OnInit, ChangeDetectorRef, CUSTOM_ELEMENTS_SCHEMA, HostListener, ElementRef, ViewChild, ChangeDetectionStrategy, inject, input } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, CUSTOM_ELEMENTS_SCHEMA, HostListener, ElementRef, ViewChild, ChangeDetectionStrategy, inject, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Game, GameStatus } from '../shared/models/game.model';
 import { LibraryService } from '../core/services/library.service';
@@ -29,7 +29,7 @@ export class GameDetailModalComponent implements OnInit {
 
   readonly gameId = input.required<number>();
   readonly platforms = input<string[]>();
-  @Output() closeModalEvent = new EventEmitter<void>();
+  readonly closeModalEvent = output<void>();
   @ViewChild('carouselTrack') carouselTrack!: ElementRef<HTMLDivElement>;
 
   game: Game | null = null;

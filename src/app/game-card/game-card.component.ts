@@ -1,4 +1,4 @@
-import { Component, Output, EventEmitter, ChangeDetectionStrategy, input } from '@angular/core';
+import { Component, ChangeDetectionStrategy, input, output } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Game } from '../shared/models/game.model';
 
@@ -14,7 +14,7 @@ export class GameCardComponent {
   readonly game = input.required<Game>();
   readonly isPlatformClickable = input<boolean>(true);
 
-  @Output() platformClick = new EventEmitter<string>();
+  readonly platformClick = output<string>();
 
   onPlatformClick(platformName: string, event: MouseEvent): void {
     if (this.isPlatformClickable()) {

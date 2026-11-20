@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Output, ChangeDetectionStrategy, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, inject, output } from '@angular/core';
 import { FormBuilder, FormGroup, Validators, ReactiveFormsModule, AbstractControl, ValidationErrors } from '@angular/forms';
 import { AuthService } from '../../core/services/auth.service';
 import { CommonModule } from '@angular/common';
@@ -27,7 +27,7 @@ export class RegisterComponent {
   public errorMessage: string | null = null;
   public isLoading: boolean = false;
 
-  @Output() public switchToLogin = new EventEmitter<void>();
+  public readonly switchToLogin = output<void>();
 
   constructor() {
     this.registerForm = this.fb.group({
