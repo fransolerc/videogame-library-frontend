@@ -1,63 +1,94 @@
 # Videogame Library Frontend
 
-A modern and responsive web application for browsing and discovering video games. This project, built with Angular, allows users to explore game libraries, search for specific titles, and view detailed information.
+Responsive web application to discover video games and manage a personal library. Built with Angular (standalone components, zoneless change detection) on top of the **Video Game Library Backend** REST API, which lives in a separate repository.
 
-## ✨ Main Features
+## Features
 
-- **Game Discovery:** View lists of the latest releases and top-rated games.
-- **Advanced Search:** A powerful search bar to find any game in the library, with live results.
-- **Dynamic Filtering:** Sort and filter results by platform, release date, name, and rating.
-- **Responsive Design:** A clean and adaptive UI that works on both desktop and mobile devices.
-- **Component-Based Architecture:** Built with reusable and modular Angular components.
+- **Discovery:** latest releases and top-rated games on the home page.
+- **Search:** live search by name (minimum 3 characters) with sorting and platform filter.
+- **Platforms:** browse platforms grouped by generation, then browse each platform's games with pagination.
+- **Game details:** modal with description, storyline, screenshot gallery and videos.
+- **Accounts:** registration and login (JWT).
+- **Personal library:** track games as *Want to play*, *Playing* or *Completed*, and mark favorites.
+- **Statistics:** charts of favorite platforms, genres and release years, computed client-side from your favorites.
+- **Responsive UI** for desktop and mobile. The interface text is in Spanish.
 
-## 📂 Project Structure
+## Requirements
 
-The project follows a standard Angular structure, with key logic organized as follows:
+- **Node.js** `^22.22.3`, `^24.15.0` or `>=26`
+- **npm** 11
+- The backend running and reachable (default `http://localhost:8080`)
 
-- `src/app/core`: Contains core services (like `GameService`, `AuthService`) that are central to the application.
-- `src/app/shared`: Holds shared models and utilities used across different features.
-- `src/app/home`: The main page of the application, which displays game lists and the search functionality.
-- `src/app/game-card-horizontal`: A compact, responsive component used in lists and search results to display key game information efficiently.
-- `src/app/game-detail-modal`: A modal component to show detailed information about a selected game.
+## Getting started
 
-## 🚀 Development
+```bash
+npm install
+cp src/environments/environment.example.ts src/environments/environment.ts
+```
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli).
+`src/environments/environment.ts` is git-ignored. Set `apiUrl` to your backend:
 
-### Development server
+```ts
+export const environment = {
+  production: false,
+  apiUrl: 'http://localhost:8080'
+};
+```
 
-To start a local development server, run:
+Start the backend first, then:
 
 ```bash
 npm start
 ```
 
-Navigate to `http://localhost:4200/`. The application will automatically reload if you change any of the source files. This command runs `ng serve --host 0.0.0.0`, making it accessible from other devices in your network.
+Open `http://localhost:4200/`. The dev server listens on `0.0.0.0`, so it is reachable from other devices on your network. If you open the app from another origin, add it to `CORS_ALLOWED_ORIGINS` in the backend.
 
-### Code scaffolding
+## Scripts
 
-To generate a new component, run:
+| Command | Description |
+|:--|:--|
+| `npm start` | Dev server with live reload |
+| `npm run build` | Production build into `dist/` |
+| `npm run watch` | Development build in watch mode |
+| `npm test` | Unit tests with Vitest (watch mode, coverage enabled) |
+| `npm test -- --no-watch` | Single test run |
 
-```bash
-npx ng generate component component-name
+Coverage reports (HTML and lcov) are written to `coverage/`.
+
+## Routes
+
+| Path | Description | Access |
+|:--|:--|:--|
+| `/` | Home: latest, top rated and search | Public |
+| `/platforms` | Platforms grouped by generation | Public |
+| `/platforms/:id` | Games of a platform | Public |
+| `/library` | Personal library and statistics | Requires login |
+
+## Project structure
+
+```
+src/app
+├── core            Services, interceptors, guards and utilities
+├── shared          Models, pipes and shared components (toasts)
+├── home            Home page and search
+├── library         Personal library
+├── statistics      Charts for favorites
+├── platform-list   Platforms grouped by generation
+├── platform-games  Games of one platform, paginated
+├── game-detail-modal   Game details modal
+├── game-card, game-card-horizontal, *-skeleton   Reusable cards and loading placeholders
+├── auth, auth-widget   Login, registration and navbar widget
+└── app.*           Root component and navigation
 ```
 
-You can also use `npx ng generate directive|pipe|service|class|guard|interface|enum|module`.
+## Authentication
 
-### Building
+The JWT returned by the backend is stored in `localStorage` (`jwt_token`, `auth_user`) and attached to every request by `authInterceptor`. Storing tokens in `localStorage` is exposed to XSS; keep third-party scripts to a minimum.
 
-To build the project for production, run:
+## Stack
 
-```bash
-npm run build
-```
+Angular, RxJS, [`@swimlane/ngx-charts`](https://github.com/swimlane/ngx-charts), [`@justinribeiro/lite-youtube`](https://github.com/justinribeiro/lite-youtube) and Vitest. Exact versions are in `package.json`.
 
-The build artifacts will be stored in the `dist/` directory.
+## Working with AI coding agents
 
-### Running unit tests
-
-To execute the unit tests via [Vitest](https://vitest.dev), run:
-
-```bash
-npm test
-```
+Conventions, the migration plan and the checks to run after every change are in [`AGENTS.md`](AGENTS.md). `CLAUDE.md` imports it for Claude Code.

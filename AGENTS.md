@@ -2,7 +2,7 @@
 
 Frontend for **GameLibrary** (video game library). Angular 22, standalone components, zoneless (no `zone.js`), tests with Vitest through `ng test`.
 
-Backend lives in a separate repo (Spring Boot 4.1.2, hexagonal architecture). The API contract is `src/main/resources/api/openapi.yaml` in that repo. Base URL comes from `environment.apiUrl`.
+Backend lives in a separate repo (Spring Boot 4, hexagonal architecture). The API contract is `src/main/resources/api/openapi.yaml` in that repo. Base URL comes from `environment.apiUrl`.
 
 ## Commands
 
