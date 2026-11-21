@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, CUSTOM_ELEMENTS_SCHEMA, HostListener, ElementRef, ViewChild, ChangeDetectionStrategy, inject, input, output } from '@angular/core';
+import { Component, OnInit, ChangeDetectorRef, CUSTOM_ELEMENTS_SCHEMA, HostListener, ElementRef, ChangeDetectionStrategy, inject, input, output, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Game, GameStatus } from '../shared/models/game.model';
 import { LibraryService } from '../core/services/library.service';
@@ -30,7 +30,7 @@ export class GameDetailModalComponent implements OnInit {
   readonly gameId = input.required<number>();
   readonly platforms = input<string[]>();
   readonly closeModalEvent = output<void>();
-  @ViewChild('carouselTrack') carouselTrack!: ElementRef<HTMLDivElement>;
+  readonly carouselTrack = viewChild<ElementRef<HTMLDivElement>>('carouselTrack');
 
   game: Game | null = null;
   currentLibraryStatus: GameStatus | null = null;
@@ -99,9 +99,10 @@ export class GameDetailModalComponent implements OnInit {
   }
 
   setupCarousel(): void {
-    if (this.isCarouselSetup || !this.carouselTrack?.nativeElement || !this.game?.screenshots?.length) return;
+    const carouselTrack = this.carouselTrack();
+    if (this.isCarouselSetup || !carouselTrack?.nativeElement || !this.game?.screenshots?.length) return;
 
-    this.carouselTrack.nativeElement.addEventListener('transitionend', () => this.handleTransitionEnd());
+    carouselTrack.nativeElement.addEventListener('transitionend', () => this.handleTransitionEnd());
     this.updatePosition(false);
     this.isCarouselSetup = true;
   }
@@ -209,7 +210,7 @@ export class GameDetailModalComponent implements OnInit {
     this.isDragging = true;
     this.startX = event.pageX;
     this.prevTranslate = this.currentTranslate;
-    this.carouselTrack.nativeElement.classList.add('grabbing');
+    this.carouselTrack()?.nativeElement.classList.add('grabbing');
   }
 
   dragMove(event: MouseEvent): void {
@@ -221,7 +222,7 @@ export class GameDetailModalComponent implements OnInit {
 
   dragEnd(): void {
     this.isDragging = false;
-    this.carouselTrack.nativeElement.classList.remove('grabbing');
+    this.carouselTrack()?.nativeElement.classList.remove('grabbing');
     const movedBy = this.currentTranslate - this.prevTranslate;
 
     if (movedBy < -100) {
@@ -234,16 +235,18 @@ export class GameDetailModalComponent implements OnInit {
   }
 
   updatePosition(withTransition = false): void {
-    if (!this.carouselTrack?.nativeElement) return;
-    const slideWidth = this.carouselTrack.nativeElement.clientWidth;
+    const track = this.carouselTrack()?.nativeElement;
+    if (!track) return;
+    const slideWidth = track.clientWidth;
     this.currentTranslate = this.currentIndex * -slideWidth;
     this.prevTranslate = this.currentTranslate;
     this.setSliderPosition(withTransition);
   }
 
   setSliderPosition(withTransition = false): void {
-    if (!this.carouselTrack?.nativeElement) return;
-    this.carouselTrack.nativeElement.style.transition = withTransition ? 'transform 0.3s ease-out' : 'none';
-    this.carouselTrack.nativeElement.style.transform = `translateX(${this.currentTranslate}px)`;
+    const track = this.carouselTrack()?.nativeElement;
+    if (!track) return;
+    track.style.transition = withTransition ? 'transform 0.3s ease-out' : 'none';
+    track.style.transform = `translateX(${this.currentTranslate}px)`;
   }
 }

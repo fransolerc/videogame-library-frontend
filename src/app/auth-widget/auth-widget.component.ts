@@ -1,4 +1,4 @@
-import { Component, ViewChild, ElementRef, HostListener, ChangeDetectionStrategy, input, output } from '@angular/core';
+import { Component, ElementRef, HostListener, ChangeDetectionStrategy, input, output, viewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { User } from '../shared/models/user.model';
@@ -18,14 +18,14 @@ export class AuthWidgetComponent {
   readonly login = output<void>();
   readonly logout = output<void>();
   readonly closeMenu = output<void>();
-
-  @ViewChild('profileMenu') profileMenu!: ElementRef;
+  readonly profileMenu = viewChild<ElementRef>('profileMenu');
 
   isProfileMenuOpen = false;
 
   @HostListener('document:click', ['$event'])
   clickOutside(event: Event) {
-    if (this.isProfileMenuOpen && this.profileMenu && !this.profileMenu.nativeElement.contains(event.target)) {
+    const menu = this.profileMenu()?.nativeElement;
+    if (this.isProfileMenuOpen && menu && !menu.contains(event.target)) {
       this.isProfileMenuOpen = false;
     }
   }
